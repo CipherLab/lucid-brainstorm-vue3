@@ -1,46 +1,53 @@
 <template>
-  <q-badge
-    @click.stop="handleDelete"
-    transparent
-    class="delete-badge"
-    :color="showDeleteConfirm ? 'red' : 'gray'"
-  >
-    x
-  </q-badge>
-  <Handle
-    v-if="props.data.agent.hasInput"
-    type="target"
-    :position="Position.Top"
-    :id="`${id}-target`"
-    style="background-color: red; width: 10px; height: 10px"
-  />
-  <div
-    class="base-node"
-    :style="{ backgroundColor: props.data.agent.color }"
-    @click="handleInspector"
-  >
-    <div class="base-name">{{ props.label }}</div>
+  <div @mouseover="mouseOverNode" @mouseleave="mouseLeaveNode">
+    <q-badge
+      @click.stop="handleDelete"
+      transparent
+      class="delete-badge"
+      :color="showDeleteConfirm ? 'red' : 'gray'"
+    >
+      x
+    </q-badge>
+    <Handle
+      v-if="props.data.agent.hasInput"
+      type="target"
+      :class="mouseOverNodeClass"
+      :position="Position.Left"
+      :id="`${id}-target`"
+      @mouseover="mouseOverHandle"
+      @mouseleave="mouseLeaveHandle"
+      style="background-color: #ccc"
+    />
+    <div
+      class="base-node"
+      :style="{ backgroundColor: props.data.agent.color }"
+      @click="handleInspector"
+    >
+      <div class="base-name">{{ props.label }}</div>
 
-    <q-avatar>
-      <q-icon :name="props.data.agent.icon" size="xl" />
-    </q-avatar>
+      <q-avatar>
+        <q-icon :name="props.data.agent.icon" size="xl" />
+      </q-avatar>
 
-    <slot />
+      <slot />
+    </div>
+    <Handle
+      v-if="props.data.agent?.hasOutput"
+      type="source"
+      :class="mouseOverNodeClass"
+      :position="Position.Bottom"
+      :id="`${id}-source`"
+      @mouseover="mouseOverHandle"
+      @mouseleave="mouseLeaveHandle"
+    />
+
+    <NodeInspector
+      class="inspector-panel"
+      :temperature="props.data.temperature"
+      :tokenCount="props.data.tokenCount"
+      :nodeId="props.id"
+    />
   </div>
-  <Handle
-    v-if="props.data.agent?.hasOutput"
-    type="source"
-    :position="Position.Bottom"
-    :id="`${id}-source`"
-    style="background-color: blue; width: 10px; height: 10px"
-  />
-
-  <NodeInspector
-    class="inspector-panel"
-    :temperature="props.data.temperature"
-    :tokenCount="props.data.tokenCount"
-    :nodeId="props.id"
-  />
 </template>
 <script setup lang="ts">
 import { inject, onMounted, onUnmounted } from 'vue';
@@ -86,6 +93,59 @@ const handleClickOutside = (event: MouseEvent) => {
   // }
 };
 
+const mousingOver = ref(false);
+const mouseOverTimeout = ref<NodeJS.Timeout | null>(null);
+
+const mouseOverNode = () => {
+  mousingOver.value = true;
+  if (mouseOverTimeout.value) {
+    clearTimeout(mouseOverTimeout.value);
+  }
+  // Increase the timeout duration for longer display
+  mouseOverTimeout.value = setTimeout(() => {
+    mousingOver.value = false;
+  }, 5000); // Increased to 5000ms for example
+};
+
+const mouseLeaveNode = () => {
+  if (mouseOverTimeout.value) {
+    clearTimeout(mouseOverTimeout.value);
+  }
+  mouseOverTimeout.value = setTimeout(() => {
+    mousingOver.value = false;
+  }, 1000); // Increased to 5000ms for example
+};
+const mouseOverNodeClass = computed(() => {
+  if (mousingOverHandle.value) {
+    return 'handle-show-more';
+  }
+
+  return mousingOver.value ? 'handle-show' : '';
+});
+
+const mousingOverHandle = ref(false);
+const mouseOverHandleTimeout = ref<NodeJS.Timeout | null>(null);
+
+const mouseOverHandle = () => {
+  mousingOverHandle.value = true;
+  if (mouseOverHandleTimeout.value) {
+    clearTimeout(mouseOverHandleTimeout.value);
+  }
+  // Increase the timeout duration for longer display
+  mouseOverHandleTimeout.value = setTimeout(() => {
+    mousingOverHandle.value = false;
+  }, 5000); // Increased to 5000ms for example
+};
+
+const mouseLeaveHandle = () => {
+  if (mouseOverHandleTimeout.value) {
+    clearTimeout(mouseOverHandleTimeout.value);
+  }
+  mouseOverHandleTimeout.value = setTimeout(() => {
+    mousingOverHandle.value = false;
+  }, 1000);
+};
+
 onMounted(() => {
   // Add the click event listener to the document when the node is mounted
   document.addEventListener('click', handleClickOutside);
@@ -98,6 +158,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.handle-show {
+  width: 1em;
+  height: 1em;
+}
+.handle-show-more {
+  width: 1.5em;
+  height: 1.5em;
+}
 .inspector-panel {
   position: absolute;
 }
