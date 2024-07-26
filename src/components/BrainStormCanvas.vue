@@ -114,6 +114,10 @@ const onDrop = (event: any) => {
     console.log('New agent node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
+    emitter.emit('node:selected', {
+      nodeId: newNode.id,
+      nodeType: '',
+    });
   } else if (eventData.type === 'input') {
     console.log('Input dropped:', eventData);
     newNode = {
@@ -138,6 +142,10 @@ const onDrop = (event: any) => {
     console.log('New input node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
+    emitter.emit('node:selected', {
+      nodeId: newNode.id,
+      nodeType: '',
+    });
   } else {
     console.log('Unknown type:', eventData);
   }

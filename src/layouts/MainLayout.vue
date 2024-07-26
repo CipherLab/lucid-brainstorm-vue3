@@ -25,7 +25,10 @@
     </q-drawer>
 
     <q-drawer v-model="inspectorOpen" side="right" show-if-above bordered>
-      <InspectorPanel v-if="selectedNodeId" :selectedNodeId="selectedNodeId" />
+      <AgentInspectorPanel
+        v-if="selectedNodeId"
+        :selectedNodeId="selectedNodeId"
+      />
     </q-drawer>
 
     <q-page-container>
@@ -37,7 +40,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import SidebarComponent from 'components/SidebarComponent.vue';
-import InspectorPanel from 'components/InspectorPanel.vue'; // Import InspectorPanel
+import AgentInspectorPanel from 'components/AgentInspectorPanel.vue'; // Import AgentInspectorPanel
 import { emitter, NodeSelectedEvent } from 'src/eventBus';
 
 interface Agent {

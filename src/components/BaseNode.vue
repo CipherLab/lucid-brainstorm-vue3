@@ -12,7 +12,7 @@
       v-if="props.data.agent.hasInput"
       type="target"
       :class="targetHandleClass"
-      :position="Position.Bottom"
+      :position="Position.Left"
       :id="`${id}-target`"
       @mouseover="handleMouseOver('target')"
       @mouseleave="handleMouseLeave"
@@ -22,7 +22,7 @@
       v-if="props.data.agent.hasOutput"
       type="source"
       :class="sourceHandleClass"
-      :position="Position.Left"
+      :position="Position.Bottom"
       :id="`${id}-target`"
       @mouseover="handleMouseOver('source')"
       @mouseleave="handleMouseLeave"
@@ -43,6 +43,7 @@
     </div>
 
     <NodeInspector
+      v-if="false"
       class="inspector-panel"
       :temperature="props.data.temperature"
       :tokenCount="props.data.tokenCount"
@@ -102,34 +103,26 @@ const handleMouseOver = (target: 'node' | 'target' | 'source') => {
   if (target === 'node') isNodeHovered.value = true;
   if (target === 'target') isTargetHandleHovered.value = true;
   if (target === 'source') isSourceHandleHovered.value = true;
-
-  if (hoverTimeout.value) clearTimeout(hoverTimeout.value);
-
-  hoverTimeout.value = setTimeout(() => {
-    isNodeHovered.value = false;
-    isTargetHandleHovered.value = false;
-    isSourceHandleHovered.value = false;
-  }, 1000); // Adjust timeout as needed
+  if (hoverTimeout.value) clearTimeout(hoverTimeout.value); // Clear any existing timeout
 };
 
 const handleMouseLeave = () => {
-  if (hoverTimeout.value) clearTimeout(hoverTimeout.value);
-
+  // Set the timeout only when leaving ALL elements:
   hoverTimeout.value = setTimeout(() => {
     isNodeHovered.value = false;
     isTargetHandleHovered.value = false;
     isSourceHandleHovered.value = false;
-  }, 1000);
+  }, 1000); // Adjust timeout duration as needed
 };
 
 const targetHandleClass = computed(() => {
   if (isTargetHandleHovered.value) return 'handle-show-more';
-  return isNodeHovered.value ? 'handle-show' : '';
+  return isNodeHovered.value ? 'handle-show' : 'handle-show-barely';
 });
 
 const sourceHandleClass = computed(() => {
   if (isSourceHandleHovered.value) return 'handle-show-more';
-  return isNodeHovered.value ? 'handle-show' : '';
+  return isNodeHovered.value ? 'handle-show' : 'handle-show-barely';
 });
 
 onMounted(() => {
@@ -145,12 +138,21 @@ onUnmounted(() => {
 
 <style scoped>
 .handle-show {
-  width: 1em;
-  height: 1em;
+  width: 0.75em;
+  height: 0.75em;
 }
 .handle-show-more {
   width: 1.5em;
   height: 1.5em;
+}
+.handle-show-barely {
+  width: 0.25em;
+  height: 0.25em;
+}
+.handle-show,
+.handle-show-more,
+.handle-show-barely {
+  transition: width 0.2s ease, height 0.2s ease; /* Adjust timing as desired */
 }
 .handle-show[type='target'] {
   /* Target handle */
@@ -185,8 +187,6 @@ onUnmounted(() => {
   flex-direction: column; /* Arrange elements vertically */
   align-items: center; /* Center elements horizontally */
   text-align: center; /* Center text */
-  height: 10em;
-  width: 10em;
 }
 .base-name {
   margin-bottom: 10px; /* Add some space between the icon and name */

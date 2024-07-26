@@ -8,38 +8,50 @@
   >
     <q-list padding>
       <q-item-label header>Agents</q-item-label>
-      <q-item
+      <q-expansion-item
         v-for="agent in availableAgents"
         :key="agent.id"
+        expand-separator
+        :icon="agent.icon"
+        :label="agent.name"
+        :header-class="`text-${agent.color}`"
         draggable="true"
         @dragstart="onAgentDragStart(agent, $event)"
       >
-        <q-item-section avatar>
-          <q-avatar :color="agent.color">
-            <q-icon :name="agent.icon" />
-          </q-avatar>
-        </q-item-section>
-        <q-item-section>{{ agent.name }}</q-item-section>
-      </q-item>
+        <q-card>
+          <q-card-section>
+            <!-- Add agent details here -->
+            <q-input
+              v-model="agent.systemInstructions"
+              label="System Instructions"
+              filled
+              autogrow
+            />
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
     </q-list>
 
     <q-separator />
 
     <q-list padding>
       <q-item-label header>Inputs</q-item-label>
-      <q-item
+      <q-expansion-item
         v-for="input in availableInputs"
-        :key="input.type"
+        :key="input.id"
+        expand-separator
+        :icon="input.icon"
+        :label="input.name"
+        :header-class="`text-${input.color}`"
         draggable="true"
         @dragstart="onInputDragStart(input, $event)"
       >
-        <q-item-section avatar>
-          <q-avatar :color="input.color">
-            <q-icon :name="input.icon" />
-          </q-avatar>
-        </q-item-section>
-        <q-item-section>{{ input.name }}</q-item-section>
-      </q-item>
+        <q-card>
+          <q-card-section>
+            <span class="label">{{ input.systemInstructions }}</span>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
     </q-list>
   </q-drawer>
 </template>
@@ -51,6 +63,7 @@ const drawerOpen = ref(true);
 const availableAgents = reactive([
   {
     id: 1,
+    systemInstructions: 'This is a logical agent best for logical tasks',
     name: 'Logical',
     icon: 'psychology',
     color: 'blue',
@@ -60,6 +73,7 @@ const availableAgents = reactive([
   },
   {
     id: 2,
+    systemInstructions: 'This is a creative agent best for creative tasks',
     name: 'Creative',
     icon: 'tips_and_updates',
     color: 'green',
@@ -70,6 +84,7 @@ const availableAgents = reactive([
   {
     id: 3,
     name: 'Wise',
+    systemInstructions: 'This is a wise agent best for wise tasks',
     icon: 'self_improvement',
     color: 'purple',
     hasOutput: true,
@@ -80,6 +95,7 @@ const availableAgents = reactive([
 const availableInputs = reactive([
   {
     id: 100,
+    systemInstructions: 'This is a file input',
     name: 'File',
     subtype: 'file',
     icon: 'attach_file',
@@ -90,6 +106,7 @@ const availableInputs = reactive([
   },
   {
     id: 101,
+    systemInstructions: 'This is a prompt input',
     name: 'Prompt',
     subtype: 'prompt',
     icon: 'chat',
@@ -100,6 +117,7 @@ const availableInputs = reactive([
   },
   {
     id: 102,
+    systemInstructions: 'This is a webpage input',
     name: 'Webpage',
     subtype: 'webpage',
     icon: 'web',
