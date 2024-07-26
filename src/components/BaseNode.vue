@@ -1,5 +1,5 @@
 <template>
-  <div @mouseover="mouseOverNode" @mouseleave="mouseLeaveNode">
+  <div @mouseover="handleMouseOver('node')" @mouseleave="handleMouseLeave">
     <q-badge
       @click.stop="handleDelete"
       transparent
@@ -11,12 +11,22 @@
     <Handle
       v-if="props.data.agent.hasInput"
       type="target"
-      :class="mouseOverNodeClass"
+      :class="targetHandleClass"
+      :position="Position.Bottom"
+      :id="`${id}-target`"
+      @mouseover="handleMouseOver('target')"
+      @mouseleave="handleMouseLeave"
+      style="background-color: goldenrod; border-radius: 50%"
+    />
+    <Handle
+      v-if="props.data.agent.hasOutput"
+      type="source"
+      :class="sourceHandleClass"
       :position="Position.Left"
       :id="`${id}-target`"
-      @mouseover="mouseOverHandle"
-      @mouseleave="mouseLeaveHandle"
-      style="background-color: #ccc"
+      @mouseover="handleMouseOver('source')"
+      @mouseleave="handleMouseLeave"
+      style="background-color: olivedrab; border: 2px solid white"
     />
     <div
       class="base-node"
@@ -31,15 +41,6 @@
 
       <slot />
     </div>
-    <Handle
-      v-if="props.data.agent?.hasOutput"
-      type="source"
-      :class="mouseOverNodeClass"
-      :position="Position.Bottom"
-      :id="`${id}-source`"
-      @mouseover="mouseOverHandle"
-      @mouseleave="mouseLeaveHandle"
-    />
 
     <NodeInspector
       class="inspector-panel"
@@ -92,59 +93,44 @@ const handleClickOutside = (event: MouseEvent) => {
   //   emitter.emit('node:deselected', null);
   // }
 };
+const isNodeHovered = ref(false);
+const isTargetHandleHovered = ref(false);
+const isSourceHandleHovered = ref(false);
+const hoverTimeout = ref<NodeJS.Timeout | null>(null);
 
-const mousingOver = ref(false);
-const mouseOverTimeout = ref<NodeJS.Timeout | null>(null);
+const handleMouseOver = (target: 'node' | 'target' | 'source') => {
+  if (target === 'node') isNodeHovered.value = true;
+  if (target === 'target') isTargetHandleHovered.value = true;
+  if (target === 'source') isSourceHandleHovered.value = true;
 
-const mouseOverNode = () => {
-  mousingOver.value = true;
-  if (mouseOverTimeout.value) {
-    clearTimeout(mouseOverTimeout.value);
-  }
-  // Increase the timeout duration for longer display
-  mouseOverTimeout.value = setTimeout(() => {
-    mousingOver.value = false;
-  }, 5000); // Increased to 5000ms for example
+  if (hoverTimeout.value) clearTimeout(hoverTimeout.value);
+
+  hoverTimeout.value = setTimeout(() => {
+    isNodeHovered.value = false;
+    isTargetHandleHovered.value = false;
+    isSourceHandleHovered.value = false;
+  }, 1000); // Adjust timeout as needed
 };
 
-const mouseLeaveNode = () => {
-  if (mouseOverTimeout.value) {
-    clearTimeout(mouseOverTimeout.value);
-  }
-  mouseOverTimeout.value = setTimeout(() => {
-    mousingOver.value = false;
-  }, 1000); // Increased to 5000ms for example
-};
-const mouseOverNodeClass = computed(() => {
-  if (mousingOverHandle.value) {
-    return 'handle-show-more';
-  }
+const handleMouseLeave = () => {
+  if (hoverTimeout.value) clearTimeout(hoverTimeout.value);
 
-  return mousingOver.value ? 'handle-show' : '';
-});
-
-const mousingOverHandle = ref(false);
-const mouseOverHandleTimeout = ref<NodeJS.Timeout | null>(null);
-
-const mouseOverHandle = () => {
-  mousingOverHandle.value = true;
-  if (mouseOverHandleTimeout.value) {
-    clearTimeout(mouseOverHandleTimeout.value);
-  }
-  // Increase the timeout duration for longer display
-  mouseOverHandleTimeout.value = setTimeout(() => {
-    mousingOverHandle.value = false;
-  }, 5000); // Increased to 5000ms for example
-};
-
-const mouseLeaveHandle = () => {
-  if (mouseOverHandleTimeout.value) {
-    clearTimeout(mouseOverHandleTimeout.value);
-  }
-  mouseOverHandleTimeout.value = setTimeout(() => {
-    mousingOverHandle.value = false;
+  hoverTimeout.value = setTimeout(() => {
+    isNodeHovered.value = false;
+    isTargetHandleHovered.value = false;
+    isSourceHandleHovered.value = false;
   }, 1000);
 };
+
+const targetHandleClass = computed(() => {
+  if (isTargetHandleHovered.value) return 'handle-show-more';
+  return isNodeHovered.value ? 'handle-show' : '';
+});
+
+const sourceHandleClass = computed(() => {
+  if (isSourceHandleHovered.value) return 'handle-show-more';
+  return isNodeHovered.value ? 'handle-show' : '';
+});
 
 onMounted(() => {
   // Add the click event listener to the document when the node is mounted
@@ -165,6 +151,27 @@ onUnmounted(() => {
 .handle-show-more {
   width: 1.5em;
   height: 1.5em;
+}
+.handle-show[type='target'] {
+  /* Target handle */
+  width: 1em;
+  height: 1em;
+}
+
+.handle-show[type='source'] {
+  /* Source handle */
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.handle-show-more[type='target'] {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.handle-show-more[type='source'] {
+  width: 1.2em;
+  height: 1.2em;
 }
 .inspector-panel {
   position: absolute;
