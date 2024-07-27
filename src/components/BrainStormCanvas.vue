@@ -89,7 +89,7 @@ const onDrop = (event: any) => {
     x: event.clientX - 300,
     y: event.clientY - 200,
   };
-  let newNode: Node;
+  let newNode: Node | null = null;
 
   if (eventData.type === 'agent') {
     newNode = {
@@ -104,6 +104,7 @@ const onDrop = (event: any) => {
           color: eventData.color,
           hasOutput: eventData.hasOutput,
           hasInput: eventData.hasInput,
+          systemInstructions: eventData.systemInstructions,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown agent',
@@ -114,10 +115,6 @@ const onDrop = (event: any) => {
     console.log('New agent node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
-    emitter.emit('node:selected', {
-      nodeId: newNode.id,
-      nodeType: '',
-    });
   } else if (eventData.type === 'input') {
     console.log('Input dropped:', eventData);
     newNode = {
@@ -133,6 +130,8 @@ const onDrop = (event: any) => {
           color: eventData.color,
           hasOutput: eventData.hasOutput,
           hasInput: eventData.hasInput,
+          subtype: eventData.subype,
+          inputData: eventData.inputData,
         },
         label: eventData.name || 'unknown input',
       },
@@ -142,12 +141,15 @@ const onDrop = (event: any) => {
     console.log('New input node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
-    emitter.emit('node:selected', {
-      nodeId: newNode.id,
-      nodeType: '',
-    });
   } else {
     console.log('Unknown type:', eventData);
+  }
+
+  if (newNode) {
+    emitter.emit('node:selected', {
+      nodeId: newNode.id,
+      nodeType: newNode.type,
+    });
   }
 };
 </script>

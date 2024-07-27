@@ -15,6 +15,7 @@
     :onRemoveNode="props.data.onRemoveNode"
     :temperature="props.data.agent.temperature"
     :tokenCount="props.data.agent.temperature"
+    :systemInstructions="props.data.agent.systemInstructions"
   >
   </BaseNode>
 </template>
@@ -23,6 +24,7 @@
 import { defineProps, computed, resolveComponent, ref } from 'vue'; // Import resolveComponent
 import BaseNode from './BaseNode.vue'; // Import the BaseNode component
 import { Dimensions, HandleConnectable, NodeProps } from '@vue-flow/core';
+import { sys } from 'typescript';
 
 const props = defineProps<NodeProps>();
 </script>

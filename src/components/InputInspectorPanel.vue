@@ -1,25 +1,28 @@
 <template>
   <div v-if="selectedNode" class="inspector-content">
-    <h3>
-      <q-input
-        v-model="selectedNode.data.label"
-        label="Name"
-        dense
-        class="inline-name-input"
-      />
-    </h3>
-    <q-slider
-      v-model.number="selectedNode.data.temperature"
-      :min="0"
-      :max="1"
-      :step="0.1"
-    />
     <q-input
-      v-model.number="selectedNode.data.tokenCount"
-      type="number"
-      :min="1"
-      label="Token Count"
+      v-model="selectedNode.data.label"
+      :label="selectedNode.data.agent.name"
+      dense
+      class="inline-name-input"
     />
+
+    <span class="label bg-amber" style="padding: 0.25em">
+      <span class="left-detail">
+        <q-icon name="thermostat" />
+        Temperature:
+      </span>
+      {{ selectedNode.data.temperature?.toFixed(1) }}
+    </span>
+    <q-input
+      v-model="selectedNode.data.inputData"
+      label="Prompt Text"
+      dense
+      class="inline-name-input"
+    />
+    <!-- <div v-if="selectedNode.data.subtype === 'file'">
+      <q-uploader flat label="Upload File" accept=".txt" @added="onFileAdded" />
+    </div> -->
   </div>
 </template>
 
@@ -33,6 +36,10 @@ const props = defineProps({
     default: null,
   },
 });
+const onFileAdded = (file: any) => {
+  console.log('File added:', file);
+  //selectedNode.value.data.file = file;
+};
 
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
@@ -46,6 +53,7 @@ watchEffect(() => {
       (node) => node.id === props.selectedNodeId
     ) as NodeProps | undefined; // Cast the result to MyNodeProps or undefined
     selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
+    console.log('input panel selectedNode:', selectedNode.value);
   } else {
     selectedNode.value = null; // Reset selectedNode if selectedNodeId is null
   }

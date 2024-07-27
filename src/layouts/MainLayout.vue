@@ -26,7 +26,11 @@
 
     <q-drawer v-model="inspectorOpen" side="right" show-if-above bordered>
       <AgentInspectorPanel
-        v-if="selectedNodeId"
+        v-if="selectedNodeId && selectedType === 'agent'"
+        :selectedNodeId="selectedNodeId"
+      />
+      <InputInspectorPanel
+        v-if="selectedNodeId && selectedType === 'input'"
         :selectedNodeId="selectedNodeId"
       />
     </q-drawer>
@@ -41,6 +45,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import SidebarComponent from 'components/SidebarComponent.vue';
 import AgentInspectorPanel from 'components/AgentInspectorPanel.vue'; // Import AgentInspectorPanel
+import InputInspectorPanel from 'components/InputInspectorPanel.vue'; // Import InputInspectorPanel
 import { emitter, NodeSelectedEvent } from 'src/eventBus';
 
 interface Agent {
@@ -75,7 +80,7 @@ const onInputDragStart = (type: 'file' | 'prompt') => {
   draggedItem.value = { type: 'input', data: type };
 };
 const selectedNodeId = ref<string | undefined>(undefined);
-
+const selectedType = ref<string | undefined>(undefined);
 // Function to handle node selection (in MainLayout)
 const handleNodeSelected = (event: NodeSelectedEvent) => {
   nodeSelectStarted.value = true;
@@ -85,13 +90,12 @@ const handleNodeSelected = (event: NodeSelectedEvent) => {
   }, 200);
   inspectorOpen.value = true; // Show the inspector drawer
   selectedNodeId.value = event.nodeId + '';
-  console.log('Node selected in MainLayout:', event.nodeId);
+  selectedType.value = event.nodeType;
 };
 
 // Function to handle node deselection (in MainLayout)
 const handleNodeDeselected = () => {
   if (nodeSelectStarted.value) return;
-  console.log('Node deselected in MainLayout');
   inspectorOpen.value = false; // Hide the inspector drawer
   selectedNodeId.value = undefined;
 };
@@ -116,4 +120,9 @@ onUnmounted(() => {
 
 /* import the default theme, this is optional but generally recommended */
 @import '@vue-flow/core/dist/theme-default.css';
+
+.my-label {
+  font-size: 14px; /* Adjust to match QInput label size */
+  color: #757575; /* Adjust to match QInput label color (grayish) */
+}
 </style>

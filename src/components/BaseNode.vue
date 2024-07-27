@@ -84,7 +84,7 @@ const handleInspector = () => {
   });
   console.log('Open inspector for:', props.label);
   console.log(' props.id:', props.id);
-  console.log(' props.temperature:', props.data.temperature);
+  console.log(' props.temperature:', props.data.agent.temperature);
 };
 
 // Handle clicks outside the node to deselect

@@ -103,6 +103,7 @@ const availableInputs = reactive([
     hasOutput: true,
     hasInput: false,
     type: 'input',
+    inputData: '',
   },
   {
     id: 101,
@@ -114,6 +115,7 @@ const availableInputs = reactive([
     hasOutput: true,
     hasInput: false,
     type: 'input',
+    inputData: '',
   },
   {
     id: 102,
@@ -125,6 +127,7 @@ const availableInputs = reactive([
     hasOutput: true,
     hasInput: false,
     type: 'input',
+    inputData: '',
   },
 ]);
 const onAgentDragStart = (agent: any, event: DragEvent) => {

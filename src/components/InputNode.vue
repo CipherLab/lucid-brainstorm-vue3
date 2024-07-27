@@ -13,6 +13,8 @@
     :hasInput="props.data.agent.hasInput"
     :hasOutput="props.data.agent.hasOutput"
     :onRemoveNode="props.data.onRemoveNode"
+    :subtype="props.data.agent.subtype"
+    :inputData="props.data.agent.inputData"
   >
   </BaseNode>
 </template>
