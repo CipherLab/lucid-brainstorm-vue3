@@ -13,10 +13,7 @@ export interface LucidFlowComposable {
   addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
   addEdge: (edge: Edge) => void;
-  updateNodePosition: (
-    nodeId: string,
-    newPosition: { x: number; y: number }
-  ) => void;
+  updateNodePosition: (nodeId: string, x: number, y: number) => void;
 }
 
 export default function useLucidFlow(): LucidFlowComposable {
@@ -51,13 +48,10 @@ export default function useLucidFlow(): LucidFlowComposable {
   };
 
   // Expose functions for node/edge manipulation
-  const updateNodePosition = (
-    nodeId: string,
-    newPosition: { x: number; y: number }
-  ) => {
+  const updateNodePosition = (nodeId: string, x: number, y: number) => {
     const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      nodeToUpdate.position = newPosition; // Directly mutate the node object
+      nodeToUpdate.position = { x, y }; // Directly mutate the node object
     }
   };
   return {

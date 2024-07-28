@@ -4,7 +4,7 @@
       :nodes="flowNodes"
       :edges="flowEdges"
       :connection-mode="connectionMode"
-      @nodes-changed="onNodesChange"
+      @nodes-change="handleNodesChange"
       @edges-changed="onEdgesChange"
       @connect="onConnect"
       @click="handleClickOutside"
@@ -23,7 +23,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, inject, watchEffect } from 'vue';
-import { ConnectionMode, Connection, Node, Edge } from '@vue-flow/core';
+import {
+  ConnectionMode,
+  Connection,
+  Node,
+  Edge,
+  NodeChange,
+} from '@vue-flow/core';
 import { VueFlow } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import AgentNode from './AgentNode.vue';
@@ -60,9 +66,6 @@ const onConnect = (connection: Edge | Connection) => {
     type: 'smoothstep',
     animated: false,
   });
-};
-const onNodesChange = (changes: any) => {
-  console.log('Nodes Changes:', changes);
 };
 
 const onEdgesChange = (changes: any) => {
@@ -153,6 +156,26 @@ const onDrop = (event: any) => {
       nodeType: newNode.data.agent.type,
     });
   }
+};
+const handleNodesChange = (changes: NodeChange[]) => {
+  //loop
+  //  changes.forEach((change: NodeChange) => {
+  if (!lucidFlow || !changes || changes.length == 0) return;
+  const change = changes[0];
+  if (change.type === 'add') {
+  } else if (change.type === 'remove') {
+  } else if (change.type === 'position') {
+    if (change.id && change.position) {
+      lucidFlow.updateNodePosition(
+        change.id,
+        change.position.x,
+        change.position.y
+      );
+    }
+  }
+  //});
+
+  // Handle the changes as needed
 };
 </script>
 <style scoped>
