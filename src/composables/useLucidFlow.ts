@@ -24,7 +24,6 @@ export default function useLucidFlow(): LucidFlowComposable {
     removeNodes,
     addNodes: vfAddNodes,
     addEdges: vfAddEdges,
-    // ... other functions from useVueFlow as needed
   } = useVueFlow();
 
   // Reactive state with type
