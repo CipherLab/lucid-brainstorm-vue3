@@ -104,7 +104,8 @@ const onDrop = (event: any) => {
           color: eventData.color,
           hasOutput: eventData.hasOutput,
           hasInput: eventData.hasInput,
-          systemInstructions: eventData.systemInstructions,
+          temperature: eventData.temperature,
+          systemInstructions: eventData.ssystemInstructions,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown agent',
@@ -133,11 +134,12 @@ const onDrop = (event: any) => {
           subtype: eventData.subype,
           inputData: eventData.inputData,
         },
+        onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown input',
       },
       type: eventData.type,
     };
-    newNode.type = 'input';
+    newNode.type = 'agent';
     console.log('New input node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
@@ -148,7 +150,7 @@ const onDrop = (event: any) => {
   if (newNode) {
     emitter.emit('node:selected', {
       nodeId: newNode.id,
-      nodeType: newNode.type,
+      nodeType: newNode.data.agent.type,
     });
   }
 };

@@ -4,7 +4,7 @@
       @click.stop="handleDelete"
       transparent
       class="delete-badge"
-      :color="showDeleteConfirm ? 'red' : 'gray'"
+      :color="showDeleteConfirm ? 'red' : 'grey'"
     >
       x
     </q-badge>
@@ -80,11 +80,11 @@ const handleDelete = () => {
 const handleInspector = () => {
   emitter.emit('node:selected', {
     nodeId: props.id,
-    nodeType: props.type + '', // Emit nodeType along with nodeId
+    nodeType: props.data.agent.type + '', // Emit nodeType along with nodeId
   });
   console.log('Open inspector for:', props.label);
   console.log(' props.id:', props.id);
-  console.log(' props.temperature:', props.data.agent.temperature);
+  console.log(' props.:', props.data.agent.temperature);
 };
 
 // Handle clicks outside the node to deselect

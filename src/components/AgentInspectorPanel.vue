@@ -1,29 +1,36 @@
 <template>
   <div v-if="selectedNode" class="inspector-content">
-    <span class="label bg-secondary text-white">
+    <span
+      class="label text-white span-width"
+      :style="{ backgroundColor: selectedNode.data.agent.color }"
+    >
       Token Count
       <span class="right-detail">{{ selectedNode.data.tokenCount ?? 0 }}</span>
     </span>
-    <q-input
-      v-model="selectedNode.data.label"
-      label="Name"
-      dense
-      class="inline-name-input"
-    />
+    <div class="q-pa-md">
+      <q-input
+        v-model="selectedNode.data.label"
+        label="Name"
+        dense
+        class="inline-name-input"
+      />
+    </div>
 
-    <span class="label bg-amber" style="padding: 0.25em">
-      <span class="left-detail">
-        <q-icon name="thermostat" />
-        Temperature:
+    <div class="q-pa-sm">
+      <span class="label" style="padding: 0.25em">
+        <span class="left-detail">
+          <q-icon name="thermostat" />
+          Temperature:
+        </span>
+        {{ selectedNode.data.agent.temperature?.toFixed(1) }}
       </span>
-      {{ selectedNode.data.temperature?.toFixed(1) }}
-    </span>
-    <q-slider
-      v-model.number="selectedNode.data.temperature"
-      :min="0"
-      :max="2"
-      :step="0.1"
-    />
+      <q-slider
+        v-model.number="selectedNode.data.agent.temperature"
+        :min="0"
+        :max="2"
+        :step="0.1"
+      />
+    </div>
     <div class="q-pa-sm">
       <q-input
         v-model="selectedNode.data.agent.systemInstructions"
@@ -32,14 +39,14 @@
         type="textarea"
       />
     </div>
-    <div class="q-pa-sm">
+    <!-- <div class="q-pa-sm">
       <q-input
         v-model="selectedNode.data.agent.inputData"
         label="Prompt Text"
         filled
         type="textarea"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -81,6 +88,14 @@ watchEffect(() => {
 }
 .input-textarea {
   width: 100%;
-  min-height: 10em;
+  min-height: 15em;
+}
+.span-width {
+  padding-top: 2px;
+  width: 100%;
+  display: block;
+  align-items: center;
+  text-align: center;
+  border-radius: 2px;
 }
 </style>

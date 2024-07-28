@@ -14,7 +14,7 @@
         expand-separator
         :icon="agent.icon"
         :label="agent.name"
-        :header-class="`text-${agent.color}`"
+        :style="`color: ${agent.color}`"
         draggable="true"
         @dragstart="onAgentDragStart(agent, $event)"
       >
@@ -42,7 +42,7 @@
         expand-separator
         :icon="input.icon"
         :label="input.name"
-        :header-class="`text-${input.color}`"
+        :style="`color: ${input.color}`"
         draggable="true"
         @dragstart="onInputDragStart(input, $event)"
       >
@@ -66,10 +66,11 @@ const availableAgents = reactive([
     systemInstructions: 'This is a logical agent best for logical tasks',
     name: 'Logical',
     icon: 'psychology',
-    color: 'blue',
+    color: '#145ea8',
     hasOutput: true,
     hasInput: true,
     type: 'agent',
+    temperature: 0,
   },
   {
     id: 2,
@@ -80,6 +81,7 @@ const availableAgents = reactive([
     hasOutput: true,
     hasInput: true,
     type: 'agent',
+    temperature: 2,
   },
   {
     id: 3,
@@ -90,6 +92,7 @@ const availableAgents = reactive([
     hasOutput: true,
     hasInput: true,
     type: 'agent',
+    temperature: 1,
   },
 ]);
 const availableInputs = reactive([
