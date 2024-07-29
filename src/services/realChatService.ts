@@ -2,7 +2,7 @@
 import axios from 'axios';
 import ChatService from './chatService'; // Import the interface
 import { startChatParams } from 'src/models/startChatParams';
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
 
 class RealChatService implements ChatService {
   private chatUrl: string;
@@ -21,7 +21,13 @@ class RealChatService implements ChatService {
     }
 
     const genAI = new GoogleGenerativeAI(this.apiKey);
-    this.model = genAI.getGenerativeModel('gemini-1.5-pro-latest'); // Assuming this is your model ID
+    const modelParams: ModelParams = {
+      // Populate the ModelParams object with the necessary properties
+      // Example:
+      model: 'gemini-1.5-pro-latest',
+      // Add other properties as required by the ModelParams interface
+    };
+    this.model = genAI.getGenerativeModel(modelParams);
 
     const chat = this.model.startChat(startChatParams);
     this.chats.set(nodeId, chat);
@@ -51,8 +57,8 @@ class RealChatService implements ChatService {
     }
   }
 
-  async loadChatHistory(): Promise<void> {
-    const savedHistory = sessionStorage.getItem('chatHistory');
+  async loadChatHistory(nodeId: string): Promise<void> {
+    const savedHistory = sessionStorage.getItem(`chatHistory_${nodeId}`);
     if (savedHistory) {
       // ... (load history logic -  you'll likely need to update your component's messages ref)
     }
@@ -69,6 +75,24 @@ class RealChatService implements ChatService {
       console.error('Failed to clear chat:', error);
       throw error; // Re-throw
     }
+  }
+
+  async getChatHistory(nodeId: string): Promise<any[]> {
+    // For now, let's assume history is stored within the chat instance itself
+    if (!this.chats.has(nodeId)) {
+      return []; // Return empty history if chat doesn't exist
+    }
+
+    const chat = this.chats.get(nodeId);
+    // Replace this with your actual history retrieval logic from the chat instance
+    // Example (adapt as needed):
+    const history = chat.messages; // Assuming "messages" is a property of your chat instance
+    return history.map((item: any) => ({
+      sender: item.role, // Adapt to your chat instance structure
+      message: item.text,
+      createdAt: item.timestamp, // Adapt if necessary
+      error: false,
+    }));
   }
 
   // ... (add other methods from your component as needed)

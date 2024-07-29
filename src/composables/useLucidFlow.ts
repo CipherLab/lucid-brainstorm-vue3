@@ -14,6 +14,8 @@ export interface LucidFlowComposable {
   removeNode: (nodeId: string) => void;
   addEdge: (edge: Edge) => void;
   updateNodePosition: (nodeId: string, x: number, y: number) => void;
+  getNodeChatData: (nodeId: string) => any;
+  updateNodeChatData: (nodeId: string, newData: any) => void;
 }
 
 export default function useLucidFlow(): LucidFlowComposable {
@@ -54,11 +56,24 @@ export default function useLucidFlow(): LucidFlowComposable {
       nodeToUpdate.position = { x, y }; // Directly mutate the node object
     }
   };
+  const getNodeChatData = (nodeId: string) => {
+    const node = state.nodes.find((node) => node.id === nodeId);
+    return node ? node.data.chatData : null;
+  };
+
+  const updateNodeChatData = (nodeId: string, newData: any) => {
+    const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
+    if (nodeToUpdate) {
+      Object.assign(nodeToUpdate.data.chatData, newData); // Update the node's data
+    }
+  };
   return {
     ...state, // Spread the reactive state properties
     addNode,
     removeNode,
     addEdge,
     updateNodePosition,
+    getNodeChatData,
+    updateNodeChatData,
   };
 }

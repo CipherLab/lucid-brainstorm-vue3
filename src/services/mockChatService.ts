@@ -21,7 +21,10 @@ class MockChatService implements ChatService {
   async clearChat(): Promise<void> {
     // ... (no need to actually clear in mock mode)
   }
-
+  async getChatHistory(nodeId: string): Promise<any[]> {
+    // ... (return mock history if needed)
+    return [];
+  }
   // ... (implement other mock methods as needed)
 }
 

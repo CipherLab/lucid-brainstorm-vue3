@@ -34,10 +34,26 @@
 <script setup lang="ts">
 import { inject, ref, onMounted, computed } from 'vue';
 import moment from 'moment';
-import Markdown from 'vue3-markdown-it';
+//import Markdown from 'vue3-markdown-it';
 import { useRoute } from 'vue-router';
 import ChatService from 'src/services/chatService'; // Import the interface
+import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 
+const chatService = inject<ChatService>('chatService')!; // Inject the service
+if (!chatService) {
+  throw new Error('Chat service not provided!');
+}
+
+const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!; // Inject the composable
+if (!lucidFlow) {
+  throw new Error('lucidFlow composable not provided');
+}
+const props = defineProps({
+  selectedNodeId: {
+    type: String,
+    required: true,
+  },
+});
 interface Message {
   sender: string;
   message: string | null;
@@ -51,11 +67,6 @@ const guid = computed(() => route.query.guid);
 const messages = ref<Message[]>([]);
 const userInput = ref('');
 const assistantName = ref('ArpWave Assistant');
-const chatService = inject<ChatService>('chatService'); // Inject the service
-
-if (!chatService) {
-  throw new Error('Chat service not provided!');
-}
 
 const formattedTime = computed(() => {
   return (createdAt: number) => moment(createdAt).fromNow();
@@ -76,7 +87,10 @@ async function sendMessage() {
     pushImmediateRequest(tempVal);
     pushImmediateResponse('', true);
 
-    const response = await chatService.sendMessage(tempVal, guid.value);
+    const response = await chatService.sendMessage(
+      tempVal,
+      props.selectedNodeId
+    );
 
     messages.value.pop(); // Remove loading dots
     await pushDelayedResponse(response.result);
@@ -92,10 +106,12 @@ async function sendMessage() {
 }
 
 async function loadChatHistory() {
-  const savedHistory = sessionStorage.getItem('chatHistory'); // Or get from session
-  if (savedHistory) {
-    messages.value = JSON.parse(savedHistory);
-  }
+  messages.value =
+    JSON.parse(lucidFlow.getNodeChatData(props.selectedNodeId)) || [];
+  // const savedHistory = sessionStorage.getItem('chatHistory'); // Or get from session
+  // if (savedHistory) {
+  //   messages.value = JSON.parse(savedHistory);
+  // }
 }
 
 async function updateChatHistory() {
@@ -105,8 +121,8 @@ async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
       messages.value = messages.value.slice(0, 1); // Keep the first message (assistant greeting
+      lucidFlow.updateNodeChatData(props.selectedNodeId, null); // Clear chat history in the graph
     }
-    await axios.delete(`${chatUrl}:${listenPort}/chat`);
   } catch (error) {
     console.error('Failed to clear chat:', error);
   }
@@ -139,7 +155,7 @@ async function pushDelayedResponse(msg: string) {
 function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
   messages.value.push({
     sender: assistantName.value,
-    message: msg,
+    message: msg ?? '',
     createdAt: Date.now(),
     error: false,
     typing: typing,

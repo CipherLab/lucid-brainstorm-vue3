@@ -44,6 +44,9 @@
           type="textarea"
         />
       </div>
+      <div class="q-pa-sm">
+        <ChatComponent :selectedNodeId="selectedNode.id" />
+      </div>
       <!-- <div class="q-pa-sm">
       <q-input
         v-model="selectedNode.data.agent.inputData"
@@ -61,6 +64,7 @@ import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 import { inject, ref, watchEffect } from 'vue';
 import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 import { NodeProps } from '@vue-flow/core';
+import ChatComponent from './ChatComponent.vue';
 const props = defineProps({
   selectedNodeId: {
     type: String,
