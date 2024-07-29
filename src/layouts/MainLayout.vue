@@ -47,7 +47,9 @@ import SidebarComponent from 'components/SidebarComponent.vue';
 import AgentInspectorPanel from 'components/AgentInspectorPanel.vue'; // Import AgentInspectorPanel
 import InputInspectorPanel from 'components/InputInspectorPanel.vue'; // Import InputInspectorPanel
 import { emitter, NodeSelectedEvent } from 'src/eventBus';
-
+import { useQuasar } from 'quasar';
+const $q = useQuasar();
+$q.dark.set(true);
 interface Agent {
   id: number;
   name?: string;

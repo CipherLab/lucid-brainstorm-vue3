@@ -1,59 +1,51 @@
 <template>
-  <q-drawer
-    side="left"
-    v-model="drawerOpen"
-    bordered
-    :width="250"
-    :breakpoint="1024"
-  >
-    <q-list padding>
-      <q-item-label header>Agents</q-item-label>
-      <q-expansion-item
-        v-for="agent in availableAgents"
-        :key="agent.id"
-        expand-separator
-        :icon="agent.icon"
-        :label="agent.name"
-        :style="`color: ${agent.color}`"
-        draggable="true"
-        @dragstart="onAgentDragStart(agent, $event)"
-      >
-        <q-card>
-          <q-card-section>
-            <!-- Add agent details here -->
-            <q-input
-              v-model="agent.systemInstructions"
-              label="System Instructions"
-              filled
-              autogrow
-            />
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
-    </q-list>
+  <q-list padding class="my-bg-grey-1">
+    <q-item-label header>Agents</q-item-label>
+    <q-expansion-item
+      class="my-bg-grey-1"
+      v-for="agent in availableAgents"
+      :key="agent.id"
+      expand-separator
+      :icon="agent.icon"
+      :label="agent.name"
+      :style="{ '--agent-color': agent.color }"
+      draggable="true"
+      @dragstart="onAgentDragStart(agent, $event)"
+    >
+      <q-card>
+        <q-card-section>
+          <!-- Add agent details here -->
+          <q-input
+            v-model="agent.systemInstructions"
+            label="System Instructions"
+            filled
+            autogrow
+          />
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
+  </q-list>
 
-    <q-separator />
+  <q-separator />
 
-    <q-list padding>
-      <q-item-label header>Inputs</q-item-label>
-      <q-expansion-item
-        v-for="input in availableInputs"
-        :key="input.id"
-        expand-separator
-        :icon="input.icon"
-        :label="input.name"
-        :style="`color: ${input.color}`"
-        draggable="true"
-        @dragstart="onInputDragStart(input, $event)"
-      >
-        <q-card>
-          <q-card-section>
-            <span class="label">{{ input.systemInstructions }}</span>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
-    </q-list>
-  </q-drawer>
+  <q-list class="my-bg-grey-1" padding>
+    <q-item-label header>Inputs</q-item-label>
+    <q-expansion-item
+      v-for="input in availableInputs"
+      :key="input.id"
+      expand-separator
+      :icon="input.icon"
+      :label="input.name"
+      draggable="true"
+      @dragstart="onInputDragStart(input, $event)"
+    >
+      <q-card>
+        <q-card-section>
+          <span class="label">{{ input.systemInstructions }}</span>
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
+  </q-list>
 </template>
 
 <script setup lang="ts">
@@ -143,3 +135,17 @@ const onInputDragStart = (input: any, event: DragEvent) => {
   event.dataTransfer.setData('text/plain', JSON.stringify(input));
 };
 </script>
+
+<style scoped>
+.my-bg-grey-1 {
+  background-color: #151516 !important;
+}
+
+:deep(.q-expansion-item__label) {
+  color: var(--agent-color);
+}
+
+:deep(.q-expansion-item__icon) {
+  color: var(--agent-color);
+}
+</style>

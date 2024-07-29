@@ -4,7 +4,7 @@
       v-model="selectedNode.data.label"
       :label="selectedNode.data.agent.name"
       dense
-      class="inline-name-input"
+      class="inline-name-input text-white"
     />
 
     <span class="label bg-amber" style="padding: 0.25em">

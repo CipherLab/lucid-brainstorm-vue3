@@ -8,6 +8,7 @@
       @edges-changed="onEdgesChange"
       @connect="onConnect"
       @click="handleClickOutside"
+      :style="{ background: '#222222' }"
     >
       <Background class="background" />
       <template #node-agent="data">
