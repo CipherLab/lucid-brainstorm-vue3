@@ -73,8 +73,8 @@ const formattedTime = computed(() => {
 });
 
 onMounted(async () => {
-  await loadChatHistory();
-  await pushDelayedResponse('Hello! How can I help you today?');
+  //await loadChatHistory();
+  //await pushDelayedResponse('Hello! How can I help you today?');
 });
 
 async function sendMessage() {
