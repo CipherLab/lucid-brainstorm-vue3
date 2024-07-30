@@ -96,6 +96,18 @@ import ChatService from 'src/services/chatService';
 import type { LucidFlowComposable } from 'src/composables/useLucidFlow';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 
+//TODO:
+// 10. Delete nodes
+// 20. Delete edges
+// 21. Add ability to re-order conversation history
+// 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
+// 40. Add node connection data to current node (context)
+// 50. UI to show/manage node connections
+// 60. UI to show/manage context data from other connected nodes
+// 70. UI to create a custom agent
+// 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
+// 90. Save/Load chat history (via saving/loading vue flow state)
+
 // Interface for messages (add selected property)
 interface Message {
   id: number;
