@@ -6,6 +6,7 @@ interface LucidFlowState {
   edges: Edge[];
   nodesTotal: number;
 }
+
 export interface LucidFlowComposable {
   nodes: Node[];
   edges: Edge[];
@@ -16,13 +17,23 @@ export interface LucidFlowComposable {
   updateNodePosition: (nodeId: string, x: number, y: number) => void;
   getNodeChatData: (nodeId: string) => any;
   updateNodeChatData: (nodeId: string, newData: any) => void;
+  saveSession: () => void;
+  loadSession: () => void;
 }
+const flowKey = 'lucid-flow-session'; // Your storage key
+const { fromObject } = useVueFlow();
+
+const { toObject } = useVueFlow();
+
+const flowStateAsObject = toObject();
 
 export default function useLucidFlow(): LucidFlowComposable {
   const {
     removeNodes,
     addNodes: vfAddNodes,
     addEdges: vfAddEdges,
+    toObject,
+    fromObject,
   } = useVueFlow();
 
   // Reactive state with type
@@ -67,6 +78,19 @@ export default function useLucidFlow(): LucidFlowComposable {
       Object.assign(nodeToUpdate.data.chatData, newData); // Update the node's data
     }
   };
+  // Saving the Session:
+  function saveSession() {
+    const flowState = toObject(); // Call toObject here
+    localStorage.setItem(flowKey, JSON.stringify(flowState));
+  }
+
+  // Loading the Session:
+  function loadSession() {
+    const savedFlow = localStorage.getItem(flowKey);
+    if (savedFlow) {
+      fromObject(JSON.parse(savedFlow)); // Call fromObject here
+    }
+  }
   return {
     ...state, // Spread the reactive state properties
     addNode,
@@ -75,5 +99,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     updateNodePosition,
     getNodeChatData,
     updateNodeChatData,
+    saveSession,
+    loadSession,
   };
 }

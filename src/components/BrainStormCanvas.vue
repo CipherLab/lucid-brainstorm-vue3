@@ -67,6 +67,10 @@ const onConnect = (connection: Edge | Connection) => {
     type: 'smoothstep',
     animated: false,
   });
+
+  // if (sourceNode && targetNode) {
+  //   lucidFlow.handleNodeConnection(connection.source, connection.target);
+  // }
 };
 
 const onEdgesChange = (changes: any) => {
