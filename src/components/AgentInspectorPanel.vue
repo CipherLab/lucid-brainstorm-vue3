@@ -57,7 +57,11 @@
     </div> -->
     </div>
     <div style="flex-grow: 1; display: flex">
-      <ChatComponent :selectedNodeId="selectedNodeId" style="flex-grow: 1" />
+      <ChatComponent
+        :selectedNodeId="selectedNodeId"
+        :assistantNameProp="selectedNode.data.label"
+        style="flex-grow: 1"
+      />
     </div>
   </div>
 </template>

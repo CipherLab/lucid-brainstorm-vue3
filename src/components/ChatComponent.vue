@@ -1,72 +1,64 @@
 <template>
   <div class="q-pa-md" style="height: 100%">
     <q-layout view="lHh lpr lFf" container class="shadow-2 rounded-borders">
-      <q-header bordered class="bg-grey-9" style="color: azure">
-        <q-toolbar>
-          <q-toolbar-title class="text-center">
-            <q-avatar>
-              <img src="/src/assets/geminilogo.webp" />
-            </q-avatar>
-            Chat History
-          </q-toolbar-title>
-        </q-toolbar>
-      </q-header>
-
       <q-page-container>
-        <q-page>
+        <q-page style="display: flex; flex-direction: column-reverse">
           <div v-if="messages && messages.length > 0">
-            <q-list
+            <div
               bordered
               class="rounded-borders chat-history"
               ref="chatHistory"
             >
-              <q-item-label header class="text-grey-8"
-                >Conversation History</q-item-label
-              >
-              <q-item
-                v-for="(message, index) in messages"
-                :key="index"
-                tag="label"
-                v-ripple
-                :class="{ selected: message.selected }"
-              >
-                <q-item-section avatar top>
-                  <q-checkbox
-                    v-model="message.selected"
-                    :color="message.sender === 'user' ? 'blue' : 'green'"
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label
-                    :class="{ 'text-weight-bold': message.sender === 'user' }"
-                  >
-                    {{ message.sender === 'user' ? 'You:' : assistantName }}:
-                  </q-item-label>
-                  <q-item-label v-if="message.typing">
-                    <q-spinner-dots size="1.5em" color="grey-7" />
-                  </q-item-label>
-                  <q-item-label v-else>
-                    <Markdown :source="message.message" />
-                  </q-item-label>
-                  <q-item-label caption class="text-grey-8 text-right">
-                    {{ formattedTime(message.createdAt) }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side v-if="message.sender === 'user'">
-                  <div class="row q-gutter-xs">
-                    <q-btn
-                      size="12px"
-                      flat
-                      dense
-                      round
-                      icon="delete"
-                      @click.stop="deleteMessage(index)"
+              <div>
+                <q-item-label header class="text-grey-8"
+                  >Conversation History</q-item-label
+                >
+                <q-item
+                  v-for="(messages, index) in messages"
+                  :key="index"
+                  tag="label"
+                  v-ripple
+                >
+                  <q-item-section avatar top>
+                    <q-checkbox
+                      v-model="messages.selected"
+                      :color="messages.sender === 'user' ? 'blue' : 'green'"
                     />
-                    <q-btn size="12px" flat dense round icon="more_vert" />
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label
+                      :class="{
+                        'text-weight-bold': messages.sender === 'user',
+                      }"
+                    >
+                      {{ messages.sender === 'user' ? 'You:' : assistantName }}:
+                    </q-item-label>
+                    <q-item-label v-if="messages.typing">
+                      <q-spinner-dots size="1.5em" color="grey-7" />
+                    </q-item-label>
+                    <q-item-label v-else>
+                      <Markdown :source="messages.message" />
+                    </q-item-label>
+                    <q-item-label caption class="text-grey-8 text-right">
+                      {{ formattedTime(messages.createdAt) }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="messages.sender === 'user'">
+                    <div class="row q-gutter-xs">
+                      <q-btn
+                        size="12px"
+                        flat
+                        dense
+                        round
+                        icon="delete"
+                        @click.stop="deleteMessage(index)"
+                      />
+                      <q-btn size="12px" flat dense round icon="more_vert" />
+                    </div>
+                  </q-item-section>
+                </q-item>
+              </div>
+            </div>
           </div>
         </q-page>
       </q-page-container>
@@ -119,7 +111,7 @@ const route = useRoute();
 const guid = computed(() => route.query.guid);
 const messages = ref<Message[]>([]);
 const userInput = ref('');
-const assistantName = ref('ArpWave Assistant');
+const assistantName = ref('Assistant');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const props = defineProps({
@@ -127,7 +119,12 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  assistantNameProp: {
+    type: String,
+    default: 'Assistant',
+  },
 });
+
 onMounted(async () => {
   //await loadChatHistory();
   //await pushDelayedResponse('Hello! How can I help you today?');
@@ -141,6 +138,9 @@ onMounted(async () => {
     selected: false,
     id: '1',
   });
+
+  assistantName.value = props.assistantNameProp + ' agent';
+  console.log('assistantNameProp:', props.assistantNameProp);
 
   // this.$nextTick(() => {
   //   if (chatList.value) {
@@ -157,17 +157,28 @@ watchEffect(() => {
 });
 
 const reversedMessages = computed(() => {
-  if (isTargetHandleHovered.value) return 'handle-show-more';
-  return [...this.messages].reverse();
+  if (!messages.value) return [];
+
+  return [...messages.value].reverse();
 });
 
 async function sendMessage() {
-  if (!userInput.value) return; // Don't send empty messages
+  if (!userInput.value) return;
 
   try {
-    await updateChatHistory();
+    pushImmediateRequest(userInput.value); // Push user message
+    pushImmediateResponse('', true); // Show thinking indicator
+
+    const response = await chatService.sendMessage(userInput.value, guid.value);
+
+    messages.value.pop(); // Remove thinking indicator
+    await pushDelayedResponse(response.result); // Push assistant message
+
+    await updateChatHistory(); // Save history (adjust logic as needed)
   } catch (error) {
-    // Handle error
+    // ... [error handling]
+  } finally {
+    userInput.value = ''; // Clear input field
   }
 }
 
@@ -193,7 +204,7 @@ async function pushDelayedMessage(
     createdAt: Date.now(),
     error: false,
     typing: true,
-    selected: false, // Add the 'selected' property
+    selected: false,
   });
 
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -217,7 +228,7 @@ function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
     createdAt: Date.now(),
     error: false,
     typing: typing,
-    selected: false, // Initialize as not selected
+    selected: false,
   });
 }
 
@@ -228,7 +239,7 @@ function pushImmediateRequest(msg: string): void {
     createdAt: Date.now(),
     error: false,
     typing: false,
-    selected: false, // Initialize as not selected
+    selected: false,
   });
 }
 
