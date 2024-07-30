@@ -12,8 +12,4 @@ defineProps<{
   draggedItem: DraggedItem | null;
 }>();
 </script>
-<style>
-.full-height {
-  height: 100vh !important ;
-}
-</style>
+<style></style>

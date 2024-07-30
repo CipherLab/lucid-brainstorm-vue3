@@ -184,7 +184,7 @@ const handleNodesChange = (changes: NodeChange[]) => {
   flex: 1;
   background-color: #f5f5f5;
   position: relative;
-  height: 100%;
+  height: calc(100vh - 55px - 20px - 10px);
 }
 
 .background {

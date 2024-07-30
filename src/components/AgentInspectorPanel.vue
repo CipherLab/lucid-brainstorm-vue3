@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-hidden-y" style="color: white">
+  <div style="color: white">
     <div v-if="selectedNode" class="inspector-content">
       <span
         class="label span-width"
@@ -53,8 +53,8 @@
       />
     </div> -->
     </div>
+    <ChatComponent class="" :selectedNodeId="selectedNodeId" />
   </div>
-  <ChatComponent class="" :selectedNodeId="selectedNodeId" />
 </template>
 
 <script setup lang="ts">
