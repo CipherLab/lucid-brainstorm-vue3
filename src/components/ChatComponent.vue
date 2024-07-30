@@ -31,13 +31,14 @@
                         'text-weight-bold': messages.sender === 'user',
                       }"
                     >
-                      {{ messages.sender === 'user' ? 'You:' : assistantName }}:
+                      {{ messages.sender === 'user' ? 'User' : assistantName }}:
                     </q-item-label>
                     <q-item-label v-if="messages.typing">
                       <q-spinner-dots size="1.5em" color="grey-7" />
                     </q-item-label>
                     <q-item-label v-else>
-                      <Markdown :source="messages.message" />
+                      <!-- <Markdown :source="messages.message" /> -->
+                      {{ messages.message }}
                     </q-item-label>
                     <q-item-label caption class="text-grey-8 text-right">
                       {{ formattedTime(messages.createdAt) }}
@@ -181,17 +182,6 @@ async function sendMessage() {
     userInput.value = ''; // Clear input field
   }
 }
-
-// async function loadChatHistory() {
-//   if (guid.value && typeof guid.value === 'string') {
-//     const nodeChatData = lucidFlow.getNodeChatData(guid.value);
-//     messages.value = JSON.parse(nodeChatData) || [];
-//   }
-// }
-
-// async function updateChatHistory() {
-//   sessionStorage.setItem('chatHistory', JSON.stringify(messages.value)); // Or save to session
-// }
 
 async function pushDelayedMessage(
   msg: string,
