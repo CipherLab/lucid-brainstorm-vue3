@@ -1,81 +1,97 @@
 <template>
-  <div class="q-pa-md">
-    <q-layout
-      view="lHh lpr lFf"
-      container
-      style="height: 400px"
-      class="shadow-2 rounded-borders"
-    >
-      <q-header bordered class="bg-grey-3 text-primary">
+  <div class="q-pa-md" style="height: 100%">
+    <q-layout view="lHh lpr lFf" container class="shadow-2 rounded-borders">
+      <q-header bordered class="bg-grey-9" style="color: azure">
         <q-toolbar>
           <q-toolbar-title class="text-center">
             <q-avatar>
-              <img src="https://cdn.quasar.dev/logo-v2/svg/logo.svg" />
+              <img src="/src/assets/geminilogo.webp" />
             </q-avatar>
-            Quasar Framework
+            Chat History
           </q-toolbar-title>
         </q-toolbar>
       </q-header>
 
-      <q-footer bordered class="bg-grey-3 text-primary">
-        <q-tabs
-          no-caps
-          active-color="primary"
-          indicator-color="transparent"
-          class="text-grey-8"
-          v-model="tab"
-        >
-          <q-tab name="images" label="Images" />
-          <q-tab name="videos" label="Videos" />
-          <q-tab name="articles" label="Articles" />
-        </q-tabs>
-      </q-footer>
-
       <q-page-container>
-        <q-page class="q-pa-md">
-          <p v-for="n in 15" :key="n">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit nihil
-            praesentium molestias a adipisci, dolore vitae odit, quidem
-            consequatur optio voluptates asperiores pariatur eos numquam rerum
-            delectus commodi perferendis voluptate?
-          </p>
+        <q-page>
+          <div v-if="messages && messages.length > 0">
+            <q-list
+              bordered
+              class="rounded-borders chat-history"
+              ref="chatHistory"
+            >
+              <q-item-label header class="text-grey-8"
+                >Conversation History</q-item-label
+              >
+              <q-item
+                v-for="(message, index) in messages"
+                :key="index"
+                tag="label"
+                v-ripple
+                :class="{ selected: message.selected }"
+              >
+                <q-item-section avatar top>
+                  <q-checkbox
+                    v-model="message.selected"
+                    :color="message.sender === 'user' ? 'blue' : 'green'"
+                  />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label
+                    :class="{ 'text-weight-bold': message.sender === 'user' }"
+                  >
+                    {{ message.sender === 'user' ? 'You:' : assistantName }}:
+                  </q-item-label>
+                  <q-item-label v-if="message.typing">
+                    <q-spinner-dots size="1.5em" color="grey-7" />
+                  </q-item-label>
+                  <q-item-label v-else>
+                    <Markdown :source="message.message" />
+                  </q-item-label>
+                  <q-item-label caption class="text-grey-8 text-right">
+                    {{ formattedTime(message.createdAt) }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side v-if="message.sender === 'user'">
+                  <div class="row q-gutter-xs">
+                    <q-btn
+                      size="12px"
+                      flat
+                      dense
+                      round
+                      icon="delete"
+                      @click.stop="deleteMessage(index)"
+                    />
+                    <q-btn size="12px" flat dense round icon="more_vert" />
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
         </q-page>
       </q-page-container>
-    </q-layout>
-    <!--
-    <q-list>
-      <q-item v-for="(message, index) in messages" :key="index">
-        <q-item-section>
-          <q-item-label :class="{ 'user-message': message.sender === 'user' }">
-            <div class="message-header">
-              <span class="sender-name">{{ message.sender }}</span>
-              <span class="timestamp">{{
-                formattedTime(message.createdAt)
-              }}</span>
-            </div>
-            <div v-if="message.typing" class="thinking-indicator q-mt-sm">
-              <q-spinner-dots size="1.5rem" color="grey-8" />
-            </div>
-            <div v-else class="message-content q-mt-sm">
-              <QMarkdown :source="message.message" />
-              <div v-if="message.error" class="error-message">
-                {{ message.message }}
-              </div>
-              <div v-else>{{ message.message }}</div>
-            </div>
-          </q-item-label>
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <q-footer>
-      <q-toolbar>
-        <q-input v-model="userInput" @keyup.enter="sendMessage">
+
+      <q-footer bordered class="bg-grey-9 text-primary">
+        <q-input
+          style="color: white !important; background"
+          v-model="userInput"
+          label="Chat"
+          dense
+          :input-style="{ color: 'white' }"
+          @keyup.enter="sendMessage"
+        >
           <template v-slot:append>
-            <q-btn round dense flat icon="send" @click="sendMessage"></q-btn>
+            <q-btn dense flat @click="sendMessage">
+              <img
+                src="/src/assets/geminilogo.webp"
+                alt="Send"
+                class="message-send-button"
+              />
+            </q-btn>
           </template>
         </q-input>
-      </q-toolbar>
-    </q-footer> -->
+      </q-footer>
+    </q-layout>
   </div>
 </template>
 
@@ -89,6 +105,7 @@ import type { LucidFlowComposable } from 'src/composables/useLucidFlow';
 
 // Interface for messages (add selected property)
 interface Message {
+  id: number;
   sender: string;
   message: string | null;
   createdAt: number;
@@ -96,6 +113,7 @@ interface Message {
   typing?: boolean;
   selected: boolean; // Add selected property to track selection
 }
+const chatList = ref(null);
 const tab = ref<string>('images');
 const route = useRoute();
 const guid = computed(() => route.query.guid);
@@ -111,8 +129,24 @@ const props = defineProps({
   },
 });
 onMounted(async () => {
-  await loadChatHistory();
-  await pushDelayedResponse('Hello! How can I help you today?');
+  //await loadChatHistory();
+  //await pushDelayedResponse('Hello! How can I help you today?');
+  messages.value.push({
+    sender: 'user',
+    message:
+      'orem ipsum dolor sit amet consectetur adipisicing elit. Fugit nihi',
+    createdAt: Date.now(),
+    error: false,
+    typing: false,
+    selected: false,
+    id: '1',
+  });
+
+  // this.$nextTick(() => {
+  //   if (chatList.value) {
+  //     this.$q.scrollToElement(chatList.value, 'bottom');
+  //   }
+  // });
 });
 
 watchEffect(() => {
@@ -120,6 +154,11 @@ watchEffect(() => {
     const nodeChatData = lucidFlow.getNodeChatData(guid.value);
     messages.value = JSON.parse(nodeChatData) || [];
   }
+});
+
+const reversedMessages = computed(() => {
+  if (isTargetHandleHovered.value) return 'handle-show-more';
+  return [...this.messages].reverse();
 });
 
 async function sendMessage() {
@@ -230,5 +269,9 @@ async function pushDelayedRequest(msg: string) {
 <style scoped>
 .thinking-indicator {
   text-align: center;
+}
+.message-send-button {
+  height: 24px;
+  width: 24px;
 }
 </style>

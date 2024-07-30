@@ -1,5 +1,7 @@
 <template>
-  <div style="color: white">
+  <div
+    style="color: white; height: 100%; display: flex; flex-direction: column"
+  >
     <div v-if="selectedNode" class="inspector-content">
       <span
         class="label span-width"
@@ -12,6 +14,7 @@
       </span>
       <div class="q-pa-md">
         <q-input
+          style="color: white !important"
           v-model="selectedNode.data.label"
           label="Name"
           dense
@@ -53,7 +56,9 @@
       />
     </div> -->
     </div>
-    <ChatComponent class="" :selectedNodeId="selectedNodeId" />
+    <div style="flex-grow: 1; display: flex">
+      <ChatComponent :selectedNodeId="selectedNodeId" style="flex-grow: 1" />
+    </div>
   </div>
 </template>
 
