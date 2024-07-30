@@ -1,5 +1,48 @@
 <template>
-  <div class="chat-container q-pa-md column full-height">
+  <div class="q-pa-md">
+    <q-layout
+      view="lHh lpr lFf"
+      container
+      style="height: 400px"
+      class="shadow-2 rounded-borders"
+    >
+      <q-header bordered class="bg-grey-3 text-primary">
+        <q-toolbar>
+          <q-toolbar-title class="text-center">
+            <q-avatar>
+              <img src="https://cdn.quasar.dev/logo-v2/svg/logo.svg" />
+            </q-avatar>
+            Quasar Framework
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
+
+      <q-footer bordered class="bg-grey-3 text-primary">
+        <q-tabs
+          no-caps
+          active-color="primary"
+          indicator-color="transparent"
+          class="text-grey-8"
+          v-model="tab"
+        >
+          <q-tab name="images" label="Images" />
+          <q-tab name="videos" label="Videos" />
+          <q-tab name="articles" label="Articles" />
+        </q-tabs>
+      </q-footer>
+
+      <q-page-container>
+        <q-page class="q-pa-md">
+          <p v-for="n in 15" :key="n">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit nihil
+            praesentium molestias a adipisci, dolore vitae odit, quidem
+            consequatur optio voluptates asperiores pariatur eos numquam rerum
+            delectus commodi perferendis voluptate?
+          </p>
+        </q-page>
+      </q-page-container>
+    </q-layout>
+    <!--
     <q-list>
       <q-item v-for="(message, index) in messages" :key="index">
         <q-item-section>
@@ -14,7 +57,11 @@
               <q-spinner-dots size="1.5rem" color="grey-8" />
             </div>
             <div v-else class="message-content q-mt-sm">
-              <Markdown :source="message.message" />
+              <QMarkdown :source="message.message" />
+              <div v-if="message.error" class="error-message">
+                {{ message.message }}
+              </div>
+              <div v-else>{{ message.message }}</div>
             </div>
           </q-item-label>
         </q-item-section>
@@ -28,7 +75,7 @@
           </template>
         </q-input>
       </q-toolbar>
-    </q-footer>
+    </q-footer> -->
   </div>
 </template>
 
@@ -38,6 +85,7 @@ import moment from 'moment';
 import { useRoute } from 'vue-router';
 import ChatService from 'src/services/chatService';
 import type { LucidFlowComposable } from 'src/composables/useLucidFlow';
+//import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 
 // Interface for messages (add selected property)
 interface Message {
@@ -48,7 +96,7 @@ interface Message {
   typing?: boolean;
   selected: boolean; // Add selected property to track selection
 }
-
+const tab = ref<string>('images');
 const route = useRoute();
 const guid = computed(() => route.query.guid);
 const messages = ref<Message[]>([]);
@@ -106,6 +154,7 @@ async function pushDelayedMessage(
     createdAt: Date.now(),
     error: false,
     typing: true,
+    selected: false, // Add the 'selected' property
   });
 
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -125,7 +174,7 @@ async function pushDelayedResponse(msg: string) {
 function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
   messages.value.push({
     sender: assistantName.value,
-    message: msg,
+    message: msg ?? '',
     createdAt: Date.now(),
     error: false,
     typing: typing,
@@ -146,8 +195,8 @@ function pushImmediateRequest(msg: string): void {
 
 async function loadChatHistory() {
   const data = lucidFlow.getNodeChatData(props.selectedNodeId);
-  if (!data) return;
-  messages.value = JSON.parse() || [];
+  if (!data || data == '') return;
+  messages.value = JSON.parse(data) || [];
   // const savedHistory = sessionStorage.getItem('chatHistory'); // Or get from session
   // if (savedHistory) {
   //   messages.value = JSON.parse(savedHistory);

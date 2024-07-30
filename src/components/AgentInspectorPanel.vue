@@ -1,5 +1,5 @@
 <template>
-  <div style="color: white">
+  <div class="overflow-hidden-y" style="color: white">
     <div v-if="selectedNode" class="inspector-content">
       <span
         class="label span-width"
@@ -44,9 +44,6 @@
           type="textarea"
         />
       </div>
-      <div class="q-pa-sm">
-        <ChatComponent :selectedNodeId="selectedNode.id" />
-      </div>
       <!-- <div class="q-pa-sm">
       <q-input
         v-model="selectedNode.data.agent.inputData"
@@ -57,6 +54,7 @@
     </div> -->
     </div>
   </div>
+  <ChatComponent class="" :selectedNodeId="selectedNodeId" />
 </template>
 
 <script setup lang="ts">
