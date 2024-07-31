@@ -59,7 +59,7 @@
     <div style="flex-grow: 1; display: flex">
       <ChatComponent
         :selectedNodeId="selectedNodeId"
-        :assistantNameProp="selectedNode.data.label"
+        :assistantNameProp="assistantName"
         style="flex-grow: 1"
       />
     </div>
@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
-import { inject, ref, watchEffect } from 'vue';
+import { inject, ref, computed, watchEffect } from 'vue';
 import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 import { NodeProps } from '@vue-flow/core';
 import ChatComponent from './ChatComponent.vue';
@@ -83,13 +83,18 @@ const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
   throw new Error('lucidFlow composable not provided');
 }
+const assistantName = computed(() => {
+  if (selectedNode.value) {
+    return selectedNode.value.data.label;
+  }
+  return 'Assistant';
+});
+
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 watchEffect(() => {
   if (props.selectedNodeId) {
     // Find and set the selected node, or null if not found
-    const node = lucidFlow.nodes.find(
-      (node) => node.id === props.selectedNodeId
-    ) as NodeProps | undefined; // Cast the result to MyNodeProps or undefined
+    const node = lucidFlow.findNodeProps(props.selectedNodeId); // Cast the result to MyNodeProps or undefined
     selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
   } else {
     selectedNode.value = null; // Reset selectedNode if selectedNodeId is null

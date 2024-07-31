@@ -1,8 +1,8 @@
 <template>
   <div class="brainstorm-canvas" @drop="onDrop" @dragover.prevent>
     <vue-flow
-      :nodes="flowNodes"
-      :edges="flowEdges"
+      :nodes="lucidFlow.getNodes()"
+      :edges="lucidFlow.getEdges()"
       :connection-mode="connectionMode"
       @nodes-change="handleNodesChange"
       @edges-changed="onEdgesChange"
@@ -35,28 +35,31 @@ import { VueFlow } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import AgentNode from './AgentNode.vue';
 import InputNode from './InputNode.vue';
+import { debounce } from 'lodash';
 
 const connectionMode = ref(ConnectionMode.Loose);
 const nodeTypes = ref(['agent', 'input', 'file', 'prompt', 'webpage']); // Add all your node types here
 const nodesTotal = ref(0);
 
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 import { emitter } from 'src/eventBus';
 
+import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
   throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
 }
 
-const flowNodes = ref<Node[]>([]); // Initialize as an empty array
-const flowEdges = ref<Edge[]>([]); // Initialize as an empty array
-
-// Watch for changes in lucidFlow and update local refs
-watchEffect(() => {
-  flowNodes.value = lucidFlow?.nodes || [];
-  flowEdges.value = lucidFlow?.edges || [];
+onMounted(() => {
+  console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
+  lucidFlow.loadSession();
+  console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
+
+onUnmounted(() => {
+  lucidFlow.saveSession();
+});
+// Watch for changes in lucidFlow and update local refs
 
 const onConnect = (connection: Edge | Connection) => {
   console.log('New connection:', connection);
@@ -67,6 +70,7 @@ const onConnect = (connection: Edge | Connection) => {
     type: 'smoothstep',
     animated: false,
   });
+  lucidFlow.saveSession();
 
   // if (sourceNode && targetNode) {
   //   lucidFlow.handleNodeConnection(connection.source, connection.target);
@@ -92,7 +96,8 @@ const onDrop = (event: any) => {
 
   const eventData = JSON.parse(event.dataTransfer.getData('text/plain'));
   if (!eventData || eventData == '') return;
-  console.log('nodes length:', lucidFlow.nodes.length);
+
+  console.log('nodes length:', lucidFlow.getNodeCount());
   const position = {
     x: event.clientX - 300,
     y: event.clientY - 200,
@@ -156,6 +161,8 @@ const onDrop = (event: any) => {
   }
 
   if (newNode) {
+    lucidFlow.saveSession();
+    console.log('N-lucidFlow.nodes.length', lucidFlow.getNodeCount());
     emitter.emit('node:selected', {
       nodeId: newNode.id,
       nodeType: newNode.data.agent.type,
@@ -171,7 +178,7 @@ const handleNodesChange = (changes: NodeChange[]) => {
   } else if (change.type === 'remove') {
   } else if (change.type === 'position') {
     if (change.id && change.position) {
-      lucidFlow.updateNodePosition(
+      debouncedUpdateNodePosition(
         change.id,
         change.position.x,
         change.position.y
@@ -182,6 +189,10 @@ const handleNodesChange = (changes: NodeChange[]) => {
 
   // Handle the changes as needed
 };
+const debouncedUpdateNodePosition = debounce((id, x, y) => {
+  lucidFlow.updateNodePosition(id, x, y);
+  lucidFlow.saveSession();
+}, 300); // Adjust the debounce delay as needed
 </script>
 <style scoped>
 .brainstorm-canvas {

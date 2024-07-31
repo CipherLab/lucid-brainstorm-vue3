@@ -1,16 +1,12 @@
 // src/composables/useLucidFlow.ts
 import { ref, reactive } from 'vue';
-import { useVueFlow, Node, Edge } from '@vue-flow/core';
-interface LucidFlowState {
-  nodes: Node[];
-  edges: Edge[];
-  nodesTotal: number;
-}
+import { useVueFlow, Node, Edge, NodeProps } from '@vue-flow/core';
 
 export interface LucidFlowComposable {
-  nodes: Node[];
-  edges: Edge[];
-  nodesTotal: number;
+  getNodes: () => Node[];
+  getEdges: () => Edge[];
+  findNodeProps: (nodeId: string) => NodeProps | undefined;
+  getNodeCount: () => number;
   addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
   addEdge: (edge: Edge) => void;
@@ -21,78 +17,92 @@ export interface LucidFlowComposable {
   loadSession: () => void;
 }
 const flowKey = 'lucid-flow-session'; // Your storage key
-const { fromObject } = useVueFlow();
-
-const { toObject } = useVueFlow();
-
-const flowStateAsObject = toObject();
-
+//const nodes = ref<Node[]>([]); // Ref for nodes
 export default function useLucidFlow(): LucidFlowComposable {
-  const {
-    removeNodes,
-    addNodes: vfAddNodes,
-    addEdges: vfAddEdges,
-    toObject,
-    fromObject,
-  } = useVueFlow();
+  // Call useVueFlow only ONCE:
+  const vueFlow = useVueFlow();
+  const { removeNodes } = vueFlow;
 
-  // Reactive state with type
-  const state = reactive<LucidFlowState>({
-    nodes: Array<Node>(),
-    edges: [],
-    nodesTotal: 0,
-  });
-
+  // Update addNode:
   const addNode = (node: Node) => {
-    state.nodes.push(node);
-    vfAddNodes([node]);
-    state.nodesTotal++;
+    console.log('Adding node', node);
+    vueFlow.addNodes(node); // Directly add to vueFlow
+    console.log('Nodes:', vueFlow.nodes.value);
   };
 
+  const getNodes = () => {
+    return vueFlow.nodes.value;
+  };
+  const getEdges = () => {
+    return vueFlow.edges.value;
+  };
+  // Update removeNode:
   const removeNode = (nodeId: string) => {
-    state.nodes = state.nodes.filter((node) => node.id !== nodeId);
-    removeNodes(nodeId);
-    state.nodesTotal--;
+    removeNodes(nodeId); // Directly remove from vueFlow
+  };
+
+  const findNodeProps = (nodeId: string) => {
+    const node = vueFlow.nodes.value.find((node) => node.id === nodeId) as
+      | NodeProps
+      | undefined;
+    return undefined;
+  };
+
+  const getNodeCount = () => {
+    if (vueFlow.nodes.value) {
+      return vueFlow.nodes.value.length;
+    }
+    return 0;
   };
 
   const addEdge = (edge: Edge) => {
-    state.edges.push(edge);
-    vfAddEdges([edge]);
+    console.log('Adding edge', edge);
+    vueFlow.addEdges(edge);
   };
 
-  // Expose functions for node/edge manipulation
   const updateNodePosition = (nodeId: string, x: number, y: number) => {
-    const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
+    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
     if (nodeToUpdate) {
-      nodeToUpdate.position = { x, y }; // Directly mutate the node object
+      nodeToUpdate.position = { x, y };
     }
   };
+
   const getNodeChatData = (nodeId: string) => {
-    const node = state.nodes.find((node) => node.id === nodeId);
+    const node = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
     return node ? node.data.chatData : null;
   };
 
   const updateNodeChatData = (nodeId: string, newData: any) => {
-    const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
+    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
     if (nodeToUpdate) {
-      Object.assign(nodeToUpdate.data.chatData, newData); // Update the node's data
+      // Assuming newData is the message to add to chat history
+      nodeToUpdate.data.chatData = [
+        ...(nodeToUpdate.data.chatData || []),
+        newData,
+      ];
     }
   };
+
   // Saving the Session:
   function saveSession() {
-    const flowState = toObject(); // Call toObject here
-    localStorage.setItem(flowKey, JSON.stringify(flowState));
+    console.log('Saving session');
+    localStorage.setItem(flowKey, JSON.stringify(vueFlow.toObject()));
   }
 
-  // Loading the Session:
+  // Loading the Session (UPDATED):
   function loadSession() {
     const savedFlow = localStorage.getItem(flowKey);
     if (savedFlow) {
-      fromObject(JSON.parse(savedFlow)); // Call fromObject here
+      // 1. Restore the internal state:
+      vueFlow.fromObject(JSON.parse(savedFlow));
     }
   }
+
   return {
-    ...state, // Spread the reactive state properties
+    getNodes,
+    getEdges,
+    findNodeProps,
+    getNodeCount,
     addNode,
     removeNode,
     addEdge,
