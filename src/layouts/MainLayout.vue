@@ -198,4 +198,7 @@ onUnmounted(() => {
 .right-handle {
   left: 0; /* Right drawer handle on the LEFT edge */
 }
+.vue-flow__node {
+  visibility: visible !important;
+}
 </style>

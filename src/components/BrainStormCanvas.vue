@@ -1,8 +1,9 @@
 <template>
+  {{ lucidFlow.getNodes().length }}
   <div class="brainstorm-canvas" @drop="onDrop" @dragover.prevent>
     <vue-flow
-      :nodes="lucidFlow.getNodes()"
-      :edges="lucidFlow.getEdges()"
+      :nodes="nodes"
+      :edges="edges"
       :connection-mode="connectionMode"
       @nodes-change="handleNodesChange"
       @edges-changed="onEdgesChange"
@@ -23,7 +24,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, inject, watchEffect } from 'vue';
+import {
+  ref,
+  onMounted,
+  computed,
+  onUnmounted,
+  inject,
+  watchEffect,
+} from 'vue';
 import {
   ConnectionMode,
   Connection,
@@ -40,6 +48,9 @@ import { debounce } from 'lodash';
 const connectionMode = ref(ConnectionMode.Loose);
 const nodeTypes = ref(['agent', 'input', 'file', 'prompt', 'webpage']); // Add all your node types here
 const nodesTotal = ref(0);
+
+const nodes = computed(() => lucidFlow.getNodes());
+const edges = computed(() => lucidFlow.getEdges());
 
 import { emitter } from 'src/eventBus';
 
@@ -161,7 +172,6 @@ const onDrop = (event: any) => {
   }
 
   if (newNode) {
-    lucidFlow.saveSession();
     console.log('N-lucidFlow.nodes.length', lucidFlow.getNodeCount());
     emitter.emit('node:selected', {
       nodeId: newNode.id,

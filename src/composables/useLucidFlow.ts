@@ -43,8 +43,13 @@ export default function useLucidFlow(): LucidFlowComposable {
   // Update addNode:
   const addNode = (node: Node) => {
     console.log('Adding node', node);
-    vueFlow.addNodes(node); // Directly add to vueFlow
-    console.log('Nodes:', vueFlow.nodes.value);
+    vueFlow.addNodes(node);
+    saveSession();
+  };
+  const addEdge = (edge: Edge) => {
+    console.log('Adding edge', edge);
+    vueFlow.addEdges(edge);
+    saveSession();
   };
 
   const getNodes = () => {
@@ -78,11 +83,6 @@ export default function useLucidFlow(): LucidFlowComposable {
       return vueFlow.nodes.value.length;
     }
     return 0;
-  };
-
-  const addEdge = (edge: Edge) => {
-    console.log('Adding edge', edge);
-    vueFlow.addEdges(edge);
   };
 
   const updateNodePosition = (nodeId: string, x: number, y: number) => {
