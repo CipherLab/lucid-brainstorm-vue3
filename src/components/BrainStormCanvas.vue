@@ -189,6 +189,10 @@ const handleNodesChange = (changes: NodeChange[]) => {
 
   // Handle the changes as needed
 };
+watchEffect(() => {
+  console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
+});
+
 const debouncedUpdateNodePosition = debounce((id, x, y) => {
   lucidFlow.updateNodePosition(id, x, y);
   lucidFlow.saveSession();

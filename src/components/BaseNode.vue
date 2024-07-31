@@ -63,6 +63,12 @@ import {
 import { defineProps, computed, PropType, VNode, ref } from 'vue';
 import { emitter } from 'src/eventBus'; // Import your event bus
 import NodeInspector from './NodeInspector.vue';
+import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
+const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
+if (!lucidFlow) {
+  console.error('useLucidFlow composable not found!');
+  throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
+}
 
 const showDeleteConfirm = ref(false);
 
@@ -71,7 +77,9 @@ const props = defineProps<Node>();
 const handleDelete = () => {
   if (showDeleteConfirm.value) {
     showDeleteConfirm.value = false;
-    //props.onRemoveNode(props.id); // Call the callback to remove the node
+    //props.onRemoveNode(props.id); // Call the callback to remove the node\
+    console.log('Delete node:', props.id);
+    lucidFlow.removeNode(props.id);
   } else {
     showDeleteConfirm.value = true;
   }
@@ -89,10 +97,7 @@ const handleInspector = () => {
 
 // Handle clicks outside the node to deselect
 const handleClickOutside = (event: MouseEvent) => {
-  // Check if the click is outside of the current node element
-  // if (!(event.target as HTMLElement).closest(`#${props.id}`)) {
-  //   emitter.emit('node:deselected', null);
-  // }
+  showDeleteConfirm.value = false;
 };
 const isNodeHovered = ref(false);
 const isTargetHandleHovered = ref(false);

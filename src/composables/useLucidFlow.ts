@@ -1,6 +1,14 @@
 // src/composables/useLucidFlow.ts
 import { ref, reactive } from 'vue';
-import { useVueFlow, Node, Edge, NodeProps } from '@vue-flow/core';
+import {
+  useVueFlow,
+  Node,
+  Edge,
+  NodeProps,
+  applyNodeChanges,
+  applyEdgeChanges,
+  NodeRemoveChange,
+} from '@vue-flow/core'; // Import applyNodeChanges
 
 export interface LucidFlowComposable {
   getNodes: () => Node[];
@@ -21,7 +29,16 @@ const flowKey = 'lucid-flow-session'; // Your storage key
 export default function useLucidFlow(): LucidFlowComposable {
   // Call useVueFlow only ONCE:
   const vueFlow = useVueFlow();
-  const { removeNodes } = vueFlow;
+  const {
+    onConnect,
+    addEdges,
+    onNodesChange,
+    onEdgesChange,
+    applyNodeChanges,
+    applyEdgeChanges,
+    removeNodes,
+    removeEdges,
+  } = vueFlow;
 
   // Update addNode:
   const addNode = (node: Node) => {
@@ -38,14 +55,22 @@ export default function useLucidFlow(): LucidFlowComposable {
   };
   // Update removeNode:
   const removeNode = (nodeId: string) => {
-    removeNodes(nodeId); // Directly remove from vueFlow
+    //removeEdges(nodeId); // Remove edges connected to the node
+    const changes: NodeRemoveChange[] = [{ type: 'remove', id: nodeId }];
+    applyNodeChanges(changes);
+    const edgesToRemove = vueFlow.edges.value.filter(
+      (edge) => edge.source === nodeId || edge.target === nodeId
+    );
+    edgesToRemove.forEach((edge) => removeEdges(edge.id));
+    saveSession();
   };
 
   const findNodeProps = (nodeId: string) => {
     const node = vueFlow.nodes.value.find((node) => node.id === nodeId) as
       | NodeProps
       | undefined;
-    return undefined;
+
+    return node;
   };
 
   const getNodeCount = () => {
