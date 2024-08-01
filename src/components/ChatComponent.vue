@@ -13,66 +13,58 @@
                 <q-item-label header class="text-grey-8"
                   >Conversation History</q-item-label
                 >
-                <draggable
-                  v-model="messages"
-                  handle=".drag-handle"
-                  @end="onDragEnd"
+
+                <q-item
+                  v-for="(message, index) in messages"
+                  :key="index"
+                  tag="label"
+                  v-ripple
                 >
-                  <q-item
-                    v-for="(message, index) in messages"
-                    :key="index"
-                    tag="label"
-                    v-ripple
-                  >
-                    <q-item-section>
-                      <q-item-label
-                        :class="{
-                          'text-weight-bold': message.sender === 'user',
-                        }"
-                      >
-                        {{
-                          message.sender === 'user' ? 'User' : assistantName
-                        }}:
-                      </q-item-label>
-                      <q-item-label v-if="message.typing">
-                        <q-spinner-dots size="1.5em" color="grey-7" />
-                      </q-item-label>
-                      <q-item-label v-else>
-                        <!-- <Markdown :source="message.message" /> -->
-                        {{ message.message }}
-                      </q-item-label>
-                      <q-item-label caption class="text-grey-8 text-right">
-                        {{ formattedTime(message.createdAt) }}
-                      </q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <div class="row q-gutter-xs">
-                        <q-btn
-                          class="drag-handle"
-                          size="12px"
-                          flat
-                          dense
-                          round
-                          icon="drag_indicator"
-                        />
-                        <q-btn
-                          size="12px"
-                          flat
-                          dense
-                          round
-                          icon="delete"
-                          @click.stop="deleteMessage(index)"
-                        />
-                      </div>
-                    </q-item-section>
-                  </q-item>
-                </draggable>
+                  <q-item-section>
+                    <q-item-label
+                      :class="{
+                        'text-weight-bold': message.sender === 'user',
+                      }"
+                    >
+                      {{ message.sender === 'user' ? 'User' : assistantName }}:
+                    </q-item-label>
+                    <q-item-label v-if="message.typing">
+                      <q-spinner-dots size="1.5em" color="grey-7" />
+                    </q-item-label>
+                    <q-item-label v-else>
+                      <!-- <Markdown :source="message.message" /> -->
+                      {{ message.message }}
+                    </q-item-label>
+                    <q-item-label caption class="text-grey-8 text-right">
+                      {{ formattedTime(message.createdAt) }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <div class="row q-gutter-xs">
+                      <q-btn
+                        class="drag-handle"
+                        size="12px"
+                        flat
+                        dense
+                        round
+                        icon="drag_indicator"
+                      />
+                      <q-btn
+                        size="12px"
+                        flat
+                        dense
+                        round
+                        icon="delete"
+                        @click.stop="deleteMessage(index)"
+                      />
+                    </div>
+                  </q-item-section>
+                </q-item>
               </div>
             </div>
           </div>
         </q-page>
       </q-page-container>
-
       <q-footer bordered class="bg-grey-9 text-primary">
         <q-input
           style="color: white !important; background"
@@ -103,19 +95,19 @@ import moment from 'moment';
 import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatService from '../services/chatService';
-//import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
+//import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 //TODO:
 // DONE 10. Delete nodes
 // 20. Delete edges
 // 21. Add ability to re-order conversation history
-// 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
+// DONE 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
 // 40. Add node connection data to current node (context)
 // 50. UI to show/manage node connections
 // 60. UI to show/manage context data from other connected nodes
 // 70. UI to create a custom agent
 // DONE 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
-// DONE-ish 90. Save/Load chat history (via saving/loading vue flow state)
+// DONE 90. Save/Load chat history (via saving/loading vue flow state)
 
 // Interface for messages (add selected property)
 interface Message {
@@ -149,7 +141,9 @@ const props = defineProps({
 onMounted(async () => {
   await loadChatHistory();
   //await pushDelayedResponse('Hello! How can I help you today?');
-
+  if (!messages.value || messages.value.length === 0) {
+    await pushDelayedResponse('Hello! How can I help you today?');
+  }
   assistantName.value = props.assistantNameProp + ' agent';
   console.log('assistantNameProp:', props.assistantNameProp);
 
@@ -225,6 +219,7 @@ async function pushDelayedMessage(
     message: msg,
     typing: false,
   };
+  updateChatHistory();
 }
 
 async function pushDelayedResponse(msg: string) {
@@ -284,7 +279,7 @@ function deleteMessage(index: number) {
   updateChatHistory();
 }
 const onDragEnd = () => {
-  // Now, directly call updateChatHistory to persist the order
+  // Call your function to update the chat history:
   updateChatHistory();
 };
 async function clearChat() {
