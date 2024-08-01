@@ -92,8 +92,8 @@
 import { inject, ref, onMounted, computed, watchEffect } from 'vue';
 import moment from 'moment';
 import { useRoute } from 'vue-router';
-import ChatService from 'src/services/chatService';
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
+import ChatService from '../services/chatService';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 
 //TODO:
@@ -110,7 +110,7 @@ import type { LucidFlowComposable } from 'src/composables/useLucidFlow';
 
 // Interface for messages (add selected property)
 interface Message {
-  id: number;
+  id: string;
   sender: string;
   message: string | null;
   createdAt: number;
@@ -121,7 +121,6 @@ interface Message {
 const chatList = ref(null);
 const tab = ref<string>('images');
 const route = useRoute();
-const guid = computed(() => route.query.guid);
 const messages = ref<Message[]>([]);
 const userInput = ref('');
 const assistantName = ref('Assistant');
@@ -162,12 +161,10 @@ onMounted(async () => {
   // });
 });
 
-watchEffect(() => {
-  if (guid.value && typeof guid.value === 'string') {
-    const nodeChatData = lucidFlow.getNodeChatData(guid.value);
-    messages.value = JSON.parse(nodeChatData) || [];
-  }
-});
+// watchEffect(() => {
+//     const nodeChatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+//     messages.value = JSON.parse(nodeChatData) || [];
+// });
 
 const reversedMessages = computed(() => {
   if (!messages.value) return [];
@@ -182,7 +179,10 @@ async function sendMessage() {
     pushImmediateRequest(userInput.value); // Push user message
     pushImmediateResponse('', true); // Show thinking indicator
 
-    const response = await chatService.sendMessage(userInput.value, guid.value);
+    const response = await chatService.sendMessage(
+      userInput.value,
+      props.selectedNodeId
+    );
 
     messages.value.pop(); // Remove thinking indicator
     await pushDelayedResponse(response.result); // Push assistant message
@@ -201,6 +201,7 @@ async function pushDelayedMessage(
   delay: number
 ): Promise<void> {
   messages.value.push({
+    id: Date.UTC.toString(),
     sender,
     message: null,
     createdAt: Date.now(),
@@ -225,6 +226,7 @@ async function pushDelayedResponse(msg: string) {
 
 function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
   messages.value.push({
+    id: Date.UTC.toString(),
     sender: assistantName.value,
     message: msg ?? '',
     createdAt: Date.now(),
@@ -236,6 +238,7 @@ function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
 
 function pushImmediateRequest(msg: string): void {
   messages.value.push({
+    id: Date.UTC.toString(),
     sender: 'user',
     message: msg,
     createdAt: Date.now(),

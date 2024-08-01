@@ -69,9 +69,9 @@
 <script setup lang="ts">
 import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 import { inject, ref, computed, watchEffect } from 'vue';
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 import { NodeProps } from '@vue-flow/core';
 import ChatComponent from './ChatComponent.vue';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
 const props = defineProps({
   selectedNodeId: {
     type: String,

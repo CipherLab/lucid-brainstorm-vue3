@@ -1,5 +1,4 @@
 <template>
-  {{ lucidFlow.getNodes().length }}
   <div class="brainstorm-canvas" @drop="onDrop" @dragover.prevent>
     <vue-flow
       :nodes="nodes"
@@ -43,23 +42,23 @@ import { VueFlow } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import AgentNode from './AgentNode.vue';
 import InputNode from './InputNode.vue';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 
 const connectionMode = ref(ConnectionMode.Loose);
 const nodeTypes = ref(['agent', 'input', 'file', 'prompt', 'webpage']); // Add all your node types here
 const nodesTotal = ref(0);
 
-const nodes = computed(() => lucidFlow.getNodes());
-const edges = computed(() => lucidFlow.getEdges());
+import { emitter } from '../eventBus';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
 
-import { emitter } from 'src/eventBus';
-
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
   throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
 }
+
+const nodes = computed(() => lucidFlow.getNodes());
+const edges = computed(() => lucidFlow.getEdges());
 
 onMounted(() => {
   console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());

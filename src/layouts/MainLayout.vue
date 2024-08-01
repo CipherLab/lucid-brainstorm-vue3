@@ -68,10 +68,10 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import SidebarComponent from 'components/SidebarComponent.vue';
-import AgentInspectorPanel from 'components/AgentInspectorPanel.vue';
-import InputInspectorPanel from 'components/InputInspectorPanel.vue';
-import { emitter, NodeSelectedEvent } from 'src/eventBus';
+import SidebarComponent from '../components/SidebarComponent.vue';
+import AgentInspectorPanel from '../components/AgentInspectorPanel.vue';
+import InputInspectorPanel from '../components/InputInspectorPanel.vue';
+import { emitter, NodeSelectedEvent } from '../eventBus';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();

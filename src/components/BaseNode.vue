@@ -61,9 +61,9 @@ import {
   Node,
 } from '@vue-flow/core';
 import { defineProps, computed, PropType, VNode, ref } from 'vue';
-import { emitter } from 'src/eventBus'; // Import your event bus
-import NodeInspector from './NodeInspector.vue';
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
+import { emitter } from '../eventBus';
+
+import { LucidFlowComposable } from '../composables/useLucidFlow';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');

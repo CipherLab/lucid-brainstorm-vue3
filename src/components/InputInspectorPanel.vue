@@ -28,8 +28,8 @@
 
 <script setup lang="ts">
 import { inject, ref, watchEffect } from 'vue';
-import type { LucidFlowComposable } from 'src/composables/useLucidFlow'; // Import the type
 import { NodeProps } from '@vue-flow/core';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -49,9 +49,7 @@ const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNod
 watchEffect(() => {
   if (props.selectedNodeId) {
     // Find and set the selected node, or null if not found
-    const node = lucidFlow.nodes.find(
-      (node) => node.id === props.selectedNodeId
-    ) as NodeProps | undefined; // Cast the result to MyNodeProps or undefined
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
     console.log('input panel selectedNode:', selectedNode.value);
   } else {

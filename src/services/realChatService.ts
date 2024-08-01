@@ -1,7 +1,7 @@
 // src/services/realChatService.ts
 import axios from 'axios';
 import ChatService from './chatService'; // Import the interface
-import { startChatParams } from 'src/models/startChatParams';
+import { startChatParams } from '../models/startChatParams';
 import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
 
 class RealChatService implements ChatService {
