@@ -97,7 +97,7 @@ import ChatService from '../services/chatService';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 
 //TODO:
-// 10. Delete nodes
+// DONE 10. Delete nodes
 // 20. Delete edges
 // 21. Add ability to re-order conversation history
 // 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
@@ -105,8 +105,8 @@ import ChatService from '../services/chatService';
 // 50. UI to show/manage node connections
 // 60. UI to show/manage context data from other connected nodes
 // 70. UI to create a custom agent
-// 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
-// 90. Save/Load chat history (via saving/loading vue flow state)
+// DONE 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
+// DONE-ish 90. Save/Load chat history (via saving/loading vue flow state)
 
 // Interface for messages (add selected property)
 interface Message {
