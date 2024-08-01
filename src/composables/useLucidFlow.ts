@@ -97,15 +97,13 @@ export default function useLucidFlow(): LucidFlowComposable {
     return node ? node.data.chatData : null;
   };
 
-  const updateNodeChatData = (nodeId: string, newData: any) => {
-    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
+  const updateNodeChatData = (nodeId: string, newChatData: any[]) => {
+    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      // Assuming newData is the message to add to chat history
-      nodeToUpdate.data.chatData = [
-        ...(nodeToUpdate.data.chatData || []),
-        newData,
-      ];
+      nodeToUpdate.data.chatData = newChatData;
     }
+
+    saveSession();
   };
 
   // Saving the Session:

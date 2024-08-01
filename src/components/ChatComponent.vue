@@ -13,51 +13,60 @@
                 <q-item-label header class="text-grey-8"
                   >Conversation History</q-item-label
                 >
-                <q-item
-                  v-for="(messages, index) in messages"
-                  :key="index"
-                  tag="label"
-                  v-ripple
+                <draggable
+                  v-model="messages"
+                  handle=".drag-handle"
+                  @end="onDragEnd"
                 >
-                  <q-item-section avatar top>
-                    <q-checkbox
-                      v-model="messages.selected"
-                      :color="messages.sender === 'user' ? 'blue' : 'green'"
-                    />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label
-                      :class="{
-                        'text-weight-bold': messages.sender === 'user',
-                      }"
-                    >
-                      {{ messages.sender === 'user' ? 'User' : assistantName }}:
-                    </q-item-label>
-                    <q-item-label v-if="messages.typing">
-                      <q-spinner-dots size="1.5em" color="grey-7" />
-                    </q-item-label>
-                    <q-item-label v-else>
-                      <!-- <Markdown :source="messages.message" /> -->
-                      {{ messages.message }}
-                    </q-item-label>
-                    <q-item-label caption class="text-grey-8 text-right">
-                      {{ formattedTime(messages.createdAt) }}
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side v-if="messages.sender === 'user'">
-                    <div class="row q-gutter-xs">
-                      <q-btn
-                        size="12px"
-                        flat
-                        dense
-                        round
-                        icon="delete"
-                        @click.stop="deleteMessage(index)"
-                      />
-                      <q-btn size="12px" flat dense round icon="more_vert" />
-                    </div>
-                  </q-item-section>
-                </q-item>
+                  <q-item
+                    v-for="(message, index) in messages"
+                    :key="index"
+                    tag="label"
+                    v-ripple
+                  >
+                    <q-item-section>
+                      <q-item-label
+                        :class="{
+                          'text-weight-bold': message.sender === 'user',
+                        }"
+                      >
+                        {{
+                          message.sender === 'user' ? 'User' : assistantName
+                        }}:
+                      </q-item-label>
+                      <q-item-label v-if="message.typing">
+                        <q-spinner-dots size="1.5em" color="grey-7" />
+                      </q-item-label>
+                      <q-item-label v-else>
+                        <!-- <Markdown :source="message.message" /> -->
+                        {{ message.message }}
+                      </q-item-label>
+                      <q-item-label caption class="text-grey-8 text-right">
+                        {{ formattedTime(message.createdAt) }}
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <div class="row q-gutter-xs">
+                        <q-btn
+                          class="drag-handle"
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="drag_indicator"
+                        />
+                        <q-btn
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="delete"
+                          @click.stop="deleteMessage(index)"
+                        />
+                      </div>
+                    </q-item-section>
+                  </q-item>
+                </draggable>
               </div>
             </div>
           </div>
@@ -138,18 +147,8 @@ const props = defineProps({
 });
 
 onMounted(async () => {
-  //await loadChatHistory();
+  await loadChatHistory();
   //await pushDelayedResponse('Hello! How can I help you today?');
-  messages.value.push({
-    sender: 'user',
-    message:
-      'orem ipsum dolor sit amet consectetur adipisicing elit. Fugit nihi',
-    createdAt: Date.now(),
-    error: false,
-    typing: false,
-    selected: false,
-    id: '1',
-  });
 
   assistantName.value = props.assistantNameProp + ' agent';
   console.log('assistantNameProp:', props.assistantNameProp);
@@ -165,6 +164,14 @@ onMounted(async () => {
 //     const nodeChatData = lucidFlow.getNodeChatData(props.selectedNodeId);
 //     messages.value = JSON.parse(nodeChatData) || [];
 // });
+watchEffect(() => {
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+  if (chatData) {
+    messages.value = [...chatData]; // Use spread syntax to ensure reactivity
+  } else {
+    messages.value = [];
+  }
+});
 
 const reversedMessages = computed(() => {
   if (!messages.value) return [];
@@ -249,18 +256,37 @@ function pushImmediateRequest(msg: string): void {
 }
 
 async function loadChatHistory() {
-  const data = lucidFlow.getNodeChatData(props.selectedNodeId);
-  if (!data || data == '') return;
-  messages.value = JSON.parse(data) || [];
-  // const savedHistory = sessionStorage.getItem('chatHistory'); // Or get from session
-  // if (savedHistory) {
-  //   messages.value = JSON.parse(savedHistory);
-  // }
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+  if (chatData) {
+    messages.value = chatData.map((message: any) => ({
+      ...message,
+      selected: false, // Add selected: false for each message loaded
+    }));
+  } else {
+    messages.value = []; // Initialize with an empty array if no data
+  }
 }
+function reorderMessages(newOrder: number[]) {
+  const updatedMessages = [...messages.value]; // Create a copy of the array
 
-async function updateChatHistory() {
-  sessionStorage.setItem('chatHistory', JSON.stringify(messages.value)); // Or save to session
+  // Reorder messages based on the newOrder array
+  const reorderedMessages = newOrder.map((index) => updatedMessages[index]);
+
+  // Update your messages ref and the node data
+  messages.value = reorderedMessages;
+  lucidFlow.updateNodeChatData(props.selectedNodeId, reorderedMessages);
 }
+async function updateChatHistory() {
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+}
+function deleteMessage(index: number) {
+  messages.value.splice(index, 1);
+  updateChatHistory();
+}
+const onDragEnd = () => {
+  // Now, directly call updateChatHistory to persist the order
+  updateChatHistory();
+};
 async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
@@ -271,9 +297,7 @@ async function clearChat() {
     console.error('Failed to clear chat:', error);
   }
 }
-function deleteMessage(index: number) {
-  messages.value.splice(index, 1);
-}
+
 function formattedTime(createdAt: number): string {
   return moment(createdAt).fromNow();
 }
