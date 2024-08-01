@@ -187,11 +187,13 @@ const handleNodesChange = (changes: NodeChange[]) => {
   } else if (change.type === 'remove') {
   } else if (change.type === 'position') {
     if (change.id && change.position) {
-      debouncedUpdateNodePosition(
+      lucidFlow.updateNodePosition(
         change.id,
         change.position.x,
         change.position.y
       );
+
+      debounceSave();
     }
   }
   //});
@@ -202,10 +204,10 @@ watchEffect(() => {
   console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
 });
 
-const debouncedUpdateNodePosition = debounce((id, x, y) => {
-  lucidFlow.updateNodePosition(id, x, y);
+const debounceSave = debounce(() => {
+  console.log('Saving session...');
   lucidFlow.saveSession();
-}, 300); // Adjust the debounce delay as needed
+}, 100);
 </script>
 <style scoped>
 .brainstorm-canvas {
