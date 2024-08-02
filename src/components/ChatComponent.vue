@@ -14,52 +14,57 @@
                   >Conversation History</q-item-label
                 >
 
-                <q-item
-                  v-for="(message, index) in messages"
-                  :key="index"
-                  tag="label"
-                  v-ripple
+                <draggable
+                  :list="messages"
+                  item-key="id"
+                  handle=".drag-handle"
+                  @end="onDragEnd"
                 >
-                  <q-item-section>
-                    <q-item-label
-                      :class="{
-                        'text-weight-bold': message.sender === 'user',
-                      }"
-                    >
-                      {{ message.sender === 'user' ? 'User' : assistantName }}:
-                    </q-item-label>
-                    <q-item-label v-if="message.typing">
-                      <q-spinner-dots size="1.5em" color="grey-7" />
-                    </q-item-label>
-                    <q-item-label v-else>
-                      <!-- <Markdown :source="message.message" /> -->
-                      {{ message.message }}
-                    </q-item-label>
-                    <q-item-label caption class="text-grey-8 text-right">
-                      {{ formattedTime(message.createdAt) }}
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <div class="row q-gutter-xs">
-                      <q-btn
-                        class="drag-handle"
-                        size="12px"
-                        flat
-                        dense
-                        round
-                        icon="drag_indicator"
-                      />
-                      <q-btn
-                        size="12px"
-                        flat
-                        dense
-                        round
-                        icon="delete"
-                        @click.stop="deleteMessage(index)"
-                      />
-                    </div>
-                  </q-item-section>
-                </q-item>
+                  <template #item="{ element, index }">
+                    <q-item :key="element.id" tag="label" v-ripple>
+                      <q-item-section>
+                        <q-item-label
+                          :class="{
+                            'text-weight-bold': element.sender === 'user',
+                          }"
+                        >
+                          {{
+                            element.sender === 'user' ? 'User' : assistantName
+                          }}:
+                        </q-item-label>
+                        <q-item-label v-if="element.typing">
+                          <q-spinner-dots size="1.5em" color="grey-7" />
+                        </q-item-label>
+                        <q-item-label v-else>
+                          {{ element.message }}
+                        </q-item-label>
+                        <q-item-label caption class="text-grey-8 text-right">
+                          {{ formattedTime(element.createdAt) }}
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section side>
+                        <div class="row q-gutter-xs">
+                          <q-btn
+                            class="drag-handle"
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            icon="drag_indicator"
+                          />
+                          <q-btn
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            icon="delete"
+                            @click.stop="deleteMessage(index)"
+                          />
+                        </div>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </draggable>
               </div>
             </div>
           </div>
@@ -90,13 +95,22 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, onMounted, computed, watchEffect } from 'vue';
+import {
+  inject,
+  ref,
+  onMounted,
+  computed,
+  watchEffect,
+  defineComponent,
+} from 'vue';
 import moment from 'moment';
 import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatService from '../services/chatService';
+import draggable from 'vuedraggable';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
+defineComponent(draggable);
 //TODO:
 // DONE 10. Delete nodes
 // 20. Delete edges
