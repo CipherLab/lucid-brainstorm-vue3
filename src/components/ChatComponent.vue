@@ -111,15 +111,14 @@ import draggable from 'vuedraggable';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
-//TODO:
 // DONE 10. Delete nodes
-// 20. Delete edges
-// 21. Add ability to re-order conversation history
+// TODO: 20. Delete edges
+// TODO: 21. Add ability to re-order conversation history
 // DONE 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
-// 40. Add node connection data to current node (context)
-// 50. UI to show/manage node connections
-// 60. UI to show/manage context data from other connected nodes
-// 70. UI to create a custom agent
+// TODO: 40. Add node connection data to current node (context)
+// TODO: 50. UI to show/manage node connections
+// TODO: 60. UI to show/manage context data from other connected nodes
+// TODO: 70. UI to create a custom agent
 // DONE 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
 // DONE 90. Save/Load chat history (via saving/loading vue flow state)
 
