@@ -1,75 +1,89 @@
 <template>
   <div class="q-pa-md" style="height: 100%">
-    <q-layout view="lHh lpr lFf" container class="shadow-2 rounded-borders">
-      <q-page-container>
-        <q-page style="display: flex; flex-direction: column-reverse">
-          <div v-if="messages && messages.length > 0">
-            <div
-              bordered
-              class="rounded-borders chat-history"
-              ref="chatHistory"
-            >
-              <div>
-                <q-item-label header class="text-grey-8"
-                  >Conversation History</q-item-label
-                >
+    <q-item-label
+      class="text-grey-8 header"
+      style="position: absolute; margin-top: -1.2em"
+    >
+      Conversation History
+    </q-item-label>
+    <q-layout view="lHh lpr lFf" container class="shadow-1 rounded-borders">
+      <q-scroll-area
+        ref="scrollAreaRef"
+        style="height: 65vh; width: 100%; overflow: hidden"
+      >
+        <q-page-container>
+          <q-page style="display: flex; flex-direction: column-reverse">
+            <div v-if="messages && messages.length > 0">
+              <div
+                bordered
+                class="rounded-borders chat-history"
+                ref="chatHistory"
+              >
+                <div>
+                  <draggable
+                    :list="messages"
+                    item-key="id"
+                    handle=".drag-handle"
+                    @end="onDragEnd"
+                  >
+                    <template #item="{ element, index }">
+                      <div :key="element.id">
+                        <!-- Sticky Header -->
+                        <q-item>
+                          <q-item-section>
+                            <q-header
+                              v-if="isHeaderVisible(index)"
+                              class="bg-grey-10 sticky-header"
+                            >
+                              <q-toolbar>
+                                <q-btn
+                                  class="drag-handle"
+                                  size="12px"
+                                  flat
+                                  dense
+                                  round
+                                  icon="drag_indicator"
+                                />
 
-                <draggable
-                  :list="messages"
-                  item-key="id"
-                  handle=".drag-handle"
-                  @end="onDragEnd"
-                >
-                  <template #item="{ element, index }">
-                    <q-item :key="element.id" tag="label" v-ripple>
-                      <q-item-section>
-                        <q-item-label
-                          :class="{
-                            'text-weight-bold': element.sender === 'user',
-                          }"
-                        >
-                          {{
-                            element.sender === 'user' ? 'User' : assistantName
-                          }}:
-                        </q-item-label>
-                        <q-item-label v-if="element.typing">
-                          <q-spinner-dots size="1.5em" color="grey-7" />
-                        </q-item-label>
-                        <q-item-label v-else>
-                          {{ element.message }}
-                        </q-item-label>
-                        <q-item-label caption class="text-grey-8 text-right">
-                          {{ formattedTime(element.createdAt) }}
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side>
-                        <div class="row q-gutter-xs">
-                          <q-btn
-                            class="drag-handle"
-                            size="12px"
-                            flat
-                            dense
-                            round
-                            icon="drag_indicator"
-                          />
-                          <q-btn
-                            size="12px"
-                            flat
-                            dense
-                            round
-                            icon="delete"
-                            @click.stop="deleteMessage(index)"
-                          />
-                        </div>
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </draggable>
+                                <q-toolbar-title
+                                  style="font-size: small"
+                                  class="text-grey-8"
+                                  >{{
+                                    assistantNameProp
+                                  }}
+                                  agent</q-toolbar-title
+                                >
+
+                                <q-btn
+                                  size="12px"
+                                  flat
+                                  dense
+                                  round
+                                  icon="delete"
+                                  @click.stop="deleteMessage(index)"
+                                />
+                              </q-toolbar>
+                            </q-header>
+
+                            <!-- Chat Message Component -->
+                            <ChatMessage
+                              :message="element.message"
+                              :sender="element.sender"
+                              :createdAt="element.createdAt"
+                              :typing="element.typing"
+                              :assistantName="assistantName"
+                            />
+                          </q-item-section>
+                        </q-item>
+                      </div>
+                    </template>
+                  </draggable>
+                </div>
               </div>
             </div>
-          </div>
-        </q-page>
-      </q-page-container>
+          </q-page>
+        </q-page-container>
+      </q-scroll-area>
       <q-footer bordered class="bg-grey-9 text-primary">
         <q-input
           style="color: white !important; background"
@@ -93,7 +107,6 @@
     </q-layout>
   </div>
 </template>
-
 <script setup lang="ts">
 import {
   inject,
@@ -102,25 +115,24 @@ import {
   computed,
   watchEffect,
   defineComponent,
+  nextTick,
 } from 'vue';
 import moment from 'moment';
 import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatService from '../services/chatService';
 import draggable from 'vuedraggable';
+import ChatMessage from './ChatMessage.vue';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
-// DONE 10. Delete nodes
 // TODO: 20. Delete edges
 // TODO: 21. Add ability to re-order conversation history
-// DONE 30. Update/Save node chat data as conversation progresses or parts of conversation are re-ordered/deleted
 // TODO: 40. Add node connection data to current node (context)
 // TODO: 50. UI to show/manage node connections
 // TODO: 60. UI to show/manage context data from other connected nodes
 // TODO: 70. UI to create a custom agent
-// DONE 80. Save/Load vue flow state (session storage enough, or need IndexDB?)
-// DONE 90. Save/Load chat history (via saving/loading vue flow state)
+// TODO: 80. Fix QMarkdown import
 
 // Interface for messages (add selected property)
 interface Message {
@@ -140,6 +152,7 @@ const userInput = ref('');
 const assistantName = ref('Assistant');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
+const scrollAreaRef = ref(null);
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -149,8 +162,14 @@ const props = defineProps({
     type: String,
     default: 'Assistant',
   },
+  assistantIcon: {
+    type: String,
+    default: '',
+  },
 });
-
+const isHeaderVisible = (index: number) => {
+  return true;
+};
 onMounted(async () => {
   await loadChatHistory();
   //await pushDelayedResponse('Hello! How can I help you today?');
@@ -159,18 +178,30 @@ onMounted(async () => {
   }
   assistantName.value = props.assistantNameProp + ' agent';
   console.log('assistantNameProp:', props.assistantNameProp);
-
-  // this.$nextTick(() => {
-  //   if (chatList.value) {
-  //     this.$q.scrollToElement(chatList.value, 'bottom');
-  //   }
-  // });
 });
 
-// watchEffect(() => {
-//     const nodeChatData = lucidFlow.getNodeChatData(props.selectedNodeId);
-//     messages.value = JSON.parse(nodeChatData) || [];
-// });
+const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
+
+// Function to scroll the chat history to the bottom
+
+const scrollToBottom = () => {
+  if (chatHistory.value && scrollAreaRef.value) {
+    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
+  }
+};
+
+watchEffect(() => {
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+  if (chatData) {
+    messages.value = [...chatData];
+  } else {
+    messages.value = [];
+  }
+
+  // Scroll after DOM updates
+  nextTick(scrollToBottom);
+});
+
 watchEffect(() => {
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
@@ -180,21 +211,17 @@ watchEffect(() => {
   }
 });
 
-const reversedMessages = computed(() => {
-  if (!messages.value) return [];
-
-  return [...messages.value].reverse();
-});
-
 async function sendMessage() {
-  if (!userInput.value) return;
+  const tempVal = userInput.value;
+  if (!tempVal || tempVal.trim() === '') return;
+  userInput.value = '';
 
   try {
-    pushImmediateRequest(userInput.value); // Push user message
+    pushImmediateRequest(tempVal); // Push user message
     pushImmediateResponse('', true); // Show thinking indicator
 
     const response = await chatService.sendMessage(
-      userInput.value,
+      tempVal,
       props.selectedNodeId
     );
 
@@ -204,6 +231,7 @@ async function sendMessage() {
     await updateChatHistory(); // Save history (adjust logic as needed)
   } catch (error) {
     // ... [error handling]
+    userInput.value = tempVal;
   } finally {
     userInput.value = ''; // Clear input field
   }
@@ -274,18 +302,9 @@ async function loadChatHistory() {
     messages.value = []; // Initialize with an empty array if no data
   }
 }
-function reorderMessages(newOrder: number[]) {
-  const updatedMessages = [...messages.value]; // Create a copy of the array
-
-  // Reorder messages based on the newOrder array
-  const reorderedMessages = newOrder.map((index) => updatedMessages[index]);
-
-  // Update your messages ref and the node data
-  messages.value = reorderedMessages;
-  lucidFlow.updateNodeChatData(props.selectedNodeId, reorderedMessages);
-}
 async function updateChatHistory() {
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+  nextTick(scrollToBottom);
 }
 function deleteMessage(index: number) {
   messages.value.splice(index, 1);
@@ -305,16 +324,15 @@ async function clearChat() {
     console.error('Failed to clear chat:', error);
   }
 }
-
-function formattedTime(createdAt: number): string {
-  return moment(createdAt).fromNow();
-}
-async function pushDelayedRequest(msg: string) {
-  await pushDelayedMessage(msg, 'user', 500);
-}
 </script>
 
 <style scoped>
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: black;
+}
 .thinking-indicator {
   text-align: center;
 }

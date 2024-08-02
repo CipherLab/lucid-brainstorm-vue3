@@ -58,8 +58,10 @@
     </div>
     <div style="flex-grow: 1; display: flex">
       <ChatComponent
+        v-if="selectedNode"
         :selectedNodeId="selectedNodeId"
         :assistantNameProp="assistantName"
+        :assistantIcon="selectedNode.data.agent.icon"
         style="flex-grow: 1"
       />
     </div>

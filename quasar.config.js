@@ -67,6 +67,10 @@ module.exports = configure(function (/* ctx */) {
         [
           'vite-plugin-checker',
           {
+            overlay: {
+              initialIsOpen: false, // Set to not open the overlay
+            },
+
             vueTsc: {
               tsconfigPath: 'tsconfig.vue-tsc.json',
             },
