@@ -55,10 +55,10 @@ const formattedTime = computed(() => moment(props.createdAt).fromNow());
 
 .user-message {
   background-color: #302d2d;
-  border-color: #5e93d565;
+  border-color: #5e93d552;
 }
 .agent-message {
   background-color: #2b2424;
-  border-color: #5e93d565;
+  border-color: #5e93d52a;
 }
 </style>

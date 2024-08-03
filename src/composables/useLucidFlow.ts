@@ -21,6 +21,7 @@ export interface LucidFlowComposable {
   updateNodePosition: (nodeId: string, x: number, y: number) => void;
   getNodeChatData: (nodeId: string) => any;
   updateNodeChatData: (nodeId: string, newData: any) => void;
+  getConnectedNodes: (nodeId: string) => string[];
   saveSession: () => void;
   loadSession: () => void;
 }
@@ -105,6 +106,21 @@ export default function useLucidFlow(): LucidFlowComposable {
 
     saveSession();
   };
+  const getConnectedNodes = (nodeId: string): string[] => {
+    const connectedNodeIds: string[] = [];
+
+    // Iterate over your Vue Flow edges
+    vueFlow.edges.value.forEach((edge: Edge) => {
+      // Check if the current node is the source or target of the edge
+      if (edge.source === nodeId) {
+        connectedNodeIds.push(edge.target);
+      } else if (edge.target === nodeId) {
+        connectedNodeIds.push(edge.source);
+      }
+    });
+
+    return connectedNodeIds;
+  };
 
   // Saving the Session:
   function saveSession() {
@@ -132,6 +148,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     updateNodePosition,
     getNodeChatData,
     updateNodeChatData,
+    getConnectedNodes,
     saveSession,
     loadSession,
   };

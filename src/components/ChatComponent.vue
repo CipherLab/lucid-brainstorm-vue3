@@ -6,7 +6,7 @@
     >
       Conversation History
     </q-item-label>
-    <q-layout view="lHh lpr lFf" container class="shadow-1 rounded-borders">
+    <q-layout view="lHh lpr lFf" container class="rounded-borders">
       <q-scroll-area
         ref="scrollAreaRef"
         class="scroll-wrapper"
@@ -342,5 +342,6 @@ async function clearChat() {
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */
   overflow: hidden; /* Prevents system scrollbar from appearing */
+  border: 1px solid #383636;
 }
 </style>
