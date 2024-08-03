@@ -78,7 +78,7 @@ const handleDelete = () => {
   if (showDeleteConfirm.value) {
     showDeleteConfirm.value = false;
     //props.onRemoveNode(props.id); // Call the callback to remove the node\
-    console.log('Delete node:', props.id);
+    //console.log('Delete node:', props.id);
     lucidFlow.removeNode(props.id);
     emitter.emit('node:deselected', null);
   } else {
@@ -91,9 +91,9 @@ const handleInspector = () => {
     nodeId: props.id,
     nodeType: props.data.agent.type + '', // Emit nodeType along with nodeId
   });
-  console.log('Open inspector for:', props.label);
-  console.log(' props.id:', props.id);
-  console.log(' props.:', props.data.agent.temperature);
+  //console.log('Open inspector for:', props.label);
+  //console.log(' props.id:', props.id);
+  //console.log(' props.:', props.data.agent.temperature);
 };
 
 // Handle clicks outside the node to deselect

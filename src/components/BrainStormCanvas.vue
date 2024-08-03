@@ -61,9 +61,9 @@ const nodes = computed(() => lucidFlow.getNodes());
 const edges = computed(() => lucidFlow.getEdges());
 
 onMounted(() => {
-  console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
+  //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
   lucidFlow.loadSession();
-  console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
+  //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
 
 onUnmounted(() => {
@@ -72,7 +72,7 @@ onUnmounted(() => {
 // Watch for changes in lucidFlow and update local refs
 
 const onConnect = (connection: Edge | Connection) => {
-  console.log('New connection:', connection);
+  //console.log('New connection:', connection);
   lucidFlow.addEdge({
     id: `${connection.source}-${connection.target}`,
     source: connection.source,
@@ -88,7 +88,7 @@ const onConnect = (connection: Edge | Connection) => {
 };
 
 const onEdgesChange = (changes: any) => {
-  console.log('Edges Changes:', changes);
+  //console.log('Edges Changes:', changes);
 };
 
 const handleClickOutside = (changes: any) => {
@@ -96,7 +96,7 @@ const handleClickOutside = (changes: any) => {
 };
 
 const removeNodeFromCanvas = (nodeId: string) => {
-  console.log('Removing node:', nodeId);
+  //console.log('Removing node:', nodeId);
   lucidFlow.removeNode(nodeId);
   nodesTotal.value--;
 };
@@ -107,7 +107,7 @@ const onDrop = (event: any) => {
   const eventData = JSON.parse(event.dataTransfer.getData('text/plain'));
   if (!eventData || eventData == '') return;
 
-  console.log('nodes length:', lucidFlow.getNodeCount());
+  //console.log('nodes length:', lucidFlow.getNodeCount());
   const position = {
     x: event.clientX - 300,
     y: event.clientY - 200,
@@ -136,11 +136,11 @@ const onDrop = (event: any) => {
       type: eventData.type,
     };
     newNode.type = 'agent';
-    console.log('New agent node:', newNode);
+    //console.log('New agent node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
   } else if (eventData.type === 'input') {
-    console.log('Input dropped:', eventData);
+    //console.log('Input dropped:', eventData);
     newNode = {
       id: `${Date.now()}`,
       position,
@@ -163,15 +163,15 @@ const onDrop = (event: any) => {
       type: eventData.type,
     };
     newNode.type = 'agent';
-    console.log('New input node:', newNode);
+    //console.log('New input node:', newNode);
     nodesTotal.value++;
     lucidFlow.addNode(newNode);
   } else {
-    console.log('Unknown type:', eventData);
+    //console.log('Unknown type:', eventData);
   }
 
   if (newNode) {
-    console.log('N-lucidFlow.nodes.length', lucidFlow.getNodeCount());
+    //console.log('N-lucidFlow.nodes.length', lucidFlow.getNodeCount());
     emitter.emit('node:selected', {
       nodeId: newNode.id,
       nodeType: newNode.data.agent.type,
@@ -201,11 +201,11 @@ const handleNodesChange = (changes: NodeChange[]) => {
   // Handle the changes as needed
 };
 watchEffect(() => {
-  console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
+  //console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
 });
 
 const debounceSave = debounce(() => {
-  console.log('Saving session...');
+  //console.log('Saving session...');
   lucidFlow.saveSession();
 }, 100);
 </script>

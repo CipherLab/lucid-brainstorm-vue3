@@ -9,7 +9,7 @@
     <q-layout view="lHh lpr lFf" container class="shadow-1 rounded-borders">
       <q-scroll-area
         ref="scrollAreaRef"
-        class=" scroll-wrapper"
+        class="scroll-wrapper"
         style="height: 60vh"
         :thumb-style="{
           right: '2px',
@@ -57,11 +57,8 @@
                                 <q-toolbar-title
                                   style="font-size: small"
                                   class="text-grey-8"
-                                  >{{
-                                    assistantNameProp
-                                  }}
-                                  agent</q-toolbar-title
-                                >
+                                  >{{ getSenderName(element.sender) }}
+                                </q-toolbar-title>
 
                                 <q-btn
                                   size="12px"
@@ -186,7 +183,6 @@ onMounted(async () => {
     await pushDelayedResponse('Hello! How can I help you today?');
   }
   assistantName.value = props.assistantNameProp + ' agent';
-  console.log('assistantNameProp:', props.assistantNameProp);
 });
 
 const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
@@ -198,18 +194,9 @@ const scrollToBottom = () => {
     scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
   }
 };
-
-watchEffect(() => {
-  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
-  if (chatData) {
-    messages.value = [...chatData];
-  } else {
-    messages.value = [];
-  }
-
-  // Scroll after DOM updates
-  nextTick(scrollToBottom);
-});
+const getSenderName = (sender: string) => {
+  return sender === 'user' ? 'User' : props.assistantNameProp;
+};
 
 watchEffect(() => {
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);

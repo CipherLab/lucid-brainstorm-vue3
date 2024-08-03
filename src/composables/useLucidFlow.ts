@@ -42,12 +42,12 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   // Update addNode:
   const addNode = (node: Node) => {
-    console.log('Adding node', node);
+    //console.log('Adding node', node);
     vueFlow.addNodes(node);
     saveSession();
   };
   const addEdge = (edge: Edge) => {
-    console.log('Adding edge', edge);
+    //console.log('Adding edge', edge);
     vueFlow.addEdges(edge);
     saveSession();
   };
@@ -108,7 +108,7 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   // Saving the Session:
   function saveSession() {
-    console.log('Saving session');
+    //console.log('Saving session');
     localStorage.setItem(flowKey, JSON.stringify(vueFlow.toObject()));
   }
 

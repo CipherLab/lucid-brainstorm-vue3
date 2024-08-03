@@ -37,7 +37,7 @@ const props = defineProps({
   },
 });
 const onFileAdded = (file: any) => {
-  console.log('File added:', file);
+  //console.log('File added:', file);
   //selectedNode.value.data.file = file;
 };
 
@@ -51,7 +51,7 @@ watchEffect(() => {
     // Find and set the selected node, or null if not found
     const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
-    console.log('input panel selectedNode:', selectedNode.value);
+    //console.log('input panel selectedNode:', selectedNode.value);
   } else {
     selectedNode.value = null; // Reset selectedNode if selectedNodeId is null
   }
