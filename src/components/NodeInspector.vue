@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { emitter } from 'src/eventBus';
+import { emitter } from '../eventBus';
 import { ref, defineProps, watch } from 'vue';
 
 const isExpanded = ref(false);

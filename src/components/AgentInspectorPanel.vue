@@ -123,4 +123,13 @@ watchEffect(() => {
   text-align: center;
   border-radius: 2px;
 }
+
+.scroll {
+  overflow: hidden !important;
+  /* Ensure the element has a defined height */
+  height: 100vh; /* or any specific height */
+}
+body.mobile .scroll--mobile {
+  overflow: hidden !important;
+}
 </style>

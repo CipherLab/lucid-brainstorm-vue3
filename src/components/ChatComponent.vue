@@ -9,7 +9,16 @@
     <q-layout view="lHh lpr lFf" container class="shadow-1 rounded-borders">
       <q-scroll-area
         ref="scrollAreaRef"
-        style="height: 65vh; width: 100%; overflow: hidden"
+        class=" scroll-wrapper"
+        style="height: 60vh"
+        :thumb-style="{
+          right: '2px',
+          borderRadius: '5px',
+          backgroundColor: '#027be3',
+          width: '5px',
+          opacity: 0.75,
+        }"
+        :bar-style="{ right: '0px', borderRadius: '9px', opacity: 0 }"
       >
         <q-page-container>
           <q-page style="display: flex; flex-direction: column-reverse">
@@ -122,7 +131,7 @@ import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatService from '../services/chatService';
 import draggable from 'vuedraggable';
-import ChatMessage from './ChatMessage.vue';
+import ChatMessage from './ChatMessageTwo.vue';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -339,5 +348,12 @@ async function clearChat() {
 .message-send-button {
   height: 24px;
   width: 24px;
+}
+.scroll-wrapper {
+  height: 65vh;
+
+  width: 100%;
+  flex: 1; /* Allows the wrapper to take up the remaining space */
+  overflow: hidden; /* Prevents system scrollbar from appearing */
 }
 </style>
