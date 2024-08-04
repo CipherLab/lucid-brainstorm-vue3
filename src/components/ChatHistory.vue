@@ -4,7 +4,7 @@
       v-for="(nodeId, index) in connectedNodeIds"
       :key="index"
       :label="getAccordionLabel(nodeId)"
-      :expanded="index === openAccordionIndex"
+      v-model="expandedStates[index]"
       @click="handleAccordionToggle(index)"
       :disable="index === connectedNodeIds.length - 1"
     >
@@ -39,6 +39,7 @@ if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
   throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
 }
+
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -57,58 +58,40 @@ const props = defineProps({
     default: false,
   },
 });
-const openAccordionIndex = ref<number>(-1); // Default to the first item
 const connectedNodeIds = ref<string[]>([]);
+const expandedStates = ref<boolean[]>([]);
+// Function to update the accordion states, ensuring the last is open
+const updateAccordionStates = () => {
+  expandedStates.value = connectedNodeIds.value.map((_, index) => {
+    return index === connectedNodeIds.value.length - 1; // Last item open by default
+  });
+};
+
 onMounted(() => {
-  const lastIndex = connectedNodeIds.value.length - 1;
-  if (openAccordionIndex.value < 0) openAccordionIndex.value = lastIndex;
+  updateAccordionStates();
 });
 
+// Update expandedStates whenever connectedNodeIds changes
 watchEffect(() => {
-  console.log('accordion watchEffect:', openAccordionIndex.value);
-  const lastIndex = connectedNodeIds.value.length - 1;
-  if (openAccordionIndex.value < 0) openAccordionIndex.value = lastIndex;
-  //openAccordionIndex.value = 0; // Reset the open accordion index
   if (props.selectedNodeId) {
     connectedNodeIds.value = [
       ...lucidFlow.getConnectedNodes(props.selectedNodeId),
       props.selectedNodeId,
     ];
+    updateAccordionStates(); // Update accordion states when nodes change
   }
 });
+
 const getAccordionLabel = (nodeId: string) => {
   const nodeProps = lucidFlow.findNodeProps(nodeId);
-  if (!nodeProps) {
-    return 'Unknown';
-  }
-  return nodeProps.data.agent.name;
+  return nodeProps ? nodeProps.data.agent.name : 'Unknown';
 };
+
 const handleAccordionToggle = (index: number) => {
-  const lastIndex = connectedNodeIds.value.length - 1;
-
-  console.log(`Accordion ${index} - ${openAccordionIndex.value} clicked`);
-  if (openAccordionIndex.value === index) {
-    // If the clicked accordion is already open, check if it's the first one
-    if (index === lastIndex) {
-      // If it's the last one, keep it open (don't allow closing)
-      console.log('Cannot close the first accordion');
-      return;
-    } else {
-      console.log('Close the accordion');
-      // If it's not the last one, close it
-      openAccordionIndex.value = lastIndex; //
-    }
-  } else {
-    // If a different accordion is clicked, open it
-    openAccordionIndex.value = index;
-  }
-  //current open node
-  const currentNodeId = connectedNodeIds.value[openAccordionIndex.value];
-
-  // Assuming NodeSelectedEvent has a structure like { id: string }
-  const currentNode: NodeToggledEvent = { nodeId: currentNodeId };
-  console.log('emitting node:accordion-toggled', currentNode);
-  emitter.emit('node:accordion-toggled', currentNode);
+  // Ensure only the last item and one other can be expanded
+  expandedStates.value = expandedStates.value.map((state, i) => {
+    return i === index || i === connectedNodeIds.value.length - 1;
+  });
 };
 </script>
 
