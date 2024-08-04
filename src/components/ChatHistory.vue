@@ -1,169 +1,106 @@
 <template>
   <q-list bordered separator class="rounded-borders">
     <q-expansion-item
-      v-for="(chat, index) in chatData"
+      v-for="(nodeId, index) in connectedNodeIds"
       :key="index"
-      :label="getAccordionLabel(chat)"
+      :label="getAccordionLabel(nodeId)"
+      :expanded="index === openAccordionIndex"
+      @toggle="handleAccordionToggle(index)"
     >
-      <q-list bordered separator class="rounded-borders" dense>
-        <q-item
-          v-for="(message, msgIndex) in chat.messages"
-          :key="msgIndex"
-          tag="label"
-          v-ripple
-        >
-          <q-item-section avatar>
-            <q-icon :name="getMessageIcon(message.sender)" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ message.message }}</q-item-label>
-            <q-item-label caption class="text-grey-8">
-              {{ formattedTime(message.createdAt) }}
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              v-if="chat.isLocal"
-              size="12px"
-              flat
-              dense
-              round
-              icon="delete"
-              @click.stop="deleteMessage(index, msgIndex)"
-            />
-            <q-btn
-              v-else
-              size="12px"
-              flat
-              dense
-              round
-              icon="visibility_off"
-              @click.stop="toggleMessageVisibility(index, msgIndex)"
-            />
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <ChatsView :selectedNodeId="nodeId" />
     </q-expansion-item>
   </q-list>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, ref, inject, onMounted, watch } from 'vue';
+import {
+  inject,
+  ref,
+  onMounted,
+  computed,
+  watchEffect,
+  defineComponent,
+  nextTick,
+} from 'vue';
 import moment from 'moment';
+import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-
-interface Message {
-  sender: string;
-  message: string;
-  createdAt: number;
-  isVisible: boolean; // Add isVisible property
-}
-
-interface ChatData {
-  nodeId: string;
-  isLocal: boolean;
-  messages: Message[];
-}
-
-const props = defineProps<{
-  selectedNodeId: string;
-}>();
-
+import ChatService from '../services/chatService';
+import draggable from 'vuedraggable';
+import ChatsView from './ChatsView.vue';
+import { Message } from '../models/chatInterfaces';
+//import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
+
 if (!lucidFlow) {
-  throw new Error('LucidFlow composable not injected!');
+  console.error('useLucidFlow composable not found!');
+  throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
 }
-
-const chatData = ref<ChatData[]>([]);
-const formattedTime = computed(() => {
-  return (createdAt: number) => moment(createdAt).fromNow();
+const props = defineProps({
+  selectedNodeId: {
+    type: String,
+    default: null,
+  },
+  assistantNameProp: {
+    type: String,
+    default: 'Assistant',
+  },
+  assistantIcon: {
+    type: String,
+    default: '',
+  },
+  isLocal: {
+    type: Boolean,
+    default: false,
+  },
 });
-
-const getAccordionLabel = (chat: ChatData) => {
-  if (chat.isLocal) {
-    return 'Local Chat';
-  } else {
-    return `Chat from Node ${chat.nodeId}`;
-  }
-};
-
-const getMessageIcon = (sender: string) => {
-  return sender === 'user' ? 'person' : 'psychology';
-};
-// Inside ChatHistory.vue script:
-const allMessagesVisible = ref(true); // Start with all messages visible
-const nodeId = ref(props.selectedNodeId);
-
-const filteredMessages = computed(() => {
-  return chatData.value.flatMap((chat) => {
-    if (chat.isLocal || allMessagesVisible.value) {
-      return chat.messages;
-    } else {
-      return chat.messages.filter((message) => message.isVisible);
-    }
-  });
-});
-const deleteMessage = (chatIndex: number, msgIndex: number) => {
-  chatData.value[chatIndex].messages.splice(msgIndex, 1);
-  // Emit an event to update the chat history in the Vue Flow node
-  if (chatData.value[chatIndex].isLocal) {
-    updateLocalChatHistory();
-  }
-};
-
-// Function to toggle message visibility
-const toggleMessageVisibility = (chatIndex: number, msgIndex: number) => {
-  chatData.value[chatIndex].messages[msgIndex].isVisible =
-    !chatData.value[chatIndex].messages[msgIndex].isVisible;
-  if (chatData.value[chatIndex].isLocal) {
-    updateLocalChatHistory(); // Update the actual chat history
-  }
-};
-
-// Watch for changes in the selectedNodeId
-watch(
-  () => props.selectedNodeId,
-  () => {
-    loadChatHistory();
-  }
-);
-
-async function loadChatHistory() {
-  const localChat = lucidFlow.getNodeChatData(props.selectedNodeId) || [];
-  chatData.value = [
-    {
-      nodeId: props.selectedNodeId,
-      isLocal: true,
-      messages: localChat.map((message: any) => ({
-        ...message,
-        isVisible: true, // Initially all local messages are visible
-      })),
-    },
+const openAccordionIndex = ref<number>(0); // Default to the first item
+const connectedNodeIds = ref<string[]>([]);
+onMounted(async () => {
+  //get connected nodes node nodeids and get history if agent
+  connectedNodeIds.value = [
+    props.selectedNodeId,
+    ...lucidFlow.getConnectedNodes(props.selectedNodeId),
   ];
-
-  const connectedNodes = lucidFlow.getConnectedNodes(props.selectedNodeId);
-
-  for (const nodeId of connectedNodes) {
-    const messages = lucidFlow.getNodeChatData(nodeId) || [];
-    chatData.value.push({
-      nodeId: nodeId,
-      isLocal: false,
-      messages: messages.map((message: any) => ({
-        ...message,
-        isVisible: true, // Initially all connected messages are visible
-      })),
-    });
-  }
-}
-
-const updateLocalChatHistory = () => {
-  const visibleMessages = chatData.value[0].messages.filter(
-    (message) => message.isVisible
-  );
-  lucidFlow.updateNodeChatData(props.selectedNodeId, visibleMessages);
-};
-
-onMounted(() => {
-  loadChatHistory();
 });
+const getAccordionLabel = (nodeId: string) => {
+  const nodeProps = lucidFlow.findNodeProps(nodeId);
+  if (!nodeProps) {
+    return 'Unknown';
+  }
+  return nodeProps.data.agent.name;
+};
+const handleAccordionToggle = (index: number) => {
+  if (openAccordionIndex.value === index) {
+    // Prevent closing the first accordion item
+    if (index === 0) return;
+    openAccordionIndex.value = -1; // Close all
+  } else {
+    openAccordionIndex.value = index;
+  }
+};
 </script>
+
+<style scoped>
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: black;
+}
+.thinking-indicator {
+  text-align: center;
+}
+.message-send-button {
+  height: 24px;
+  width: 24px;
+}
+.scroll-wrapper {
+  height: 65vh;
+
+  width: 100%;
+  flex: 1; /* Allows the wrapper to take up the remaining space */
+  overflow: hidden; /* Prevents system scrollbar from appearing */
+  border: 1px solid #383636;
+}
+</style>

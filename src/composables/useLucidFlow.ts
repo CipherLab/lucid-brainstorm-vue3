@@ -113,7 +113,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     vueFlow.edges.value.forEach((edge: Edge) => {
       // Check if the current node is the source or target of the edge
       if (edge.source === nodeId) {
-        connectedNodeIds.push(edge.target);
+        //connectedNodeIds.push(edge.target);
       } else if (edge.target === nodeId) {
         connectedNodeIds.push(edge.source);
       }

@@ -9,7 +9,6 @@ interface ChatHistory {
   role: 'user' | 'model';
   parts: ChatPart[];
 }
-
 interface StartChatParams {
   history: ChatHistory[];
   generationConfig?: {
