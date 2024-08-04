@@ -1,63 +1,79 @@
 <template>
-  <div bordered class="rounded-borders chat-history" ref="chatHistory">
-    <div>
-      <draggable
-        :list="messages"
-        item-key="id"
-        handle=".drag-handle"
-        @end="onDragEnd"
-      >
-        <template #item="{ element, index }">
-          <div :key="element.id">
-            <!-- Sticky Header -->
-            <q-item>
-              <q-item-section>
-                <q-header
-                  v-if="isHeaderVisible(index)"
-                  class="bg-grey-10 sticky-header"
-                >
-                  <q-toolbar>
-                    <q-btn
-                      class="drag-handle"
-                      size="12px"
-                      flat
-                      dense
-                      round
-                      icon="drag_indicator"
+  <q-scroll-area
+    ref="scrollAreaRef"
+    class="scroll-wrapper"
+    style="height: 46vh"
+    :thumb-style="{
+      right: '2px',
+      borderRadius: '5px',
+      backgroundColor: '#027be3',
+      width: '5px',
+      opacity: 0.75,
+    }"
+    :bar-style="{ right: '0px', borderRadius: '9px', opacity: 0 }"
+  >
+    <q-page style="display: flex; flex-direction: column-reverse">
+      <div bordered class="rounded-borders chat-history" ref="chatHistory">
+        <div>
+          <draggable
+            :list="messages"
+            item-key="id"
+            handle=".drag-handle"
+            @end="onDragEnd"
+          >
+            <template #item="{ element, index }">
+              <div :key="element.id">
+                <!-- Sticky Header -->
+                <q-item>
+                  <q-item-section>
+                    <q-header
+                      v-if="isHeaderVisible(index)"
+                      class="bg-grey-10 sticky-header"
+                    >
+                      <q-toolbar>
+                        <q-btn
+                          class="drag-handle"
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="drag_indicator"
+                        />
+
+                        <q-toolbar-title
+                          style="font-size: small"
+                          class="text-grey-8"
+                          >{{ getSenderName(element.sender) }}
+                        </q-toolbar-title>
+
+                        <q-btn
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="delete"
+                          @click.stop="deleteMessage(index)"
+                        />
+                      </q-toolbar>
+                    </q-header>
+
+                    <!-- Chat Message Component -->
+                    <ChatMessage
+                      :message="element.message"
+                      :sender="element.sender"
+                      :createdAt="element.createdAt"
+                      :typing="element.typing"
+                      assistantName="test"
                     />
-
-                    <q-toolbar-title
-                      style="font-size: small"
-                      class="text-grey-8"
-                      >{{ getSenderName(element.sender) }}
-                    </q-toolbar-title>
-
-                    <q-btn
-                      size="12px"
-                      flat
-                      dense
-                      round
-                      icon="delete"
-                      @click.stop="deleteMessage(index)"
-                    />
-                  </q-toolbar>
-                </q-header>
-
-                <!-- Chat Message Component -->
-                <ChatMessage
-                  :message="element.message"
-                  :sender="element.sender"
-                  :createdAt="element.createdAt"
-                  :typing="element.typing"
-                  assistantName="test"
-                />
-              </q-item-section>
-            </q-item>
-          </div>
-        </template>
-      </draggable>
-    </div>
-  </div>
+                  </q-item-section>
+                </q-item>
+              </div>
+            </template>
+          </draggable>
+        </div>
+      </div>
+    </q-page>
+  </q-scroll-area>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +85,7 @@ import {
   watchEffect,
   defineComponent,
   nextTick,
+  onUnmounted,
 } from 'vue';
 import moment from 'moment';
 import { useRoute } from 'vue-router';
@@ -78,6 +95,7 @@ import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
+import { emitter } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -86,7 +104,7 @@ const messages = ref<Message[]>([]);
 const userInput = ref('');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
-const scrollAreaRef = ref(null);
+const scrollAreaRef = ref<any>(null);
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -96,6 +114,18 @@ const props = defineProps({
 
 const nodeProps = ref<NodeProps>();
 
+onMounted(() => {
+  emitter.on('node:accordion-toggled', handleScrollToBottom);
+});
+
+onUnmounted(() => {
+  emitter.off('node:accordion-toggled', handleScrollToBottom);
+});
+
+const handleScrollToBottom = () => {
+  console.log('nextTick scroll to bottom');
+  nextTick(scrollToBottom);
+};
 watchEffect(() => {
   if (!props.selectedNodeId || props.selectedNodeId == '') {
     console.log('selectedNodeId is null or empty');
@@ -141,6 +171,14 @@ const isHeaderVisible = (index: number) => {
 const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
+const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
+
+const scrollToBottom = () => {
+  console.log('Scrolling to bottom');
+  if (chatHistory.value && scrollAreaRef.value) {
+    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
+  }
+};
 </script>
 
 <style scoped>
@@ -162,7 +200,10 @@ const getSenderName = (sender: string) => {
 
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */
-  overflow: hidden; /* Prevents system scrollbar from appearing */
+  overflow: hidden !important; /* Prevents system scrollbar from appearing */
   border: 1px solid #383636;
+}
+.q-page-container {
+  padding-top: 0px !important;
 }
 </style>

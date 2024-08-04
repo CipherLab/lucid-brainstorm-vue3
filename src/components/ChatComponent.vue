@@ -6,26 +6,18 @@
     >
       Conversation History
     </q-item-label>
-    <q-layout view="lHh lpr lFf" container class="rounded-borders">
-      <q-scroll-area
-        ref="scrollAreaRef"
-        class="scroll-wrapper"
-        style="height: 60vh"
-        :thumb-style="{
-          right: '2px',
-          borderRadius: '5px',
-          backgroundColor: '#027be3',
-          width: '5px',
-          opacity: 0.75,
-        }"
-        :bar-style="{ right: '0px', borderRadius: '9px', opacity: 0 }"
+    <q-layout
+      view="lHh lpr lFf"
+      container
+      class="rounded-borders overflow-hidden"
+    >
+      <q-page-container
+        class="overflow-hidden"
+        style="padding-top: 0px !important"
       >
-        <q-page-container>
-          <q-page style="display: flex; flex-direction: column-reverse">
-            <ChatHistory :selectedNodeId="selectedNodeId" />
-          </q-page>
-        </q-page-container>
-      </q-scroll-area>
+        <ChatHistory :selectedNodeId="selectedNodeId" />
+      </q-page-container>
+
       <q-footer bordered class="bg-grey-9 text-primary">
         <q-input
           style="color: white !important; background"

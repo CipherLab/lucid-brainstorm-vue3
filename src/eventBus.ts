@@ -6,6 +6,9 @@ type NodeSelectedEvent = {
   nodeId: string | undefined;
   nodeType: string | undefined;
 }; // Added nodeType
+type NodeToggledEvent = {
+  nodeId: string | undefined;
+}; // Added nodeType
 type NodeDeselectedEvent = null;
 
 // Define the event handler types
@@ -16,6 +19,7 @@ type NodeDeselectedHandler = (event: NodeDeselectedEvent) => void;
 type Events = {
   'node:selected': NodeSelectedEvent;
   'node:deselected': NodeDeselectedEvent;
+  'node:accordion-toggled': NodeToggledEvent;
 };
 
 // Create the event bus
@@ -24,4 +28,9 @@ const emitter = mitt<Events>();
 // Export the event bus and event types
 export { emitter };
 
-export type { NodeSelectedEvent, NodeSelectedHandler, NodeDeselectedHandler };
+export type {
+  NodeSelectedEvent,
+  NodeSelectedHandler,
+  NodeDeselectedHandler,
+  NodeToggledEvent,
+};
