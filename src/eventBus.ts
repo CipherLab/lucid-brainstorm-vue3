@@ -8,6 +8,7 @@ type NodeSelectedEvent = {
 }; // Added nodeType
 type NodeToggledEvent = {
   nodeId: string | undefined;
+  totalConnections: number;
 }; // Added nodeType
 type NodeDeselectedEvent = null;
 

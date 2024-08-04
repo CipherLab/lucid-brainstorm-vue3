@@ -2,7 +2,7 @@
   <q-scroll-area
     ref="scrollAreaRef"
     class="scroll-wrapper"
-    style="height: 46vh"
+    :style="{ height: `${dynamicVh}vh` }"
     :thumb-style="{
       right: '2px',
       borderRadius: '5px',
@@ -95,7 +95,7 @@ import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
-import { emitter } from '../eventBus';
+import { emitter, NodeToggledEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -122,15 +122,16 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleScrollToBottom);
 });
 
-const handleScrollToBottom = () => {
-  console.log('nextTick scroll to bottom');
-  nextTick(scrollToBottom);
+const baseVh = 42;
+const dynamicVh = ref<number>(42);
+const handleScrollToBottom = (event: NodeToggledEvent) => {
+  if (event.nodeId === props.selectedNodeId) {
+    console.log('scroll to bottom');
+    dynamicVh.value = baseVh + event.totalConnections;
+    nextTick(scrollToBottom);
+  }
 };
 watchEffect(() => {
-  if (!props.selectedNodeId || props.selectedNodeId == '') {
-    console.log('selectedNodeId is null or empty');
-    return;
-  }
   console.log('selectedNodeId:', props.selectedNodeId);
   nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
