@@ -181,6 +181,7 @@ const scrollToBottom = () => {
 </script>
 <style scoped>
 .scroll-wrapper {
+  height: 60vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */
