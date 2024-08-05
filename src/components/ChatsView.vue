@@ -1,19 +1,7 @@
 <template>
-  <q-scroll-area
-    ref="scrollAreaRef"
-    class="scroll-wrapper"
-    :style="{ height: `${dynamicVh}vh` }"
-    :thumb-style="{
-      right: '2px',
-      borderRadius: '5px',
-      backgroundColor: '#027be3',
-      width: '5px',
-      opacity: 0.75,
-    }"
-    :bar-style="{ right: '0px', borderRadius: '9px', opacity: 0 }"
-  >
+  <q-scroll-area ref="scrollAreaRef" class="scroll-wrapper">
     <q-page-container>
-      <q-page style="display: flex; flex-direction: column-reverse">
+      <q-page class="reverse-list">
         <div bordered class="rounded-borders chat-history" ref="chatHistory">
           <div>
             <draggable
@@ -191,30 +179,31 @@ const scrollToBottom = () => {
   }
 };
 </script>
-
 <style scoped>
+.scroll-wrapper {
+  display: flex;
+  width: 100%;
+  flex: 1; /* Allows the wrapper to take up the remaining space */
+  overflow: hidden; /* Prevents system scrollbar from appearing */
+  border: 1px solid #383636;
+}
 .sticky-header {
   position: sticky;
   top: 0;
   z-index: 10;
   background-color: black;
 }
-.thinking-indicator {
-  text-align: center;
-}
 .message-send-button {
   height: 24px;
   width: 24px;
 }
-.scroll-wrapper {
-  height: 65vh;
 
-  width: 100%;
-  flex: 1; /* Allows the wrapper to take up the remaining space */
-  overflow: hidden !important; /* Prevents system scrollbar from appearing */
-  border: 1px solid #383636;
-}
 .q-page-container {
   padding-top: 0px !important;
+}
+.reverse-list {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden !important;
 }
 </style>

@@ -18,7 +18,6 @@ import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatsView from './ChatsView.vue';
 import { emitter, NodeToggledEvent } from '../eventBus';
-import { is } from 'quasar';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 
@@ -97,26 +96,4 @@ const handleAccordionToggle = (index: number) => {
 };
 </script>
 
-<style scoped>
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: black;
-}
-.thinking-indicator {
-  text-align: center;
-}
-.message-send-button {
-  height: 24px;
-  width: 24px;
-}
-.scroll-wrapper {
-  height: 65vh;
-
-  width: 100%;
-  flex: 1; /* Allows the wrapper to take up the remaining space */
-  overflow: hidden; /* Prevents system scrollbar from appearing */
-  border: 1px solid #383636;
-}
-</style>
+<style scoped></style>

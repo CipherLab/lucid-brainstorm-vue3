@@ -16,7 +16,6 @@
         class="text-white text-center tab-panels"
         v-model="activeTab"
         animated
-        style="height: calc(100% - 16px)"
       >
         <q-tab-panel name="primary">
           <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="true" />
@@ -78,7 +77,6 @@ const userInput = ref('');
 const assistantName = ref('Assistant');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
-const scrollAreaRef = ref(null);
 const activeTab = ref('primary');
 const props = defineProps({
   selectedNodeId: {
@@ -209,33 +207,17 @@ async function updateChatHistory() {
 </script>
 
 <style scoped>
-.q-tab-panel {
-  padding: 0px !important;
-}
 .chat-box {
   background-color: #2b2929;
   padding: 6px;
   border-top: 1px solid #383636;
 }
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: black;
-}
-.thinking-indicator {
-  text-align: center;
-}
 .message-send-button {
   height: 24px;
   width: 24px;
 }
-.scroll-wrapper {
-  height: 65vh;
-
-  width: 100%;
-  flex: 1; /* Allows the wrapper to take up the remaining space */
-  overflow: hidden; /* Prevents system scrollbar from appearing */
-  border: 1px solid #383636;
+.tab-panels {
+  display: flex;
+  flex: 1;
 }
 </style>
