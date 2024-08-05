@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
+      <q-toolbar class="toolbar-bg">
         <q-btn
           flat
           dense
@@ -10,7 +10,7 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-        <q-toolbar-title>Lucid Brainstorm</q-toolbar-title>
+        <q-toolbar-title>Gemini Flow</q-toolbar-title>
         <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
@@ -200,5 +200,21 @@ onUnmounted(() => {
 }
 .vue-flow__node {
   visibility: visible !important;
+}
+
+.toolbar-bg {
+  background: linear-gradient(
+    74deg,
+    #0943a2 0,
+    #502d7a 3%,
+    #85212a 6.67%,
+    #85212a 8%,
+    #502d7a 11.67%,
+    #0943a2 14.67%,
+    #502d7a 16.67%,
+    #85212a 18.67%,
+    black 25%,
+    black 100%
+  );
 }
 </style>

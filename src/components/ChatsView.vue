@@ -12,67 +12,69 @@
     }"
     :bar-style="{ right: '0px', borderRadius: '9px', opacity: 0 }"
   >
-    <q-page style="display: flex; flex-direction: column-reverse">
-      <div bordered class="rounded-borders chat-history" ref="chatHistory">
-        <div>
-          <draggable
-            :list="messages"
-            item-key="id"
-            handle=".drag-handle"
-            @end="onDragEnd"
-          >
-            <template #item="{ element, index }">
-              <div :key="element.id">
-                <!-- Sticky Header -->
-                <q-item>
-                  <q-item-section>
-                    <q-header
-                      v-if="isHeaderVisible(index)"
-                      class="bg-grey-10 sticky-header"
-                    >
-                      <q-toolbar>
-                        <q-btn
-                          class="drag-handle"
-                          size="12px"
-                          flat
-                          dense
-                          round
-                          icon="drag_indicator"
-                        />
+    <q-page-container>
+      <q-page style="display: flex; flex-direction: column-reverse">
+        <div bordered class="rounded-borders chat-history" ref="chatHistory">
+          <div>
+            <draggable
+              :list="messages"
+              item-key="id"
+              handle=".drag-handle"
+              @end="onDragEnd"
+            >
+              <template #item="{ element, index }">
+                <div :key="element.id">
+                  <!-- Sticky Header -->
+                  <q-item>
+                    <q-item-section>
+                      <q-header
+                        v-if="isHeaderVisible(index)"
+                        class="bg-grey-10 sticky-header"
+                      >
+                        <q-toolbar>
+                          <q-btn
+                            class="drag-handle"
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            icon="drag_indicator"
+                          />
 
-                        <q-toolbar-title
-                          style="font-size: small"
-                          class="text-grey-8"
-                          >{{ getSenderName(element.sender) }}
-                        </q-toolbar-title>
+                          <q-toolbar-title
+                            style="font-size: small"
+                            class="text-grey-8"
+                            >{{ getSenderName(element.sender) }}
+                          </q-toolbar-title>
 
-                        <q-btn
-                          size="12px"
-                          flat
-                          dense
-                          round
-                          icon="delete"
-                          @click.stop="deleteMessage(index)"
-                        />
-                      </q-toolbar>
-                    </q-header>
+                          <q-btn
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            icon="delete"
+                            @click.stop="deleteMessage(index)"
+                          />
+                        </q-toolbar>
+                      </q-header>
 
-                    <!-- Chat Message Component -->
-                    <ChatMessage
-                      :message="element.message"
-                      :sender="element.sender"
-                      :createdAt="element.createdAt"
-                      :typing="element.typing"
-                      assistantName="test"
-                    />
-                  </q-item-section>
-                </q-item>
-              </div>
-            </template>
-          </draggable>
+                      <!-- Chat Message Component -->
+                      <ChatMessage
+                        :message="element.message"
+                        :sender="element.sender"
+                        :createdAt="element.createdAt"
+                        :typing="element.typing"
+                        assistantName="test"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </div>
+              </template>
+            </draggable>
+          </div>
         </div>
-      </div>
-    </q-page>
+      </q-page>
+    </q-page-container>
   </q-scroll-area>
 </template>
 
@@ -95,7 +97,7 @@ import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
-import { emitter, NodeToggledEvent } from '../eventBus';
+import { emitter, NodeTabbedEvent, NodeToggledEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -116,18 +118,26 @@ const nodeProps = ref<NodeProps>();
 
 onMounted(() => {
   emitter.on('node:accordion-toggled', handleScrollToBottom);
+  emitter.on('node:q-tab-toggled', handleTabScrollToBottom);
 });
 
 onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleScrollToBottom);
+  emitter.off('node:q-tab-toggled', handleTabScrollToBottom);
 });
 
-const baseVh = 42;
-const dynamicVh = ref<number>(42);
+const baseVh = 50;
+const dynamicVh = ref<number>(baseVh);
 const handleScrollToBottom = (event: NodeToggledEvent) => {
   if (event.nodeId === props.selectedNodeId) {
-    console.log('scroll to bottom');
+    console.log('EXPAND scroll to bottom');
     dynamicVh.value = baseVh + event.totalConnections;
+    nextTick(scrollToBottom);
+  }
+};
+const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
+  if (event.nodeId === props.selectedNodeId) {
+    console.log('TAB scroll to bottom');
     nextTick(scrollToBottom);
   }
 };

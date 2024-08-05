@@ -7,32 +7,18 @@
       :label="getAccordionLabel(nodeId)"
       v-model="expandedStates[index]"
       @click="handleAccordionToggle(index)"
-      :disable="index === connectedNodeIds.length - 1"
-      :header-class="getHeaderClass(nodeId)"
+      :disable="isPrimary"
     >
       <ChatsView :selectedNodeId="nodeId" />
     </q-expansion-item>
   </q-list>
 </template>
 <script setup lang="ts">
-import {
-  inject,
-  ref,
-  onMounted,
-  computed,
-  watchEffect,
-  defineComponent,
-  nextTick,
-} from 'vue';
-import moment from 'moment';
-import { useRoute } from 'vue-router';
+import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatService from '../services/chatService';
-import draggable from 'vuedraggable';
 import ChatsView from './ChatsView.vue';
-import { Message } from '../models/chatInterfaces';
-import { emit } from 'process';
-import { emitter, NodeSelectedEvent, NodeToggledEvent } from '../eventBus';
+import { emitter, NodeToggledEvent } from '../eventBus';
+import { is } from 'quasar';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 
@@ -46,15 +32,7 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  assistantNameProp: {
-    type: String,
-    default: 'Assistant',
-  },
-  assistantIcon: {
-    type: String,
-    default: '',
-  },
-  isLocal: {
+  isPrimary: {
     type: Boolean,
     default: false,
   },
@@ -64,31 +42,33 @@ const expandedStates = ref<boolean[]>([]);
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
   expandedStates.value = connectedNodeIds.value.map((_, index) => {
-    return index === connectedNodeIds.value.length - 1; // Last item open by default
+    return index === 0; // Last item open by default
   });
 };
 
 onMounted(() => {
-  const toggledEvent: NodeToggledEvent = {
-    nodeId: connectedNodeIds.value[connectedNodeIds.value.length - 1],
-    totalConnections: connectedNodeIds.value.length,
-  };
-  emitter.emit('node:accordion-toggled', toggledEvent);
+  // const toggledEvent: NodeToggledEvent = {
+  //   nodeId: connectedNodeIds.value[connectedNodeIds.value.length - 1],
+  //   totalConnections: connectedNodeIds.value.length,
+  // };
+  // emitter.emit('node:accordion-toggled', toggledEvent);
 });
 
 // Update expandedStates whenever connectedNodeIds changes
 watchEffect(() => {
   if (props.selectedNodeId) {
-    connectedNodeIds.value = [
-      ...lucidFlow.getConnectedNodes(props.selectedNodeId),
-      props.selectedNodeId,
-    ];
+    if (props.isPrimary) {
+      connectedNodeIds.value = [props.selectedNodeId];
+    } else {
+      connectedNodeIds.value = lucidFlow.getConnectedNodes(
+        props.selectedNodeId
+      );
+    }
+
     updateAccordionStates(); // Update accordion states when nodes change
   }
 });
-const getHeaderClass = (nodeId: string) => {
-  return nodeId === props.selectedNodeId ? 'text-orange' : '';
-};
+
 const getAccordionLabel = (nodeId: string) => {
   const nodeProps = lucidFlow.findNodeProps(nodeId);
   if (!nodeProps) {

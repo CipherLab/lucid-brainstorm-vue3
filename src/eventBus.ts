@@ -9,7 +9,10 @@ type NodeSelectedEvent = {
 type NodeToggledEvent = {
   nodeId: string | undefined;
   totalConnections: number;
-}; // Added nodeType
+};
+type NodeTabbedEvent = {
+  nodeId: string | undefined;
+};
 type NodeDeselectedEvent = null;
 
 // Define the event handler types
@@ -21,6 +24,7 @@ type Events = {
   'node:selected': NodeSelectedEvent;
   'node:deselected': NodeDeselectedEvent;
   'node:accordion-toggled': NodeToggledEvent;
+  'node:q-tab-toggled': NodeTabbedEvent;
 };
 
 // Create the event bus
@@ -34,4 +38,5 @@ export type {
   NodeSelectedHandler,
   NodeDeselectedHandler,
   NodeToggledEvent,
+  NodeTabbedEvent,
 };

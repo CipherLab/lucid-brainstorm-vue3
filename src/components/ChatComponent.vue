@@ -1,24 +1,32 @@
 <template>
-  <div class="q-pa-md" style="height: 100%">
-    <q-item-label
-      class="text-grey-8 header"
-      style="position: absolute; margin-top: -1.2em"
-    >
-      Conversation History
-    </q-item-label>
+  <div style="height: 100%">
     <q-layout
       view="lHh lpr lFf"
       container
       class="rounded-borders overflow-hidden"
     >
-      <q-page-container
-        class="overflow-hidden"
-        style="padding-top: 0px !important"
-      >
-        <ChatHistory :selectedNodeId="selectedNodeId" />
-      </q-page-container>
+      <q-tabs align="justify" v-model="activeTab" dense narrow-indicator>
+        <q-tab name="primary" label="Selected Chat History" />
+        <q-tab name="contextual" label="Connected Chat History" />
+      </q-tabs>
 
-      <q-footer bordered class="bg-grey-9 text-primary">
+      <q-tab-panels
+        transition-prev="jump-up"
+        transition-next="jump-down"
+        class="text-white text-center tab-panels"
+        v-model="activeTab"
+        animated
+        style="height: calc(100% - 16px)"
+      >
+        <q-tab-panel name="primary">
+          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="true" />
+        </q-tab-panel>
+        <q-tab-panel name="contextual">
+          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="false" />
+        </q-tab-panel>
+      </q-tab-panels>
+
+      <q-footer bordered class="bg-grey-9 text-primary chat-box">
         <q-input
           style="color: white !important; background"
           v-model="userInput"
@@ -51,6 +59,7 @@ import {
   watchEffect,
   defineComponent,
   nextTick,
+  watch,
 } from 'vue';
 import moment from 'moment';
 import { useRoute } from 'vue-router';
@@ -59,6 +68,7 @@ import ChatService from '../services/chatService';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { Message } from '../models/chatInterfaces';
+import { emitter } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -69,6 +79,7 @@ const assistantName = ref('Assistant');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const scrollAreaRef = ref(null);
+const activeTab = ref('primary');
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -183,6 +194,14 @@ function pushImmediateRequest(msg: string): void {
     isEnabled: true,
   });
 }
+//watch not watcheffect for activetab
+watch(
+  () => activeTab.value,
+  (newValue) => {
+    console.log('activeTab:', newValue);
+    emitter.emit('node:q-tab-toggled', { nodeId: props.selectedNodeId });
+  }
+);
 
 async function updateChatHistory() {
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
@@ -190,6 +209,14 @@ async function updateChatHistory() {
 </script>
 
 <style scoped>
+.q-tab-panel {
+  padding: 0px !important;
+}
+.chat-box {
+  background-color: #2b2929;
+  padding: 6px;
+  border-top: 1px solid #383636;
+}
 .sticky-header {
   position: sticky;
   top: 0;
