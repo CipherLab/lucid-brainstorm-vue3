@@ -85,7 +85,7 @@ import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
-import { emitter, NodeTabbedEvent, NodeToggledEvent } from '../eventBus';
+import { emitter, BaseNodeEvent, NodeTabbedEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -105,32 +105,38 @@ const props = defineProps({
 const nodeProps = ref<NodeProps>();
 
 onMounted(() => {
-  emitter.on('node:accordion-toggled', handleScrollToBottom);
-  emitter.on('node:q-tab-toggled', handleTabScrollToBottom);
+  // emitter.on('node:selected', handleScrollToBottom);
+  emitter.on('node:accordion-toggled', handleTabScrollToBottom);
+  // emitter.on('node:q-tab-toggled', handleScrollToBottom);
 });
 
 onUnmounted(() => {
-  emitter.off('node:accordion-toggled', handleScrollToBottom);
-  emitter.off('node:q-tab-toggled', handleTabScrollToBottom);
+  // emitter.off('node:selected', handleScrollToBottom);
+  emitter.off('node:accordion-toggled', handleTabScrollToBottom);
+  // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-
-const baseVh = 50;
-const dynamicVh = ref<number>(baseVh);
-const handleScrollToBottom = (event: NodeToggledEvent) => {
-  if (event.nodeId === props.selectedNodeId) {
-    console.log('EXPAND scroll to bottom');
-    dynamicVh.value = baseVh + event.totalConnections;
-    nextTick(scrollToBottom);
-  }
-};
+// const baseVh = 50;
+// const dynamicVh = ref<number>(baseVh);
+// const handleScrollToBottom = (event: NodeToggledEvent) => {
+//   if (event.nodeId === props.selectedNodeId) {
+//     console.log('EXPAND scroll to bottom');
+//     dynamicVh.value = baseVh + event.totalConnections;
+//     nextTick(scrollToBottom);
+//   }
+// };
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     console.log('TAB scroll to bottom');
     nextTick(scrollToBottom);
   }
 };
+const scrollToBottom = () => {
+  console.log('Scrolling to bottom');
+  if (chatHistory.value && scrollAreaRef.value) {
+    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
+  }
+};
 watchEffect(() => {
-  console.log('selectedNodeId:', props.selectedNodeId);
   nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
@@ -141,6 +147,7 @@ watchEffect(() => {
   } else {
     messages.value = []; // Initialize with an empty array if no data
   }
+  nextTick(scrollToBottom);
 });
 
 async function updateChatHistory() {
@@ -171,17 +178,10 @@ const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
 const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
-
-const scrollToBottom = () => {
-  console.log('Scrolling to bottom');
-  if (chatHistory.value && scrollAreaRef.value) {
-    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
-  }
-};
 </script>
 <style scoped>
 .scroll-wrapper {
-  height: 60vh;
+  height: 58vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */

@@ -41,7 +41,10 @@ const expandedStates = ref<boolean[]>([]);
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
   expandedStates.value = connectedNodeIds.value.map((_, index) => {
-    return index === 0; // Last item open by default
+    if (props.isPrimary) {
+      return index === 0; // first item open by default
+    }
+    return index === -1; // no item open
   });
 };
 

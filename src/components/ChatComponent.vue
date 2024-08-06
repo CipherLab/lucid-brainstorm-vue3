@@ -109,27 +109,43 @@ watchEffect(() => {
     messages.value = [];
   }
 });
-
 async function sendMessage() {
   const tempVal = userInput.value;
   if (!tempVal || tempVal.trim() === '') return;
   userInput.value = '';
 
   try {
+    console.log('chatService.sendMessage:', tempVal);
     pushImmediateRequest(tempVal); // Push user message
     pushImmediateResponse('', true); // Show thinking indicator
-
+    await updateChatHistory(); // Save history (this will update the node data)
+    console.log('chatService.sendMessage:', tempVal);
+    // Get the Gemini response:
     const response = await chatService.sendMessage(
       tempVal,
       props.selectedNodeId
     );
 
-    messages.value.pop(); // Remove thinking indicator
-    await pushDelayedResponse(response.result); // Push assistant message
+    console.log('chat response:', response);
 
-    await updateChatHistory(); // Save history (adjust logic as needed)
+    // Extract relevant data and create a Message object:
+    const newMessage: Message = {
+      id: Date.now().toString(), // Use a suitable ID generator if needed
+      sender: assistantName.value,
+      message: response.result, // Access the correct property
+      createdAt: Date.now(),
+      error: false,
+      typing: false, // Set typing to false as the message has been received
+      selected: false,
+      isEnabled: true,
+    };
+
+    // Update the chat history in lucidFlow
+    messages.value.pop(); // Remove the "thinking" message
+    messages.value.push(newMessage);
+    await updateChatHistory();
   } catch (error) {
-    // ... [error handling]
+    // ... [error handling - potentially re-add the user input]
     userInput.value = tempVal;
   } finally {
     userInput.value = ''; // Clear input field

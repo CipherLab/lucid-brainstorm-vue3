@@ -9,6 +9,7 @@ import {
   applyEdgeChanges,
   NodeRemoveChange,
 } from '@vue-flow/core'; // Import applyNodeChanges
+import { Message } from '../models/chatInterfaces';
 
 export interface LucidFlowComposable {
   getNodes: () => Node[];
@@ -92,19 +93,20 @@ export default function useLucidFlow(): LucidFlowComposable {
       nodeToUpdate.position = { x, y };
     }
   };
-
-  const getNodeChatData = (nodeId: string) => {
-    const node = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
+  const getNodeChatData = (nodeId: string): Message[] | null => {
+    const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
     return node ? node.data.chatData : null;
   };
 
-  const updateNodeChatData = (nodeId: string, newChatData: any[]) => {
+  const updateNodeChatData = (nodeId: string, newMessage: Message) => {
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      nodeToUpdate.data.chatData = newChatData;
+      if (!nodeToUpdate.data.chatData) {
+        nodeToUpdate.data.chatData = [];
+      }
+      nodeToUpdate.data.chatData.push(newMessage);
     }
-
-    saveSession();
+    this.saveSession();
   };
   const getConnectedNodes = (nodeId: string): string[] => {
     const connectedNodeIds: string[] = [];

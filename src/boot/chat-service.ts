@@ -5,6 +5,7 @@ import MockChatService from 'src/services/mockChatService';
 import ChatService from 'src/services/chatService'; // The interface
 export default boot(({ app }) => {
   // Choose which service to use (e.g., based on environment variable)
+
   const chatService: ChatService =
     process.env.NODE_ENV === 'development'
       ? new MockChatService()

@@ -16,6 +16,7 @@ class RealChatService implements ChatService {
   }
 
   async startChat(nodeId: string) {
+    console.log('Starting chat for node:', nodeId);
     if (this.chats.has(nodeId)) {
       return this.chats.get(nodeId); // Return existing chat for this node
     }
@@ -37,26 +38,20 @@ class RealChatService implements ChatService {
   async sendMessage(
     text: string,
     nodeId: string // Node ID to identify the chat
-  ): Promise<{ result: string }> {
+  ): Promise<any> {
+    // Returns the full Gemini response object
     try {
       if (!this.chats.has(nodeId)) {
-        await this.startChat(nodeId); // Start a new chat if it doesn't exist
+        await this.startChat(nodeId);
       }
-
       const chat = this.chats.get(nodeId);
-      //const contextUris = this.loadUrisFromFile(); // Load your URIs
-
-      // Customize based on your Gemini API:
-      const result = await chat.sendMessage(text); // Add contextFiles or other parameters as needed
-      const responseText = result.response.text();
-
-      return { result: responseText };
+      const result = await chat.sendMessage(text);
+      return result;
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
     }
   }
-
   async loadChatHistory(nodeId: string): Promise<void> {
     const savedHistory = sessionStorage.getItem(`chatHistory_${nodeId}`);
     if (savedHistory) {
