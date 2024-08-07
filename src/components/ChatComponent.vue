@@ -115,11 +115,11 @@ async function sendMessage() {
   userInput.value = '';
 
   try {
-    console.log('chatService.sendMessage:', tempVal);
+    console.log('1chatService.sendMessage:', tempVal);
     pushImmediateRequest(tempVal); // Push user message
     pushImmediateResponse('', true); // Show thinking indicator
     await updateChatHistory(); // Save history (this will update the node data)
-    console.log('chatService.sendMessage:', tempVal);
+    console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
     const response = await chatService.sendMessage(
       tempVal,

@@ -106,7 +106,7 @@ export default function useLucidFlow(): LucidFlowComposable {
       }
       nodeToUpdate.data.chatData.push(newMessage);
     }
-    this.saveSession();
+    saveSession();
   };
   const getConnectedNodes = (nodeId: string): string[] => {
     const connectedNodeIds: string[] = [];
@@ -126,8 +126,20 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   // Saving the Session:
   function saveSession() {
-    //console.log('Saving session');
-    localStorage.setItem(flowKey, JSON.stringify(vueFlow.toObject()));
+    const flowObject = vueFlow.toObject();
+
+    // Before saving, format the chat history in each node
+    flowObject.nodes = flowObject.nodes.map((node: any) => {
+      if (node.data.chatData) {
+        node.data.chatData = node.data.chatData.map((message: Message) => ({
+          role: message.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: message.message || '' }], // Safeguarding against null messages
+        }));
+      }
+      return node;
+    });
+
+    localStorage.setItem(flowKey, JSON.stringify(flowObject));
   }
 
   // Loading the Session (UPDATED):

@@ -12,9 +12,9 @@ class RealChatService implements ChatService {
   private model: any;
   private lucidFlow: LucidFlowComposable;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
     this.apiKey = apiKey;
-    this.lucidFlow = inject('lucidFlow') as LucidFlowComposable;
+    this.lucidFlow = lucidFlow;
     if (!this.lucidFlow) {
       throw new Error('lucidFlow composable not provided!');
     }
@@ -59,6 +59,7 @@ class RealChatService implements ChatService {
   }
 
   async sendMessage(text: string, nodeId: string): Promise<any> {
+    console.log('Sending message:', text, 'for node:', nodeId);
     // Returns the full Gemini response
     try {
       if (!this.chats.has(nodeId)) {

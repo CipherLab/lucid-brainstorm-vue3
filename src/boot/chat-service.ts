@@ -4,14 +4,12 @@ import MockChatService from '../services/mockChatService';
 import ChatService from '../services/chatService'; // The interface
 
 export default boot(({ app }) => {
-  if (process.env.CHAT_API_KEY === undefined) {
-    throw new Error('CHAT_API_KEY environment variable not set!');
-  }
-
-  const chatService: ChatService =
-    process.env.NODE_ENV === 'development'
-      ? new MockChatService()
-      : new RealChatService(process.env.CHAT_API_KEY);
-
-  app.provide('chatService', chatService);
+  // const chatService: ChatService =
+  //   process.env.NODE_ENV === 'development'
+  //     ? new MockChatService()
+  //     : new RealChatService('AIzaSyCGJYzPdw4I_FBVBN6qvPnhG_IrH_6oywk');
+  // const chatService: ChatService = new RealChatService(
+  //   'AIzaSyCGJYzPdw4I_FBVBN6qvPnhG_IrH_6oywk'
+  // );
+  //app.provide('chatService', chatService);
 });
