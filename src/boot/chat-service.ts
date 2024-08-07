@@ -2,9 +2,6 @@ import { boot } from 'quasar/wrappers';
 import RealChatService from '../services/realChatService';
 import MockChatService from '../services/mockChatService';
 import ChatService from '../services/chatService'; // The interface
-import dotenv from 'dotenv';
-
-dotenv.config(); // Load environment variables from .env file
 
 export default boot(({ app }) => {
   if (process.env.CHAT_API_KEY === undefined) {
