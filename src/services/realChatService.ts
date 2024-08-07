@@ -1,18 +1,18 @@
-// src/services/realChatService.ts
-import axios from 'axios';
 import ChatService from './chatService'; // Import the interface
 import { startChatParams } from '../models/startChatParams';
 import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
 
 class RealChatService implements ChatService {
   private chatUrl: string;
   private apiKey: string;
   private chats: Map<string, any> = new Map(); // Store chat instances by node ID
   private model: any;
-
-  constructor(chatUrl: string, apiKey: string) {
-    this.chatUrl = chatUrl;
+  private lucidFlow: LucidFlowComposable;
+  constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
+    this.lucidFlow = lucidFlow;
     this.apiKey = apiKey;
+    console.log('RealChatService initialized', apiKey);
   }
 
   async startChat(nodeId: string) {
@@ -33,7 +33,6 @@ class RealChatService implements ChatService {
     this.chats.set(nodeId, chat);
     return chat;
   }
-
   async sendMessage(
     text: string,
     nodeId: string // Node ID to identify the chat

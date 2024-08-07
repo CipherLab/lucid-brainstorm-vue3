@@ -1,14 +1,11 @@
-// src/boot/chatService.ts
 import { boot } from 'quasar/wrappers';
-import RealChatService from 'src/services/realChatService';
-import MockChatService from 'src/services/mockChatService';
-import ChatService from 'src/services/chatService'; // The interface
-export default boot(({ app }) => {
-  // Choose which service to use (e.g., based on environment variable)
-  const chatService: ChatService =
-    process.env.NODE_ENV === 'development'
-      ? new MockChatService()
-      : new RealChatService(process.env.CHAT_URL, process.env.CHAT_API_KEY);
+import RealChatService from '../services/realChatService'; // Make sure this path is correct
+import ChatService from '../services/chatService'; // The interface
+import useLucidFlow from '../composables/useLucidFlow';
 
+export default boot(({ app }) => {
+  const lucidFlow = useLucidFlow(); // Get the lucidFlow instance
+  const apiKey = 'AIzaSyCGJYzPdw4I_FBVBN6qvPnhG_IrH_6oywk';
+  const chatService: ChatService = new RealChatService(apiKey, lucidFlow);
   app.provide('chatService', chatService);
 });

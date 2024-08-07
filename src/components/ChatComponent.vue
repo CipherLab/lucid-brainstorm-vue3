@@ -121,28 +121,35 @@ async function sendMessage() {
     await updateChatHistory(); // Save history (this will update the node data)
     console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
-    const response = await chatService.sendMessage(
-      tempVal,
-      props.selectedNodeId
-    );
+    try {
+      emitter.emit('node:message-requested', { nodeId: props.selectedNodeId });
 
-    console.log('chat response:', response);
+      const response = await chatService.sendMessage(
+        tempVal,
+        props.selectedNodeId
+      );
 
-    // Extract relevant data and create a Message object:
-    const newMessage: Message = {
-      id: Date.now().toString(), // Use a suitable ID generator if needed
-      sender: assistantName.value,
-      message: response.result, // Access the correct property
-      createdAt: Date.now(),
-      error: false,
-      typing: false, // Set typing to false as the message has been received
-      selected: false,
-      isEnabled: true,
-    };
+      console.log('chat response:', response);
 
-    // Update the chat history in lucidFlow
-    messages.value.pop(); // Remove the "thinking" message
-    messages.value.push(newMessage);
+      // Extract relevant data and create a Message object:
+      const newMessage: Message = {
+        id: Date.now().toString(), // Use a suitable ID generator if needed
+        sender: assistantName.value,
+        message: response.result, // Access the correct property
+        createdAt: Date.now(),
+        error: false,
+        typing: false, // Set typing to false as the message has been received
+        selected: false,
+        isEnabled: true,
+      };
+
+      // Update the chat history in lucidFlow
+      messages.value.push(newMessage);
+    } catch (error) {
+      emitter.emit('node:message-failed', { nodeId: props.selectedNodeId });
+    } finally {
+      emitter.emit('node:message-received', { nodeId: props.selectedNodeId });
+    }
     await updateChatHistory();
   } catch (error) {
     // ... [error handling - potentially re-add the user input]

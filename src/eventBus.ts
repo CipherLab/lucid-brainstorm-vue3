@@ -1,30 +1,49 @@
 // src/event-bus.ts
 import mitt from 'mitt';
 
-// Define event types
-type NodeSelectedEvent = {
+// Define a base class for events with a nodeId
+class BaseNodeEvent {
   nodeId: string | undefined;
+
+  constructor(nodeId: string | undefined) {
+    this.nodeId = nodeId;
+  }
+}
+
+// Define event types extending the base class
+class NodeSelectedEvent extends BaseNodeEvent {
   nodeType: string | undefined;
-}; // Added nodeType
-type NodeToggledEvent = {
-  nodeId: string | undefined;
+
+  constructor(nodeId: string | undefined, nodeType: string | undefined) {
+    super(nodeId);
+    this.nodeType = nodeType;
+  }
+}
+class NodeDeselectedEvent {}
+
+class NodeToggledEvent extends BaseNodeEvent {
   totalConnections: number;
-};
-type NodeTabbedEvent = {
-  nodeId: string | undefined;
-};
-type NodeDeselectedEvent = null;
 
-// Define the event handler types
-type NodeSelectedHandler = (event: NodeSelectedEvent) => void;
-type NodeDeselectedHandler = (event: NodeDeselectedEvent) => void;
+  constructor(nodeId: string | undefined, totalConnections: number) {
+    super(nodeId);
+    this.totalConnections = totalConnections;
+  }
+}
 
+class NodeTabbedEvent extends BaseNodeEvent {
+  constructor(nodeId: string | undefined) {
+    super(nodeId);
+  }
+}
 // Define the types for your event bus
 type Events = {
   'node:selected': NodeSelectedEvent;
   'node:deselected': NodeDeselectedEvent;
   'node:accordion-toggled': NodeToggledEvent;
   'node:q-tab-toggled': NodeTabbedEvent;
+  'node:message-received': BaseNodeEvent;
+  'node:message-requested': BaseNodeEvent;
+  'node:message-failed': BaseNodeEvent;
 };
 
 // Create the event bus
@@ -35,8 +54,8 @@ export { emitter };
 
 export type {
   NodeSelectedEvent,
-  NodeSelectedHandler,
-  NodeDeselectedHandler,
+  BaseNodeEvent,
+  NodeDeselectedEvent,
   NodeToggledEvent,
   NodeTabbedEvent,
 };

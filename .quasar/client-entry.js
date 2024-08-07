@@ -154,11 +154,11 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/markdownit'),
       
+      import('boot/lucid-flow'),
+      
       import('boot/chat-service'),
       
-      import('boot/vue-flow'),
-      
-      import('boot/lucid-flow')
+      import('boot/vue-flow')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

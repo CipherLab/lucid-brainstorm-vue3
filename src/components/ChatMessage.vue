@@ -3,8 +3,11 @@
     class="chat-message"
     :class="{ 'user-message': isUser, 'agent-message': !isUser }"
   >
-    <q-item-label v-if="typing">
+    <q-item-label v-if="showWorking">
       <q-spinner-dots size="1.5em" color="grey-7" />
+    </q-item-label>
+    <q-item-label v-else-if="!showWorking && showError">
+      <q-icon name="error" color="red" />
     </q-item-label>
     <q-item-label v-else>
       {{ message }}
@@ -16,8 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
+import { BaseNodeEvent, emitter } from '../eventBus';
 
 const props = defineProps({
   message: {
@@ -32,18 +36,40 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  typing: {
-    type: Boolean,
-    default: false,
-  },
+
   assistantName: {
     type: String,
     default: 'Assistant',
   },
 });
-
+const showWorking = ref<boolean>(false);
+const showError = ref<boolean>(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
+onMounted(() => {
+  emitter.on('node:message-requested', handleRequested);
+  emitter.on('node:message-received', handleReceived);
+  emitter.on('node:message-failed', handleFailed);
+});
+
+onUnmounted(() => {
+  emitter.off('node:message-requested', handleRequested);
+  emitter.off('node:message-received', handleReceived);
+  emitter.off('node:message-failed', handleFailed);
+});
+
+const handleRequested = (event: BaseNodeEvent) => {
+  showWorking.value = true;
+  showError.value = false;
+};
+const handleReceived = (event: BaseNodeEvent) => {
+  showWorking.value = false;
+  showError.value = false;
+};
+const handleFailed = (event: BaseNodeEvent) => {
+  showWorking.value = false;
+  showError.value = true;
+};
 </script>
 
 <style scoped>
