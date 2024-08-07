@@ -5,7 +5,7 @@
         <div bordered class="rounded-borders chat-history" ref="chatHistory">
           <div>
             <draggable
-              :list="messages"
+              :list="formattedMessages"
               item-key="id"
               handle=".drag-handle"
               @end="onDragEnd"
@@ -52,7 +52,7 @@
                         :sender="element.sender"
                         :createdAt="element.createdAt"
                         :typing="element.typing"
-                        assistantName="test"
+                        :assistantName="getSenderName(element.sender)"
                       />
                     </q-item-section>
                   </q-item>
@@ -115,15 +115,7 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-// const baseVh = 50;
-// const dynamicVh = ref<number>(baseVh);
-// const handleScrollToBottom = (event: NodeToggledEvent) => {
-//   if (event.nodeId === props.selectedNodeId) {
-//     console.log('EXPAND scroll to bottom');
-//     dynamicVh.value = baseVh + event.totalConnections;
-//     nextTick(scrollToBottom);
-//   }
-// };
+
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     console.log('TAB scroll to bottom');
@@ -178,6 +170,17 @@ const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
 const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
+
+const formattedMessages = computed(() => {
+  if (!messages.value) return [];
+
+  return messages.value.map((message) => ({
+    ...message,
+    sender:
+      message.sender === 'user' ? 'user' : nodeProps.value?.data.agent.name, // Extract sender from message, use nodeProps for agent name
+    message: message.message,
+  }));
+});
 </script>
 <style scoped>
 .scroll-wrapper {

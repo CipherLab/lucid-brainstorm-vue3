@@ -1,15 +1,20 @@
-// src/boot/chatService.ts
 import { boot } from 'quasar/wrappers';
-import RealChatService from 'src/services/realChatService';
-import MockChatService from 'src/services/mockChatService';
-import ChatService from 'src/services/chatService'; // The interface
+import RealChatService from '../services/realChatService';
+import MockChatService from '../services/mockChatService';
+import ChatService from '../services/chatService'; // The interface
+import dotenv from 'dotenv';
+
+dotenv.config(); // Load environment variables from .env file
+
 export default boot(({ app }) => {
-  // Choose which service to use (e.g., based on environment variable)
+  if (process.env.CHAT_API_KEY === undefined) {
+    throw new Error('CHAT_API_KEY environment variable not set!');
+  }
 
   const chatService: ChatService =
     process.env.NODE_ENV === 'development'
       ? new MockChatService()
-      : new RealChatService(process.env.CHAT_URL, process.env.CHAT_API_KEY);
+      : new RealChatService(process.env.CHAT_API_KEY);
 
   app.provide('chatService', chatService);
 });
