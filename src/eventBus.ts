@@ -1,40 +1,24 @@
 // src/event-bus.ts
 import mitt from 'mitt';
 
-// Define a base class for events with a nodeId
-class BaseNodeEvent {
+// Define event types
+type NodeSelectedEvent = {
   nodeId: string | undefined;
-
-  constructor(nodeId: string | undefined) {
-    this.nodeId = nodeId;
-  }
-}
-
-// Define event types extending the base class
-class NodeSelectedEvent extends BaseNodeEvent {
   nodeType: string | undefined;
-
-  constructor(nodeId: string | undefined, nodeType: string | undefined) {
-    super(nodeId);
-    this.nodeType = nodeType;
-  }
-}
-class NodeDeselectedEvent {}
-
-class NodeToggledEvent extends BaseNodeEvent {
+}; // Added nodeType
+type NodeToggledEvent = {
+  nodeId: string | undefined;
   totalConnections: number;
+};
+type NodeTabbedEvent = {
+  nodeId: string | undefined;
+};
+type NodeDeselectedEvent = null;
 
-  constructor(nodeId: string | undefined, totalConnections: number) {
-    super(nodeId);
-    this.totalConnections = totalConnections;
-  }
-}
+// Define the event handler types
+type NodeSelectedHandler = (event: NodeSelectedEvent) => void;
+type NodeDeselectedHandler = (event: NodeDeselectedEvent) => void;
 
-class NodeTabbedEvent extends BaseNodeEvent {
-  constructor(nodeId: string | undefined) {
-    super(nodeId);
-  }
-}
 // Define the types for your event bus
 type Events = {
   'node:selected': NodeSelectedEvent;
@@ -51,8 +35,8 @@ export { emitter };
 
 export type {
   NodeSelectedEvent,
-  BaseNodeEvent,
-  NodeDeselectedEvent,
+  NodeSelectedHandler,
+  NodeDeselectedHandler,
   NodeToggledEvent,
   NodeTabbedEvent,
 };

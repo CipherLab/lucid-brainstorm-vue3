@@ -1,15 +1,14 @@
+// src/boot/chatService.ts
 import { boot } from 'quasar/wrappers';
-import RealChatService from '../services/realChatService';
-import MockChatService from '../services/mockChatService';
-import ChatService from '../services/chatService'; // The interface
-
+import RealChatService from 'src/services/realChatService';
+import MockChatService from 'src/services/mockChatService';
+import ChatService from 'src/services/chatService'; // The interface
 export default boot(({ app }) => {
-  // const chatService: ChatService =
-  //   process.env.NODE_ENV === 'development'
-  //     ? new MockChatService()
-  //     : new RealChatService('AIzaSyCGJYzPdw4I_FBVBN6qvPnhG_IrH_6oywk');
-  // const chatService: ChatService = new RealChatService(
-  //   'AIzaSyCGJYzPdw4I_FBVBN6qvPnhG_IrH_6oywk'
-  // );
-  //app.provide('chatService', chatService);
+  // Choose which service to use (e.g., based on environment variable)
+  const chatService: ChatService =
+    process.env.NODE_ENV === 'development'
+      ? new MockChatService()
+      : new RealChatService(process.env.CHAT_URL, process.env.CHAT_API_KEY);
+
+  app.provide('chatService', chatService);
 });

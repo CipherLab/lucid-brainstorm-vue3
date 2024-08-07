@@ -18,6 +18,10 @@ import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatsView from './ChatsView.vue';
 import { emitter, NodeToggledEvent } from '../eventBus';
+<<<<<<< HEAD
+=======
+import { is } from 'quasar';
+>>>>>>> 299fcc5 (Refactor eventBus.ts to add 'node:q-tab-toggled' event type)
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 
@@ -41,10 +45,7 @@ const expandedStates = ref<boolean[]>([]);
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
   expandedStates.value = connectedNodeIds.value.map((_, index) => {
-    if (props.isPrimary) {
-      return index === 0; // first item open by default
-    }
-    return index === -1; // no item open
+    return index === 0; // Last item open by default
   });
 };
 

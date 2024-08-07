@@ -1,93 +1,101 @@
 // src/services/realChatService.ts
-import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
-import { Message } from '../models/chatInterfaces';
-import { inject } from 'vue';
-import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatService from '../services/chatService';
+import axios from 'axios';
+import ChatService from './chatService'; // Import the interface
 import { startChatParams } from '../models/startChatParams';
+import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
 
 class RealChatService implements ChatService {
+  private chatUrl: string;
   private apiKey: string;
   private chats: Map<string, any> = new Map(); // Store chat instances by node ID
   private model: any;
-  private lucidFlow: LucidFlowComposable;
 
-  constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
+  constructor(chatUrl: string, apiKey: string) {
+    this.chatUrl = chatUrl;
     this.apiKey = apiKey;
-    this.lucidFlow = lucidFlow;
-    if (!this.lucidFlow) {
-      throw new Error('lucidFlow composable not provided!');
-    }
-  }
-  loadChatHistory(nodeId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  updateChatHistory(nodeId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  clearChat(nodeId: string): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   async startChat(nodeId: string) {
-    console.log('Starting chat for node:', nodeId);
     if (this.chats.has(nodeId)) {
-      return this.chats.get(nodeId);
+      return this.chats.get(nodeId); // Return existing chat for this node
     }
 
     const genAI = new GoogleGenerativeAI(this.apiKey);
     const modelParams: ModelParams = {
+      // Populate the ModelParams object with the necessary properties
+      // Example:
       model: 'gemini-1.5-pro-latest',
+      // Add other properties as required by the ModelParams interface
     };
     this.model = genAI.getGenerativeModel(modelParams);
-
-    // Load initial chat history from lucidFlow
-    const initialHistory = (await this.lucidFlow.getNodeChatData(nodeId)) || [];
-    console.log('initialHistory length:', initialHistory.length);
-
-    // Integrate initialHistory into startChatParams - ADAPT THIS SECTION:
-    startChatParams.history = startChatParams.history.concat(
-      initialHistory.map((message) => ({
-        role: message.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: message.message }],
-      }))
-    );
 
     const chat = this.model.startChat(startChatParams);
     this.chats.set(nodeId, chat);
     return chat;
   }
 
-  async sendMessage(text: string, nodeId: string): Promise<any> {
-    console.log('Sending message:', text, 'for node:', nodeId);
-    // Returns the full Gemini response
+  async sendMessage(
+    text: string,
+    nodeId: string // Node ID to identify the chat
+  ): Promise<{ result: string }> {
     try {
       if (!this.chats.has(nodeId)) {
-        await this.startChat(nodeId);
+        await this.startChat(nodeId); // Start a new chat if it doesn't exist
       }
+
       const chat = this.chats.get(nodeId);
-      const result = await chat.sendMessage(text);
-      return result;
+      //const contextUris = this.loadUrisFromFile(); // Load your URIs
+
+      // Customize based on your Gemini API:
+      const result = await chat.sendMessage(text); // Add contextFiles or other parameters as needed
+      const responseText = result.response.text();
+
+      return { result: responseText };
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
     }
   }
 
+  async loadChatHistory(nodeId: string): Promise<void> {
+    const savedHistory = sessionStorage.getItem(`chatHistory_${nodeId}`);
+    if (savedHistory) {
+      // ... (load history logic -  you'll likely need to update your component's messages ref)
+    }
+  }
+
+  async updateChatHistory(): Promise<void> {
+    // ... (save history logic -  similarly, update the messages ref in your component)
+  }
+
+  async clearChat(): Promise<void> {
+    try {
+      // ... (your existing clear chat logic)
+    } catch (error) {
+      console.error('Failed to clear chat:', error);
+      throw error; // Re-throw
+    }
+  }
+
   async getChatHistory(nodeId: string): Promise<any[]> {
+    // For now, let's assume history is stored within the chat instance itself
     if (!this.chats.has(nodeId)) {
-      return [];
+      return []; // Return empty history if chat doesn't exist
     }
 
     const chat = this.chats.get(nodeId);
-    const history = chat.messages; // Assuming "messages" is in your chat instance
+    // Replace this with your actual history retrieval logic from the chat instance
+    // Example (adapt as needed):
+    const history = chat.messages; // Assuming "messages" is a property of your chat instance
     return history.map((item: any) => ({
-      sender: item.role,
+      sender: item.role, // Adapt to your chat instance structure
       message: item.text,
-      createdAt: item.timestamp,
+      createdAt: item.timestamp, // Adapt if necessary
       error: false,
     }));
   }
+
+  // ... (add other methods from your component as needed)
 }
 
 export default RealChatService;

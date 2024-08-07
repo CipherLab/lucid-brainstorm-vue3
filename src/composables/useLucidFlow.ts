@@ -9,7 +9,6 @@ import {
   applyEdgeChanges,
   NodeRemoveChange,
 } from '@vue-flow/core'; // Import applyNodeChanges
-import { Message } from '../models/chatInterfaces';
 
 export interface LucidFlowComposable {
   getNodes: () => Node[];
@@ -93,19 +92,18 @@ export default function useLucidFlow(): LucidFlowComposable {
       nodeToUpdate.position = { x, y };
     }
   };
-  const getNodeChatData = (nodeId: string): Message[] | null => {
-    const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
+
+  const getNodeChatData = (nodeId: string) => {
+    const node = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
     return node ? node.data.chatData : null;
   };
 
-  const updateNodeChatData = (nodeId: string, newMessage: Message) => {
+  const updateNodeChatData = (nodeId: string, newChatData: any[]) => {
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      if (!nodeToUpdate.data.chatData) {
-        nodeToUpdate.data.chatData = [];
-      }
-      nodeToUpdate.data.chatData.push(newMessage);
+      nodeToUpdate.data.chatData = newChatData;
     }
+
     saveSession();
   };
   const getConnectedNodes = (nodeId: string): string[] => {
@@ -126,20 +124,8 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   // Saving the Session:
   function saveSession() {
-    const flowObject = vueFlow.toObject();
-
-    // Before saving, format the chat history in each node
-    flowObject.nodes = flowObject.nodes.map((node: any) => {
-      if (node.data.chatData) {
-        node.data.chatData = node.data.chatData.map((message: Message) => ({
-          role: message.sender === 'user' ? 'user' : 'model',
-          parts: [{ text: message.message || '' }], // Safeguarding against null messages
-        }));
-      }
-      return node;
-    });
-
-    localStorage.setItem(flowKey, JSON.stringify(flowObject));
+    //console.log('Saving session');
+    localStorage.setItem(flowKey, JSON.stringify(vueFlow.toObject()));
   }
 
   // Loading the Session (UPDATED):
