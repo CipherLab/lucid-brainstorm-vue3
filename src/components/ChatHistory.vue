@@ -18,10 +18,6 @@ import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import ChatsView from './ChatsView.vue';
 import { emitter, NodeToggledEvent } from '../eventBus';
-<<<<<<< HEAD
-=======
-import { is } from 'quasar';
->>>>>>> 299fcc5 (Refactor eventBus.ts to add 'node:q-tab-toggled' event type)
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 
