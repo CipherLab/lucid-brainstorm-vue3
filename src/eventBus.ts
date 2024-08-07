@@ -19,14 +19,7 @@ class NodeSelectedEvent extends BaseNodeEvent {
     this.nodeType = nodeType;
   }
 }
-class NodeDeselectedEvent extends BaseNodeEvent {
-  nodeType: string | undefined;
-
-  constructor(nodeId: string | undefined, nodeType: string | undefined) {
-    super(nodeId);
-    this.nodeType = nodeType;
-  }
-}
+class NodeDeselectedEvent {}
 
 class NodeToggledEvent extends BaseNodeEvent {
   totalConnections: number;

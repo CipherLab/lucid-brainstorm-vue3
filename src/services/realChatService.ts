@@ -1,45 +1,65 @@
 // src/services/realChatService.ts
-import axios from 'axios';
-import ChatService from './chatService'; // Import the interface
-import { startChatParams } from '../models/startChatParams';
 import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
+import { Message } from '../models/chatInterfaces';
+import { inject } from 'vue';
+import { LucidFlowComposable } from '../composables/useLucidFlow';
+import ChatService from '../services/chatService';
+import { startChatParams } from '../models/startChatParams';
 
 class RealChatService implements ChatService {
-  private chatUrl: string;
   private apiKey: string;
   private chats: Map<string, any> = new Map(); // Store chat instances by node ID
   private model: any;
+  private lucidFlow: LucidFlowComposable;
 
-  constructor(chatUrl: string, apiKey: string) {
-    this.chatUrl = chatUrl;
+  constructor(apiKey: string) {
     this.apiKey = apiKey;
+    this.lucidFlow = inject('lucidFlow') as LucidFlowComposable;
+    if (!this.lucidFlow) {
+      throw new Error('lucidFlow composable not provided!');
+    }
+  }
+  loadChatHistory(nodeId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  updateChatHistory(nodeId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  clearChat(nodeId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async startChat(nodeId: string) {
     console.log('Starting chat for node:', nodeId);
     if (this.chats.has(nodeId)) {
-      return this.chats.get(nodeId); // Return existing chat for this node
+      return this.chats.get(nodeId);
     }
 
     const genAI = new GoogleGenerativeAI(this.apiKey);
     const modelParams: ModelParams = {
-      // Populate the ModelParams object with the necessary properties
-      // Example:
       model: 'gemini-1.5-pro-latest',
-      // Add other properties as required by the ModelParams interface
     };
     this.model = genAI.getGenerativeModel(modelParams);
+
+    // Load initial chat history from lucidFlow
+    const initialHistory = (await this.lucidFlow.getNodeChatData(nodeId)) || [];
+    console.log('initialHistory length:', initialHistory.length);
+
+    // Integrate initialHistory into startChatParams - ADAPT THIS SECTION:
+    startChatParams.history = startChatParams.history.concat(
+      initialHistory.map((message) => ({
+        role: message.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: message.message }],
+      }))
+    );
 
     const chat = this.model.startChat(startChatParams);
     this.chats.set(nodeId, chat);
     return chat;
   }
 
-  async sendMessage(
-    text: string,
-    nodeId: string // Node ID to identify the chat
-  ): Promise<any> {
-    // Returns the full Gemini response object
+  async sendMessage(text: string, nodeId: string): Promise<any> {
+    // Returns the full Gemini response
     try {
       if (!this.chats.has(nodeId)) {
         await this.startChat(nodeId);
@@ -52,45 +72,21 @@ class RealChatService implements ChatService {
       throw error;
     }
   }
-  async loadChatHistory(nodeId: string): Promise<void> {
-    const savedHistory = sessionStorage.getItem(`chatHistory_${nodeId}`);
-    if (savedHistory) {
-      // ... (load history logic -  you'll likely need to update your component's messages ref)
-    }
-  }
-
-  async updateChatHistory(): Promise<void> {
-    // ... (save history logic -  similarly, update the messages ref in your component)
-  }
-
-  async clearChat(): Promise<void> {
-    try {
-      // ... (your existing clear chat logic)
-    } catch (error) {
-      console.error('Failed to clear chat:', error);
-      throw error; // Re-throw
-    }
-  }
 
   async getChatHistory(nodeId: string): Promise<any[]> {
-    // For now, let's assume history is stored within the chat instance itself
     if (!this.chats.has(nodeId)) {
-      return []; // Return empty history if chat doesn't exist
+      return [];
     }
 
     const chat = this.chats.get(nodeId);
-    // Replace this with your actual history retrieval logic from the chat instance
-    // Example (adapt as needed):
-    const history = chat.messages; // Assuming "messages" is a property of your chat instance
+    const history = chat.messages; // Assuming "messages" is in your chat instance
     return history.map((item: any) => ({
-      sender: item.role, // Adapt to your chat instance structure
+      sender: item.role,
       message: item.text,
-      createdAt: item.timestamp, // Adapt if necessary
+      createdAt: item.timestamp,
       error: false,
     }));
   }
-
-  // ... (add other methods from your component as needed)
 }
 
 export default RealChatService;

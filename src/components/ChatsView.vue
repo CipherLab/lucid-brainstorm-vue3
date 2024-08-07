@@ -181,7 +181,7 @@ const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat histor
 </script>
 <style scoped>
 .scroll-wrapper {
-  height: 58vh;
+  height: 52vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */

@@ -218,6 +218,7 @@ watch(
 );
 
 async function updateChatHistory() {
+  console.log('updateChatHistory', messages.value);
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 </script>
