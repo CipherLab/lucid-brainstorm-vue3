@@ -123,32 +123,29 @@ async function sendMessage() {
       emitter.emit('node:message-requested', { nodeId: props.selectedNodeId });
 
       const response = await chatService.sendMessage(
-        tempVal,
-        props.selectedNodeId
+        props.selectedNodeId,
+        tempVal
       );
 
       console.log('chat response:', response);
 
       // Extract relevant data and create a Message object:
-      const newMessage: Message = {
-        id: Date.now().toString(), // Use a suitable ID generator if needed
-        sender: assistantName.value,
-        message: response.result, // Access the correct property
+      messages.value.push({
+        id: Date.now() + '',
+        sender: 'model',
+        message: response.result + '',
         createdAt: Date.now(),
         error: false,
-        typing: false, // Set typing to false as the message has been received
+        typing: false,
         selected: false,
         isEnabled: true,
-      };
-
-      // Update the chat history in lucidFlow
-      messages.value.push(newMessage);
+      });
+      await updateChatHistory();
     } catch (error) {
       emitter.emit('node:message-failed', { nodeId: props.selectedNodeId });
     } finally {
       emitter.emit('node:message-received', { nodeId: props.selectedNodeId });
     }
-    await updateChatHistory();
   } catch (error) {
     // ... [error handling - potentially re-add the user input]
     userInput.value = tempVal;
@@ -163,7 +160,7 @@ async function pushDelayedMessage(
   delay: number
 ): Promise<void> {
   messages.value.push({
-    id: Date.UTC.toString(),
+    id: Date.now() + '',
     sender,
     message: null,
     createdAt: Date.now(),
@@ -190,8 +187,8 @@ async function pushDelayedResponse(msg: string) {
 
 function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
   messages.value.push({
-    id: Date.UTC.toString(),
-    sender: assistantName.value,
+    id: Date.now() + '',
+    sender: 'model',
     message: msg ?? '',
     createdAt: Date.now(),
     error: false,
@@ -203,9 +200,9 @@ function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
 
 function pushImmediateRequest(msg: string): void {
   messages.value.push({
-    id: Date.UTC.toString(),
+    id: Date.now() + '',
     sender: 'user',
-    message: msg,
+    message: msg ?? '',
     createdAt: Date.now(),
     error: false,
     typing: false,

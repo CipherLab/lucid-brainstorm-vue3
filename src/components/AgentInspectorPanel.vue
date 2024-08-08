@@ -57,7 +57,7 @@
     </div> -->
     </div>
     <div style="flex-grow: 1; display: flex">
-      <ChatComponent
+      <ChatWrapper
         v-if="selectedNode"
         :selectedNodeId="selectedNodeId"
         :assistantNameProp="assistantName"
@@ -71,9 +71,9 @@
 <script setup lang="ts">
 import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 import { inject, ref, computed, watchEffect } from 'vue';
-import { NodeProps } from '@vue-flow/core';
-import ChatComponent from './ChatComponent.vue';
+import ChatWrapper from './ChatWrapper.vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
+import { NodeProps } from '@vue-flow/core';
 const props = defineProps({
   selectedNodeId: {
     type: String,

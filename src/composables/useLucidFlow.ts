@@ -9,6 +9,7 @@ import {
   applyEdgeChanges,
   NodeRemoveChange,
 } from '@vue-flow/core'; // Import applyNodeChanges
+import { Message } from '../models/chatInterfaces';
 
 export interface LucidFlowComposable {
   getNodes: () => Node[];
@@ -19,7 +20,8 @@ export interface LucidFlowComposable {
   removeNode: (nodeId: string) => void;
   addEdge: (edge: Edge) => void;
   updateNodePosition: (nodeId: string, x: number, y: number) => void;
-  getNodeChatData: (nodeId: string) => any;
+  getNodeChatData: (nodeId: string) => Message[] | null;
+
   updateNodeChatData: (nodeId: string, newData: any) => void;
   getConnectedNodes: (nodeId: string) => string[];
   saveSession: () => void;
@@ -98,12 +100,15 @@ export default function useLucidFlow(): LucidFlowComposable {
     return node ? node.data.chatData : null;
   };
 
-  const updateNodeChatData = (nodeId: string, newChatData: any[]) => {
+  const updateNodeChatData = (
+    nodeId: string,
+    newChatData: Message[] | null
+  ) => {
+    // Accept an array of Messages
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      nodeToUpdate.data.chatData = newChatData;
+      nodeToUpdate.data.chatData = newChatData; // Update the entire chatData array
     }
-
     saveSession();
   };
   const getConnectedNodes = (nodeId: string): string[] => {
@@ -147,6 +152,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     addEdge,
     updateNodePosition,
     getNodeChatData,
+
     updateNodeChatData,
     getConnectedNodes,
     saveSession,

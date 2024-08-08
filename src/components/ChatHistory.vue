@@ -9,14 +9,14 @@
       @click="handleAccordionToggle(index)"
       :disable="isPrimary"
     >
-      <ChatsView :selectedNodeId="nodeId" />
+      <ChatViewer :selectedNodeId="nodeId" />
     </q-expansion-item>
   </q-list>
 </template>
 <script setup lang="ts">
+import ChatViewer from './ChatViewer.vue';
 import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatsView from './ChatsView.vue';
 import { emitter, NodeToggledEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;

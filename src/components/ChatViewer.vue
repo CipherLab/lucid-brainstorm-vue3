@@ -130,7 +130,7 @@ watchEffect(() => {
   nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
-    messages.value = chatData.map((message: any) => ({
+    messages.value = chatData.map((message: Message) => ({
       ...message,
       selected: false, // Add selected: false for each message loaded
     }));
