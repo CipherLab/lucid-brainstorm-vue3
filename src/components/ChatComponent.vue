@@ -63,10 +63,9 @@ import {
 import moment from 'moment';
 import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatService from '../services/chatService';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
-import { Message } from '../models/chatInterfaces';
+import { ChatService, Message } from '../models/chatInterfaces';
 import { emitter } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 

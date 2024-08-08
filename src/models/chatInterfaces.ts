@@ -8,3 +8,8 @@ export interface Message {
   selected: boolean;
   isEnabled: boolean;
 }
+
+export interface ChatService {
+  startChat(nodeId: string, systemInstructions: string): Promise<void>;
+  sendMessage(nodeId: string, text: string): Promise<{ result: string }>;
+}

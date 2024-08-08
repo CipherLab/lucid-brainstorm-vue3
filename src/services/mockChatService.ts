@@ -1,7 +1,12 @@
 // src/services/mockChatService.ts
-import ChatService from './chatService';
+
+import { ChatService } from '../models/chatInterfaces';
 
 class MockChatService implements ChatService {
+  startChat(nodeId: string, systemInstructions: string): Promise<void> {
+    // ... (no need to actually start in mock mode)
+    return Promise.resolve();
+  }
   async sendMessage(text: string): Promise<{ result: string }> {
     // Simulate a delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -21,10 +26,7 @@ class MockChatService implements ChatService {
   async clearChat(): Promise<void> {
     // ... (no need to actually clear in mock mode)
   }
-  async getChatHistory(nodeId: string): Promise<any[]> {
-    // ... (return mock history if needed)
-    return [];
-  }
+
   // ... (implement other mock methods as needed)
 }
 

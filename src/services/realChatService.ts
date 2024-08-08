@@ -1,11 +1,16 @@
-import ChatService from './chatService'; // Import the interface
+import {
+  Content,
+  GoogleGenerativeAI,
+  ModelParams,
+} from '@google/generative-ai';
+import { LucidFlowComposable } from '../composables/useLucidFlow.ts';
+import { ChatService, Message } from '../models/chatInterfaces.ts';
 import {
   startChatParams,
-  defaultInstructions,
-} from '../models/startChatParams';
-import { GoogleGenerativeAI, ModelParams } from '@google/generative-ai';
-import { LucidFlowComposable } from '../composables/useLucidFlow';
-import { Message } from '../models/chatInterfaces';
+  StartChatParams,
+  ChatHistory,
+  ChatPart,
+} from '../models/startChatParams.ts';
 
 class RealChatService implements ChatService {
   private apiKey: string;
@@ -19,29 +24,24 @@ class RealChatService implements ChatService {
     console.log('RealChatService initialized', apiKey);
   }
 
-  async startChat(
-    nodeId: string,
-    systemInstructions: string = defaultInstructions
-  ) {
+  async startChat(nodeId: string, systemInstructions: string) {
     if (this.chats.has(nodeId)) {
-      this.chats.delete(nodeId); // clear it out
+      this.chats.delete(nodeId); // Clear it out
     }
-
     const genAI = new GoogleGenerativeAI(this.apiKey);
+
     const modelParams: ModelParams = {
       model: 'gemini-1.5-pro-latest',
     };
     this.model = genAI.getGenerativeModel(modelParams);
 
-    const fullHistory: { role: string; parts: { text: string }[] }[] = [];
-
-    // 1. System Instructions
+    const fullHistory: ChatHistory[] = [];
+    // Add a dummy user message
     fullHistory.push({
-      role: 'user', // Or 'system' if that's how your API expects it
-      parts: [{ text: systemInstructions }],
+      role: 'user',
+      parts: [{ text: '' }], // An empty user message is enough
     });
 
-    // 2. Add Connected Node Chat History:
     const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId);
     for (const connectedNodeId of connectedNodeIds) {
       const connectedChatHistory = await this.lucidFlow.getNodeChatData(
@@ -52,25 +52,31 @@ class RealChatService implements ChatService {
       }
     }
 
-    // 3. Add Current Node Chat History:
     const currentChatHistory = await this.lucidFlow.getNodeChatData(nodeId);
     if (currentChatHistory) {
       fullHistory.push(...this.formatChatHistory(currentChatHistory));
     }
 
-    // Create the chat with the combined history:
-    const chat = this.model.startChat({ history: fullHistory });
-    this.chats.set(nodeId, chat);
+    // Create a new StartChatParams object with the correct system instructions
+    const updatedStartChatParams: StartChatParams = {
+      ...startChatParams,
+      systemInstructions: {
+        role: 'system',
+        parts: [{ text: systemInstructions }], // Remove the 'data' object
+      },
+      history: fullHistory, // Override history with the combined history
+    };
 
+    const chat = this.model.startChat(updatedStartChatParams);
+    this.chats.set(nodeId, chat);
     return chat;
   }
 
-  async sendMessage(text: string, nodeId: string): Promise<{ result: string }> {
+  async sendMessage(nodeId: string, text: string): Promise<{ result: string }> {
     try {
       const nodeProps = this.lucidFlow.findNodeProps(nodeId);
-      const systemInstructions =
-        nodeProps?.data.agent.systemInstructions || defaultInstructions;
-
+      const systemInstructions = nodeProps?.data.agent.systemInstructions;
+      console.log('Sending message:', text, nodeId, systemInstructions);
       if (!this.chats.has(nodeId)) {
         await this.startChat(nodeId, systemInstructions);
       }
@@ -85,17 +91,12 @@ class RealChatService implements ChatService {
     }
   }
 
-  // Helper to format history
-  private formatChatHistory(
-    messages: Message[]
-  ): { role: string; parts: { text: string }[] }[] {
+  private formatChatHistory(messages: Message[]): ChatHistory[] {
     return messages.map((message) => ({
       role: message.sender === 'user' ? 'user' : 'model',
       parts: [{ text: message.message || '' }],
     }));
   }
-
-  // ... other methods as needed ...
 }
 
 export default RealChatService;

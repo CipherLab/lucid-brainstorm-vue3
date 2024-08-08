@@ -80,7 +80,6 @@ import {
 import moment from 'moment';
 import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatService from '../services/chatService';
 import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
@@ -92,7 +91,6 @@ defineComponent(draggable);
 
 const messages = ref<Message[]>([]);
 const userInput = ref('');
-const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const scrollAreaRef = ref<any>(null);
 const props = defineProps({

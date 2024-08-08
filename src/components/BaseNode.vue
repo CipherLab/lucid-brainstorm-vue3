@@ -80,7 +80,7 @@ const handleDelete = () => {
     //props.onRemoveNode(props.id); // Call the callback to remove the node\
     //console.log('Delete node:', props.id);
     lucidFlow.removeNode(props.id);
-    emitter.emit('node:deselected', null);
+    emitter.emit('node:deselected', { nodeId: props.id });
   } else {
     showDeleteConfirm.value = true;
   }

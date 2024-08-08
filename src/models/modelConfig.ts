@@ -1,5 +1,4 @@
-import { defaultInstructions } from './startChatParams';
-
+// modelConfig.ts
 interface GenerationConfig {
   temperature: number;
   topP: number;
@@ -20,16 +19,16 @@ interface ModelConfig {
     role: 'system';
     parts: { text: string }[];
   };
+  defaultInstructions: string; // New field for default instructions
 }
 
+// Set default instructions directly in modelConfig
 const modelConfig: ModelConfig = {
-  // model: "gemini-pro",
   model: 'gemini-1.5-pro-latest',
   generationConfig: {
     temperature: 1,
     topP: 0.95,
     topK: 0,
-    // maxOutputTokens: 500,
   },
   safetySettings: [
     {
@@ -49,17 +48,9 @@ const modelConfig: ModelConfig = {
       threshold: 'BLOCK_MEDIUM_AND_ABOVE',
     },
   ],
+  defaultInstructions: 'You are a helpful AI assistant.', // Your default instructions here
 };
 
-if (modelConfig.model !== 'gemini-pro') {
-  modelConfig.systemInstruction = {
-    role: 'system',
-    parts: [
-      {
-        text: defaultInstructions,
-      },
-    ],
-  };
-}
+// ... (you can remove the `if (modelConfig.model !== 'gemini-pro')` block) ...
 
 export { modelConfig };
