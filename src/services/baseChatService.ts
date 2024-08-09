@@ -99,7 +99,7 @@ abstract class BaseChatService implements ChatService {
 
     return nonReactive.map((message) => ({
       role: message.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: message.message || '' }],
+      parts: [{ text: message.isEnabled ? message.message || '' : '' }],
     }));
   }
 }

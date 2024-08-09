@@ -173,10 +173,15 @@ function deleteMessage(index: number) {
   messages.value.splice(index, 1);
   updateChatHistory();
 }
+
 const onDragEnd = () => {
-  // Call your function to update the chat history:
-  updateChatHistory();
+  // Force a re-evaluation of the computed property:
+  const temp = formattedMessages.value; // Trigger a re-evaluation
+  messages.value = [...temp]; // Update the original array
+
+  updateChatHistory(); // Save the changes
 };
+
 async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
