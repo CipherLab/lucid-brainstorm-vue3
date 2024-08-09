@@ -70,7 +70,6 @@
                         :message="element.message"
                         :sender="element.sender"
                         :createdAt="element.createdAt"
-                        :typing="element.typing"
                         :assistantName="getSenderName(element.sender)"
                       />
                     </q-item-section>
