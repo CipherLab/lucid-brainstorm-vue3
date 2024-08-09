@@ -11,7 +11,10 @@
               @end="onDragEnd"
             >
               <template #item="{ element, index }">
-                <div :key="element.id">
+                <div
+                  :key="element.id"
+                  :class="{ 'disabled-message': !element.isEnabled }"
+                >
                   <!-- Sticky Header -->
                   <q-item>
                     <q-item-section>
@@ -35,7 +38,23 @@
                             >{{ getSenderName(element.sender) }}
                           </q-toolbar-title>
 
+                          <!-- Eye Icon Button -->
                           <q-btn
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            :icon="
+                              element.isEnabled
+                                ? 'visibility'
+                                : 'visibility_off'
+                            "
+                            @click.stop="toggleMessageEnabled(index)"
+                          />
+
+                          <!-- Delete Button (only for primary chat) -->
+                          <q-btn
+                            v-if="primaryChat"
                             size="12px"
                             flat
                             dense
@@ -98,7 +117,12 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isPrimaryChat: {
+    type: Boolean,
+    default: false,
+  },
 });
+const primaryChat = computed(() => props.isPrimaryChat); // New computed property
 
 const nodeProps = ref<NodeProps>();
 
@@ -113,7 +137,10 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-
+function toggleMessageEnabled(index: number) {
+  messages.value[index].isEnabled = !messages.value[index].isEnabled;
+  updateChatHistory();
+}
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     console.log('TAB scroll to bottom');
@@ -207,5 +234,8 @@ const formattedMessages = computed(() => {
   display: flex;
   flex-direction: column-reverse;
   overflow: hidden !important;
+}
+.disabled-message {
+  opacity: 0.3; /* Adjust opacity as needed */
 }
 </style>

@@ -23,7 +23,7 @@ export interface LucidFlowComposable {
   getNodeChatData: (nodeId: string) => Message[] | null;
 
   updateNodeChatData: (nodeId: string, newData: any) => void;
-  getConnectedNodes: (nodeId: string) => string[];
+  getConnectedNodes: (nodeId: string, includeSelf: boolean) => string[];
   saveSession: () => void;
   loadSession: () => void;
 }
@@ -111,22 +111,35 @@ export default function useLucidFlow(): LucidFlowComposable {
     }
     saveSession();
   };
-  const getConnectedNodes = (nodeId: string): string[] => {
-    const connectedNodeIds: string[] = [];
 
-    // Iterate over your Vue Flow edges
-    vueFlow.edges.value.forEach((edge: Edge) => {
-      // Check if the current node is the source or target of the edge
-      if (edge.source === nodeId) {
-        //connectedNodeIds.push(edge.target);
-      } else if (edge.target === nodeId) {
-        connectedNodeIds.push(edge.source);
-      }
-    });
-
+  const getConnectedNodes = (nodeId: string, includeSelf = false): string[] => {
+    const connectedNodeIds: string[] = includeSelf ? [nodeId] : [];
+    gatherConnectedNodesRecursively(nodeId, connectedNodeIds);
+    if (includeSelf && connectedNodeIds.indexOf(nodeId) === -1) {
+      connectedNodeIds.push(nodeId);
+    } else {
+      connectedNodeIds.splice(connectedNodeIds.indexOf(nodeId), 1);
+    }
     return connectedNodeIds;
   };
 
+  const gatherConnectedNodesRecursively = (
+    nodeId: string,
+    connectedNodeIds: string[]
+  ): void => {
+    vueFlow.edges.value.forEach((edge: Edge) => {
+      if (edge.source === nodeId && !connectedNodeIds.includes(edge.target)) {
+        connectedNodeIds.push(edge.target);
+        gatherConnectedNodesRecursively(edge.target, connectedNodeIds);
+      } else if (
+        edge.target === nodeId &&
+        !connectedNodeIds.includes(edge.source)
+      ) {
+        connectedNodeIds.push(edge.source);
+        gatherConnectedNodesRecursively(edge.source, connectedNodeIds);
+      }
+    });
+  };
   // Saving the Session:
   function saveSession() {
     //console.log('Saving session');

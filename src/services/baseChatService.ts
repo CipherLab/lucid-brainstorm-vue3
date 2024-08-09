@@ -44,16 +44,26 @@ abstract class BaseChatService implements ChatService {
     this.model = genAI.getGenerativeModel(modelParams);
 
     const fullHistory: ChatHistory[] = [];
-    // Add a dummy user message
     fullHistory.push({
-      role: 'user',
+      role: 'user', // Dummy message
       parts: [{ text: '' }],
     });
 
-    // Recursively gather chat histories
-    await this.recursivelyGatherChatHistory(nodeId, fullHistory);
+    // Get connected nodes using lucidFlow
+    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true); // Include self
 
-    // Create a new StartChatParams object with the correct system instructions
+    for (const connectedNodeId of connectedNodeIds) {
+      const connectedChatHistory = await this.lucidFlow.getNodeChatData(
+        connectedNodeId
+      );
+      if (connectedChatHistory) {
+        const formattedHistory = this.formatChatHistory(connectedChatHistory);
+        this.ensurePattern(fullHistory, formattedHistory);
+        fullHistory.push(...formattedHistory);
+      }
+    }
+
+    // Create the chat with the combined history:
     const updatedStartChatParams: StartChatParams = {
       ...startChatParams,
       systemInstructions: {
@@ -64,37 +74,6 @@ abstract class BaseChatService implements ChatService {
     };
 
     return updatedStartChatParams;
-  }
-
-  private async recursivelyGatherChatHistory(
-    nodeId: string,
-    fullHistory: ChatHistory[]
-  ) {
-    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId);
-
-    for (const connectedNodeId of connectedNodeIds) {
-      const connectedChatHistory = await this.lucidFlow.getNodeChatData(
-        connectedNodeId
-      );
-
-      if (connectedChatHistory) {
-        const formattedHistory = this.formatChatHistory(connectedChatHistory);
-        this.ensurePattern(fullHistory, formattedHistory);
-        fullHistory.push(...formattedHistory);
-
-        // Recursive call for connected nodes
-        await this.recursivelyGatherChatHistory(connectedNodeId, fullHistory);
-      }
-    }
-
-    // Add Current Node Chat History
-    const currentChatHistory = await this.lucidFlow.getNodeChatData(nodeId);
-
-    if (currentChatHistory) {
-      const formattedHistory = this.formatChatHistory(currentChatHistory);
-      this.ensurePattern(fullHistory, formattedHistory);
-      fullHistory.push(...formattedHistory);
-    }
   }
 
   private ensurePattern(
