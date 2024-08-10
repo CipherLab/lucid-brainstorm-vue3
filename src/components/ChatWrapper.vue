@@ -132,6 +132,7 @@ async function sendMessage() {
       //console.log('chat response:', response);
 
       // Extract relevant data and create a Message object:
+
       messages.value.push({
         id: Date.now() + '',
         sender: 'model',
@@ -140,7 +141,7 @@ async function sendMessage() {
         error: false,
         typing: false,
         selected: false,
-        isEnabled: true,
+        isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
       });
       await updateChatHistory();
     } catch (error) {
@@ -169,7 +170,7 @@ async function pushDelayedMessage(
     error: false,
     typing: true,
     selected: false,
-    isEnabled: true,
+    isEnabledByNode: { [props.selectedNodeId]: true },
   });
 
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -196,7 +197,7 @@ function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
     error: false,
     typing: typing,
     selected: false,
-    isEnabled: true,
+    isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
   });
 }
 
@@ -209,9 +210,10 @@ function pushImmediateRequest(msg: string): void {
     error: false,
     typing: false,
     selected: false,
-    isEnabled: true,
+    isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
   });
 }
+
 //watch not watcheffect for activetab
 watch(
   () => activeTab.value,

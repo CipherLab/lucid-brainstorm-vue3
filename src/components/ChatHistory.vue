@@ -65,14 +65,18 @@ const updateAccordionStates = () => {
 
 function isChatEnabled(nodeId: string): boolean {
   const chatData = lucidFlow.getNodeChatData(nodeId);
-  return chatData ? chatData.every((message) => message.isEnabled) : true;
+  if (!chatData) return true;
+  // Check if the message is enabled for the given nodeId
+  return chatData.every((message) => message.isEnabledByNode[nodeId] ?? true);
 }
 
 function toggleChatEnabled(nodeId: string) {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   if (chatData) {
     const newEnabledState = !isChatEnabled(nodeId);
-    chatData.forEach((message) => (message.isEnabled = newEnabledState));
+    chatData.forEach((message) => {
+      message.isEnabledByNode[nodeId] = newEnabledState;
+    });
     lucidFlow.updateNodeChatData(nodeId, chatData);
   }
 }
@@ -98,13 +102,16 @@ watchEffect(() => {
 
 const getAccordionLabel = (nodeId: string) => {
   const nodeProps = lucidFlow.findNodeProps(nodeId);
+
   if (!nodeProps) {
     return 'Unknown';
   }
   if (nodeId === props.selectedNodeId) {
     return `${nodeProps.data.agent.name} (Current)`;
   }
-  return nodeProps ? nodeProps.data.agent.name : 'Unknown';
+  return nodeProps
+    ? `${nodeProps.data.agent.name} - ${nodeProps.data.label}`
+    : 'Unknown';
 };
 
 const handleAccordionToggle = (index: number) => {

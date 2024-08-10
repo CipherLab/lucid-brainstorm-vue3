@@ -13,7 +13,9 @@
               <template #item="{ element, index }">
                 <div
                   :key="element.id"
-                  :class="{ 'disabled-message': !element.isEnabled }"
+                  :class="{
+                    'disabled-message': !isEnabledByNode(element),
+                  }"
                 >
                   <!-- Sticky Header -->
                   <q-item>
@@ -40,12 +42,13 @@
 
                           <!-- Eye Icon Button -->
                           <q-btn
+                            v-if="!primaryChat"
                             size="12px"
                             flat
                             dense
                             round
                             :icon="
-                              element.isEnabled
+                              isEnabledByNode(element)
                                 ? 'visibility'
                                 : 'visibility_off'
                             "
@@ -137,9 +140,23 @@ onUnmounted(() => {
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
 function toggleMessageEnabled(index: number) {
-  messages.value[index].isEnabled = !messages.value[index].isEnabled;
+  const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
+  const message = messages.value[index];
+
+  // Check if isEnabledByNode exists, if not, create it
+  if (!message.isEnabledByNode) {
+    message.isEnabledByNode = {};
+  }
+
+  // Toggle the isEnabled state for the current node
+  message.isEnabledByNode[nodeId] = !message.isEnabledByNode[nodeId];
+
   updateChatHistory();
 }
+
+const isEnabledByNode = (message: Message) => {
+  return message.isEnabledByNode[props.selectedNodeId] ?? true;
+};
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     //console.log('TAB scroll to bottom');
@@ -181,7 +198,9 @@ const onDragEnd = () => {
 
   updateChatHistory(); // Save the changes
 };
-
+const messageIsEnabledForNode = computed(() => (message: Message) => {
+  return message.isEnabledByNode[props.selectedNodeId] ?? true;
+});
 async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {

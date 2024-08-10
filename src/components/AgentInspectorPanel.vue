@@ -8,7 +8,6 @@
         :style="{ backgroundColor: selectedNode.data.agent.color }"
       >
         Token Count
-        {{ selectedNode.data.agent }}
         <span class="right-detail">{{
           selectedNode.data.tokenCount ?? 0
         }}</span>
@@ -58,19 +57,11 @@
             label="Enter something"
             filled
             type="textarea"
-            @input="debouncedUpdateChatHistory"
-            @blur="debouncedUpdateChatHistory"
+            @input="updateChatHistory"
+            @blur="updateChatHistory"
           />
         </div>
       </div>
-      <!-- <div class="q-pa-sm">
-      <q-input
-        v-model="selectedNode.data.agent.inputData"
-        label="Prompt Text"
-        filled
-        type="textarea"
-      />
-    </div> -->
     </div>
     <div style="flex-grow: 1; display: flex">
       <ChatWrapper
@@ -113,18 +104,7 @@ const props = defineProps({
     default: null,
   },
 });
-const messages = ref<Message[]>([
-  {
-    id: Date.now().toString(),
-    sender: 'user',
-    message: textInputData.value,
-    createdAt: Date.now(),
-    error: false,
-    typing: false,
-    selected: true,
-    isEnabled: true,
-  },
-]);
+const messages = ref<Message[]>([]);
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
@@ -198,13 +178,41 @@ const shouldShowAgentControls = computed(() => {
 
 watchEffect(() => {
   if (props.selectedNodeId) {
-    // Find and set the selected node, or null if not found
-    const node = lucidFlow.findNodeProps(props.selectedNodeId); // Cast the result to MyNodeProps or undefined
-    selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    selectedNode.value = node ?? null;
+
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData && chatData.length > 0) {
+      messages.value = [...chatData];
+      textInputData.value = messages.value[0]?.message || '';
+    } else {
+      messages.value = [
+        {
+          id: 'textInputMessage',
+          sender: 'input',
+          message: '', // Start with an empty message
+          createdAt: Date.now(),
+          error: false,
+          typing: false,
+          selected: false,
+          isEnabledByNode: {}, // Initialize isEnabledByNode
+        },
+      ];
+      textInputData.value = ''; // Clear input if no message data
+    }
   } else {
-    selectedNode.value = null; // Reset selectedNode if selectedNodeId is null
+    selectedNode.value = null;
+    textInputData.value = '';
   }
 });
+
+// Method to update the single-item message
+const updateTextInputMessage = debounce(() => {
+  if (selectedNode.value && selectedNode.value.data.agent.subtype === 'input') {
+    messages.value[0].message = textInputData.value;
+    updateChatHistory();
+  }
+}, 500); // Debounce for 500ms (adjust as needed)
 
 watchEffect(() => {
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
@@ -217,24 +225,29 @@ watchEffect(() => {
 // Debounce the updateChatHistory function
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 
-// ... your other methods ...
 async function updateChatHistory() {
-  if (textInputData.value && textInputData.value.trim() !== '') {
-    if (!messages.value || messages.value.length === 0) {
-      messages.value = [
-        {
-          id: Date.now().toString(),
-          sender: 'user',
-          message: textInputData.value,
-          createdAt: Date.now(),
-          error: false,
-          typing: false,
-          selected: true,
-          isEnabled: true,
-        },
-      ];
-    }
+  if (!messages.value || messages.value.length === 0) {
+    messages.value = [
+      {
+        id: 'textInputMessage',
+        sender: 'input',
+        message: textInputData.value,
+        createdAt: Date.now(),
+        error: false,
+        typing: false,
+        selected: true,
+        isEnabledByNode: {}, // Safe to initialize here (new message)
+      },
+    ];
+  } else {
+    // Preserve existing isEnabledByNode!
+    messages.value[0] = {
+      ...messages.value[0], // Copy existing properties
+      message: textInputData.value, // Update the message
+    };
   }
+
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 </script>
 
