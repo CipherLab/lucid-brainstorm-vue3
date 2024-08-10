@@ -71,8 +71,11 @@ function isChatEnabled(nodeId: string): boolean {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   if (!chatData) return true;
   // Check if the message is enabled for the given nodeId
-  return chatData.every((message) => message.isEnabledByNode[nodeId] ?? true);
+  return chatData.every(
+    (message) => message.isEnabledByNode[props.selectedNodeId] ?? true
+  );
 }
+
 function toggleChatEnabled(nodeId: string) {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   if (chatData) {
@@ -82,7 +85,7 @@ function toggleChatEnabled(nodeId: string) {
       if (!message.isEnabledByNode) {
         message.isEnabledByNode = {};
       }
-      message.isEnabledByNode[nodeId] = newEnabledState;
+      message.isEnabledByNode[props.selectedNodeId] = newEnabledState;
     });
     lucidFlow.updateNodeChatData(nodeId, chatData);
   }

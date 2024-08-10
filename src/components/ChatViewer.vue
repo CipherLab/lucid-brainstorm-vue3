@@ -161,7 +161,6 @@ function toggleMessageEnabled(connectedMessage: Message) {
 }
 
 const isEnabledByNode = (connectedMessage: Message) => {
-  const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
   const currentMessage = messages.value.find(
     (message) => message.id === connectedMessage.id
   );
