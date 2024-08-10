@@ -12,7 +12,7 @@
       draggable="true"
       @dragstart="onAgentDragStart(agent, $event)"
     >
-      <q-card>
+      <q-card v-if="agent.subtype == 'agent'">
         <q-card-section>
           <!-- Add agent details here -->
           <q-input
@@ -63,6 +63,7 @@ const availableAgents = reactive([
     hasInput: true,
     type: 'agent',
     temperature: 0,
+    subtype: 'agent',
   },
   {
     id: 2,
@@ -74,6 +75,7 @@ const availableAgents = reactive([
     hasInput: true,
     type: 'agent',
     temperature: 2,
+    subtype: 'agent',
   },
   {
     id: 3,
@@ -85,6 +87,7 @@ const availableAgents = reactive([
     hasInput: true,
     type: 'agent',
     temperature: 1,
+    subtype: 'agent',
   },
 ]);
 const availableInputs = reactive([
@@ -123,6 +126,18 @@ const availableInputs = reactive([
     hasInput: false,
     type: 'input',
     inputData: '',
+  },
+  {
+    id: 103, // Unique ID
+    systemInstructions: '', // No system instructions needed
+    name: 'Text Input',
+    icon: 'text_fields', // Choose a suitable icon
+    color: 'lightblue',
+    hasOutput: true,
+    hasInput: false,
+    type: 'agent', // New type
+    inputData: '', // Initial text for the input
+    subtype: 'input',
   },
 ]);
 const onAgentDragStart = (agent: any, event: DragEvent) => {

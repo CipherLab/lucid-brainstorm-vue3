@@ -142,12 +142,12 @@ function toggleMessageEnabled(index: number) {
 }
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
-    console.log('TAB scroll to bottom');
+    //console.log('TAB scroll to bottom');
     nextTick(scrollToBottom);
   }
 };
 const scrollToBottom = () => {
-  console.log('Scrolling to bottom');
+  //console.log('Scrolling to bottom');
   if (chatHistory.value && scrollAreaRef.value) {
     scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
   }

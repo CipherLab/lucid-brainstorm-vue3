@@ -102,7 +102,7 @@ const getAccordionLabel = (nodeId: string) => {
     return 'Unknown';
   }
   if (nodeId === props.selectedNodeId) {
-    console.log('Current node:', nodeProps.data.agent.name);
+    //console.log('Current node:', nodeProps.data.agent.name);
     return `${nodeProps.data.agent.name} (Current)`;
   }
   return nodeProps ? nodeProps.data.agent.name : 'Unknown';

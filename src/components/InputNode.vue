@@ -15,6 +15,7 @@
     :onRemoveNode="props.data.onRemoveNode"
     :subtype="props.data.agent.subtype"
     :inputData="props.data.agent.inputData"
+    :tokenCount="props.data.agent.tokenCount"
   >
   </BaseNode>
 </template>

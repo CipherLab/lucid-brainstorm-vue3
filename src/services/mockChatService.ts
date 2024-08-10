@@ -6,7 +6,7 @@ import BaseChatService from './baseChatService';
 
 class MockChatService extends BaseChatService {
   constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
-    console.log('MockChatService initialized', apiKey);
+    //console.log('MockChatService initialized', apiKey);
     // Mock implementation does not need parameters
     super('', lucidFlow); // Example, replace with appropriate parameters if needed
   }
@@ -17,7 +17,7 @@ class MockChatService extends BaseChatService {
   ): Promise<StartChatParams> {
     // Mock implementation of startChat
     const updatedChatParams = super.startChat(nodeId, systemInstructions);
-    console.log(
+    //console.log(
       'Mock startChat',
       nodeId,
       systemInstructions,
@@ -35,7 +35,7 @@ class MockChatService extends BaseChatService {
       systemInstructions
     );
 
-    console.log('Mock chatHistory', chatHistory);
+    //console.log('Mock chatHistory', chatHistory);
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return { result: `Mock response to: ${text}` };

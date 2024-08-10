@@ -12,7 +12,7 @@ import {
 class RealChatService extends BaseChatService {
   constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
     super(apiKey, lucidFlow);
-    console.log('RealChatService initialized', apiKey);
+    //console.log('RealChatService initialized', apiKey);
   }
 
   async startChat(nodeId: string, systemInstructions: string) {
@@ -31,7 +31,7 @@ class RealChatService extends BaseChatService {
         nodeId,
         systemInstructions
       );
-      console.log('Real chatHistory', chatHistory);
+      //console.log('Real chatHistory', chatHistory);
 
       const result = await chat.sendMessage(text);
       const responseText = result.response.text();

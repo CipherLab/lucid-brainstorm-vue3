@@ -10,7 +10,7 @@
   >
     <div v-if="isExpanded" class="node-inspector">
       <q-item>
-        <q-item-section>
+        <q-item-section v-if="subType != 'input'">
           <q-icon name="mdi-temperature-celsius" />
           <q-item-label>Temperature: {{ temperature }}</q-item-label>
         </q-item-section>
@@ -35,6 +35,8 @@ interface NodeInspectorProps {
   temperature: number;
   tokenCount: number;
   nodeId: string;
+  nodeType: string;
+  subType: string;
 }
 
 watch(isExpanded, (expanded) => {

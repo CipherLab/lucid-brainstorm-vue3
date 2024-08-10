@@ -114,10 +114,10 @@ async function sendMessage() {
   userInput.value = '';
 
   try {
-    console.log('1chatService.sendMessage:', tempVal);
+    //console.log('1chatService.sendMessage:', tempVal);
     pushImmediateRequest(tempVal); // Push user message
     await updateChatHistory(); // Save history (this will update the node data)
-    console.log('2chatService.sendMessage:', tempVal);
+    //console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
     try {
       emitter.emit('node:message-requested', { nodeId: props.selectedNodeId });
@@ -127,7 +127,7 @@ async function sendMessage() {
         tempVal
       );
 
-      console.log('chat response:', response);
+      //console.log('chat response:', response);
 
       // Extract relevant data and create a Message object:
       messages.value.push({
@@ -214,13 +214,13 @@ function pushImmediateRequest(msg: string): void {
 watch(
   () => activeTab.value,
   (newValue) => {
-    console.log('activeTab:', newValue);
+    //console.log('activeTab:', newValue);
     emitter.emit('node:q-tab-toggled', { nodeId: props.selectedNodeId });
   }
 );
 
 async function updateChatHistory() {
-  console.log('updateChatHistory', messages.value);
+  //console.log('updateChatHistory', messages.value);
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 </script>

@@ -14,8 +14,9 @@
     :hasOutput="props.data.agent.hasOutput"
     :onRemoveNode="props.data.onRemoveNode"
     :temperature="props.data.agent.temperature"
-    :tokenCount="props.data.agent.temperature"
+    :tokenCount="props.data.agent.tokenCount"
     :systemInstructions="props.data.agent.systemInstructions"
+    :subtype="props.data.agent.subtype"
   >
   </BaseNode>
 </template>
