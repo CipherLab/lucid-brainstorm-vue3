@@ -108,6 +108,8 @@ export default function useLucidFlow(): LucidFlowComposable {
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
       nodeToUpdate.data.chatData = newChatData; // Update the entire chatData array
+    } else {
+      console.error('Node not found');
     }
     saveSession();
   };

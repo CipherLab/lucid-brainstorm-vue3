@@ -132,7 +132,7 @@ const availableInputs = reactive([
     systemInstructions: '', // No system instructions needed
     name: 'Text Input',
     icon: 'text_fields', // Choose a suitable icon
-    color: 'lightblue',
+    color: 'rgb(185, 115, 45)',
     hasOutput: true,
     hasInput: false,
     type: 'agent', // New type

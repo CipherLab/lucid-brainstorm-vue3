@@ -66,10 +66,11 @@ import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
 import { emitter } from '../eventBus';
+import { debounce } from 'lodash';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
-
+const textInputData = ref('');
 const messages = ref<Message[]>([]);
 const userInput = ref('');
 const assistantName = ref('Assistant');
@@ -107,6 +108,8 @@ watchEffect(() => {
     messages.value = [];
   }
 });
+const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
+
 async function sendMessage() {
   const tempVal = userInput.value;
   if (!tempVal || tempVal.trim() === '') return;
