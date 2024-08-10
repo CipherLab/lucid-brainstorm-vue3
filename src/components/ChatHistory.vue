@@ -125,12 +125,16 @@ const getAccordionLabel = (nodeId: string) => {
 };
 
 const handleAccordionToggle = (index: number) => {
-  // Ensure only the last item and one other can be expanded
-  const thisItemsState = expandedStates.value[index];
-  for (let i = 0; i < connectedNodeIds.value.length - 1; i++) {
-    expandedStates[i] = false;
+  // Close all other accordions
+  if (props.isPrimary) {
+    return;
   }
-  expandedStates[index] = !thisItemsState;
+  expandedStates.value.forEach((_, i) => {
+    expandedStates.value[i] = false;
+  });
+
+  // Open the selected accordion
+  expandedStates.value[index] = true;
 
   const toggledEvent: NodeToggledEvent = {
     nodeId: connectedNodeIds.value[index],
