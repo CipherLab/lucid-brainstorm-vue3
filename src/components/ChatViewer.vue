@@ -11,7 +11,10 @@
               @end="onDragEnd"
             >
               <template #item="{ element, index }">
-                <div :key="element.id">
+                <div
+                  :key="element.id"
+                  :class="{ 'disabled-message': !element.isEnabled }"
+                >
                   <!-- Sticky Header -->
                   <q-item>
                     <q-item-section>
@@ -35,7 +38,23 @@
                             >{{ getSenderName(element.sender) }}
                           </q-toolbar-title>
 
+                          <!-- Eye Icon Button -->
                           <q-btn
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            :icon="
+                              element.isEnabled
+                                ? 'visibility'
+                                : 'visibility_off'
+                            "
+                            @click.stop="toggleMessageEnabled(index)"
+                          />
+
+                          <!-- Delete Button (only for primary chat) -->
+                          <q-btn
+                            v-if="primaryChat"
                             size="12px"
                             flat
                             dense
@@ -51,7 +70,6 @@
                         :message="element.message"
                         :sender="element.sender"
                         :createdAt="element.createdAt"
-                        :typing="element.typing"
                         :assistantName="getSenderName(element.sender)"
                       />
                     </q-item-section>
@@ -98,7 +116,12 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isPrimaryChat: {
+    type: Boolean,
+    default: false,
+  },
 });
+const primaryChat = computed(() => props.isPrimaryChat); // New computed property
 
 const nodeProps = ref<NodeProps>();
 
@@ -113,15 +136,18 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-
+function toggleMessageEnabled(index: number) {
+  messages.value[index].isEnabled = !messages.value[index].isEnabled;
+  updateChatHistory();
+}
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
-    console.log('TAB scroll to bottom');
+    //console.log('TAB scroll to bottom');
     nextTick(scrollToBottom);
   }
 };
 const scrollToBottom = () => {
-  console.log('Scrolling to bottom');
+  //console.log('Scrolling to bottom');
   if (chatHistory.value && scrollAreaRef.value) {
     scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
   }
@@ -130,7 +156,7 @@ watchEffect(() => {
   nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
-    messages.value = chatData.map((message: any) => ({
+    messages.value = chatData.map((message: Message) => ({
       ...message,
       selected: false, // Add selected: false for each message loaded
     }));
@@ -147,10 +173,15 @@ function deleteMessage(index: number) {
   messages.value.splice(index, 1);
   updateChatHistory();
 }
+
 const onDragEnd = () => {
-  // Call your function to update the chat history:
-  updateChatHistory();
+  // Force a re-evaluation of the computed property:
+  const temp = formattedMessages.value; // Trigger a re-evaluation
+  messages.value = [...temp]; // Update the original array
+
+  updateChatHistory(); // Save the changes
 };
+
 async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
@@ -207,5 +238,8 @@ const formattedMessages = computed(() => {
   display: flex;
   flex-direction: column-reverse;
   overflow: hidden !important;
+}
+.disabled-message {
+  opacity: 0.3; /* Adjust opacity as needed */
 }
 </style>

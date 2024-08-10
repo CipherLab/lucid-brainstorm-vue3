@@ -8,6 +8,7 @@
         :style="{ backgroundColor: selectedNode.data.agent.color }"
       >
         Token Count
+        {{ selectedNode.data.agent }}
         <span class="right-detail">{{
           selectedNode.data.tokenCount ?? 0
         }}</span>
@@ -21,32 +22,38 @@
           :input-style="{ color: 'white' }"
         />
       </div>
-
-      <div class="q-pa-sm">
-        <span class="label" style="padding: 0.25em">
-          <span class="left-detail">
-            <q-icon name="thermostat" />
-            Temperature:
+      <div
+        :style="
+          selectedNode.data.agent.subtype == 'agent' ? 'display: none' : ''
+        "
+      >
+        <div class="q-pa-sm">
+          <span class="label" style="padding: 0.25em">
+            <span class="left-detail">
+              <q-icon name="thermostat" />
+              Temperature:
+            </span>
+            {{ selectedNode.data.agent.temperature?.toFixed(1) }}
           </span>
-          {{ selectedNode.data.agent.temperature?.toFixed(1) }}
-        </span>
-        <q-slider
-          class="text-light"
-          v-model.number="selectedNode.data.agent.temperature"
-          :min="0"
-          :max="2"
-          :step="0.1"
-        />
+          <q-slider
+            class="text-light"
+            v-model.number="selectedNode.data.agent.temperature"
+            :min="0"
+            :max="2"
+            :step="0.1"
+          />
+        </div>
+        <div class="q-pa-sm">
+          <q-input
+            class="text-light"
+            v-model="selectedNode.data.agent.systemInstructions"
+            label="System Instructions"
+            filled
+            type="textarea"
+          />
+        </div>
       </div>
-      <div class="q-pa-sm">
-        <q-input
-          class="text-light"
-          v-model="selectedNode.data.agent.systemInstructions"
-          label="System Instructions"
-          filled
-          type="textarea"
-        />
-      </div>
+
       <!-- <div class="q-pa-sm">
       <q-input
         v-model="selectedNode.data.agent.inputData"
@@ -57,7 +64,7 @@
     </div> -->
     </div>
     <div style="flex-grow: 1; display: flex">
-      <ChatComponent
+      <ChatWrapper
         v-if="selectedNode"
         :selectedNodeId="selectedNodeId"
         :assistantNameProp="assistantName"
@@ -71,9 +78,9 @@
 <script setup lang="ts">
 import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 import { inject, ref, computed, watchEffect } from 'vue';
-import { NodeProps } from '@vue-flow/core';
-import ChatComponent from './ChatComponent.vue';
+import ChatWrapper from './ChatWrapper.vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
+import { NodeProps } from '@vue-flow/core';
 const props = defineProps({
   selectedNodeId: {
     type: String,

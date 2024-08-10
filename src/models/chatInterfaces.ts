@@ -1,3 +1,5 @@
+import { StartChatParams } from './startChatParams';
+
 export interface Message {
   id: string;
   sender: string;
@@ -10,6 +12,9 @@ export interface Message {
 }
 
 export interface ChatService {
-  startChat(nodeId: string, systemInstructions: string): Promise<void>;
+  startChat(
+    nodeId: string,
+    systemInstructions: string
+  ): Promise<StartChatParams>;
   sendMessage(nodeId: string, text: string): Promise<{ result: string }>;
 }

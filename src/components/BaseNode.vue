@@ -48,6 +48,8 @@
       :temperature="props.data.temperature"
       :tokenCount="props.data.tokenCount"
       :nodeId="props.id"
+      :nodeType="props.data.agent.type"
+      :subType="props.data.agent.subType"
     />
   </div>
 </template>
@@ -62,7 +64,7 @@ import {
 } from '@vue-flow/core';
 import { defineProps, computed, PropType, VNode, ref } from 'vue';
 import { emitter } from '../eventBus';
-
+import NodeInspector from './NodeInspector.vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
@@ -93,7 +95,7 @@ const handleInspector = () => {
   });
   //console.log('Open inspector for:', props.label);
   //console.log(' props.id:', props.id);
-  //console.log(' props.:', props.data.agent.temperature);
+  console.log(' props.data:', props.data);
 };
 
 // Handle clicks outside the node to deselect

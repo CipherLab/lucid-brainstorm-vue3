@@ -92,7 +92,7 @@ const onEdgesChange = (changes: any) => {
 };
 
 const handleClickOutside = (changes: any) => {
-  emitter.emit('node:deselected', null);
+  emitter.emit('node:deselected', {});
 };
 
 const removeNodeFromCanvas = (nodeId: string) => {
@@ -129,6 +129,8 @@ const onDrop = (event: any) => {
           hasInput: eventData.hasInput,
           temperature: eventData.temperature,
           systemInstructions: eventData.systemInstructions,
+          subtype: eventData.subtype,
+          tokenCount: eventData.tokenCount,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown agent',
@@ -156,6 +158,35 @@ const onDrop = (event: any) => {
           hasInput: eventData.hasInput,
           subtype: eventData.subtype,
           inputData: eventData.inputData,
+          tokenCount: eventData.tokenCount,
+        },
+        onRemoveNode: removeNodeFromCanvas,
+        label: eventData.name || 'unknown input',
+      },
+      type: eventData.type,
+    };
+    newNode.type = 'agent';
+    //console.log('New input node:', newNode);
+    nodesTotal.value++;
+    lucidFlow.addNode(newNode);
+  } else if (eventData.type === 'textInput') {
+    //console.log('Input dropped:', eventData);
+    newNode = {
+      id: `${Date.now()}`,
+      position,
+      data: {
+        // Add the 'agent' property to the data object
+        agent: {
+          type: 'textInput',
+          id: eventData.id,
+          name: eventData.name,
+          icon: eventData.icon,
+          color: eventData.color,
+          hasOutput: eventData.hasOutput,
+          hasInput: eventData.hasInput,
+          subtype: eventData.subtype,
+          inputData: eventData.inputData,
+          tokenCount: eventData.tokenCount,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown input',

@@ -9,18 +9,33 @@
       @click="handleAccordionToggle(index)"
       :disable="isPrimary"
     >
-      <ChatsView :selectedNodeId="nodeId" />
+      <template #header>
+        <div class="custom-header">
+          <q-btn
+            v-if="!isPrimary"
+            flat
+            dense
+            round
+            :icon="isChatEnabled(nodeId) ? 'visibility' : 'visibility_off'"
+            @click.stop="toggleChatEnabled(nodeId)"
+          />
+
+          <div class="custom-label text-center">
+            {{ getAccordionLabel(nodeId) }}
+          </div>
+        </div>
+      </template>
+      <ChatViewer :selectedNodeId="nodeId" :isPrimaryChat="isPrimary" />
     </q-expansion-item>
   </q-list>
 </template>
 <script setup lang="ts">
+import ChatViewer from './ChatViewer.vue';
 import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import ChatsView from './ChatsView.vue';
 import { emitter, NodeToggledEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
-
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
   throw new Error('useLucidFlow composable not found!'); // Or handle the error appropriately
@@ -44,7 +59,19 @@ const updateAccordionStates = () => {
     return index === 0; // Last item open by default
   });
 };
+function isChatEnabled(nodeId: string): boolean {
+  const chatData = lucidFlow.getNodeChatData(nodeId);
+  return chatData ? chatData.every((message) => message.isEnabled) : true;
+}
 
+function toggleChatEnabled(nodeId: string) {
+  const chatData = lucidFlow.getNodeChatData(nodeId);
+  if (chatData) {
+    const newEnabledState = !isChatEnabled(nodeId);
+    chatData.forEach((message) => (message.isEnabled = newEnabledState));
+    lucidFlow.updateNodeChatData(nodeId, chatData);
+  }
+}
 onMounted(() => {
   // const toggledEvent: NodeToggledEvent = {
   //   nodeId: connectedNodeIds.value[connectedNodeIds.value.length - 1],
@@ -60,7 +87,8 @@ watchEffect(() => {
       connectedNodeIds.value = [props.selectedNodeId];
     } else {
       connectedNodeIds.value = lucidFlow.getConnectedNodes(
-        props.selectedNodeId
+        props.selectedNodeId,
+        false
       );
     }
 
@@ -74,6 +102,7 @@ const getAccordionLabel = (nodeId: string) => {
     return 'Unknown';
   }
   if (nodeId === props.selectedNodeId) {
+    //console.log('Current node:', nodeProps.data.agent.name);
     return `${nodeProps.data.agent.name} (Current)`;
   }
   return nodeProps ? nodeProps.data.agent.name : 'Unknown';
@@ -96,4 +125,15 @@ const handleAccordionToggle = (index: number) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.custom-header {
+  display: flex;
+  align-items: center; /* Vertical alignment */
+  justify-content: space-between; /* Horizontal spacing */
+  width: 100%;
+}
+
+.custom-label {
+  flex-grow: 1; /* Allow the label to take up available space */
+}
+</style>
