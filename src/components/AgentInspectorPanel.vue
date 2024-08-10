@@ -107,6 +107,12 @@ import { on } from 'events';
 import { text } from 'stream/consumers';
 import { debug } from 'console';
 const textInputData = ref('');
+const props = defineProps({
+  selectedNodeId: {
+    type: String,
+    default: null,
+  },
+});
 const messages = ref<Message[]>([
   {
     id: Date.now().toString(),
@@ -119,13 +125,8 @@ const messages = ref<Message[]>([
     isEnabled: true,
   },
 ]);
+const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 
-const props = defineProps({
-  selectedNodeId: {
-    type: String,
-    default: null,
-  },
-});
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 if (!lucidFlow) {
   throw new Error('lucidFlow composable not provided');
@@ -232,17 +233,12 @@ async function updateChatHistory() {
           isEnabled: true,
         },
       ];
-    } else {
-      messages.value[0].message = textInputData.value;
     }
-    lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
   }
 }
 </script>
+
 <style scoped>
-.inspector-content {
-  padding: 10px;
-}
 .inline-name-input {
   color: white !important;
   width: 100%;
