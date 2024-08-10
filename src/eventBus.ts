@@ -30,6 +30,15 @@ class NodeToggledEvent extends BaseNodeEvent {
   }
 }
 
+class MessageReceivedEvent extends BaseNodeEvent {
+  message: string;
+
+  constructor(nodeId: string | undefined, message: string) {
+    super(nodeId);
+    this.message = message;
+  }
+}
+
 class NodeTabbedEvent extends BaseNodeEvent {
   constructor(nodeId: string | undefined) {
     super(nodeId);
@@ -41,7 +50,7 @@ type Events = {
   'node:deselected': NodeDeselectedEvent;
   'node:accordion-toggled': NodeToggledEvent;
   'node:q-tab-toggled': NodeTabbedEvent;
-  'node:message-received': BaseNodeEvent;
+  'node:message-received': MessageReceivedEvent;
   'node:message-requested': BaseNodeEvent;
   'node:message-failed': BaseNodeEvent;
 };
@@ -58,4 +67,5 @@ export type {
   NodeDeselectedEvent,
   NodeToggledEvent,
   NodeTabbedEvent,
+  MessageReceivedEvent,
 };

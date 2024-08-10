@@ -70,6 +70,7 @@
 
                       <!-- Chat Message Component -->
                       <ChatMessage
+                        :nodeId="element.id"
                         :message="element.message"
                         :sender="element.sender"
                         :createdAt="element.createdAt"

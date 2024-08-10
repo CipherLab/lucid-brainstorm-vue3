@@ -22,9 +22,13 @@
 import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
 import markdownIt from 'markdown-it';
-import { BaseNodeEvent, emitter } from '../eventBus';
+import { BaseNodeEvent, emitter, MessageReceivedEvent } from '../eventBus';
 
 const props = defineProps({
+  nodeId: {
+    type: String,
+    required: true,
+  },
   message: {
     type: String,
     required: true,
@@ -49,8 +53,8 @@ const showWorking = ref<boolean>(false);
 const showError = ref<boolean>(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
-
-const renderedMessage = computed(() => md.render(props.message));
+const messageProp = ref<string>(props.message);
+const renderedMessage = computed(() => md.render(messageProp.value));
 
 onMounted(() => {
   emitter.on('node:message-requested', handleRequested);
@@ -65,16 +69,23 @@ onUnmounted(() => {
 });
 
 const handleRequested = (event: BaseNodeEvent) => {
-  showWorking.value = true;
-  showError.value = false;
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = true;
+    showError.value = false;
+  }
 };
-const handleReceived = (event: BaseNodeEvent) => {
-  showWorking.value = false;
-  showError.value = false;
+const handleReceived = (event: MessageReceivedEvent) => {
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = false;
+    showError.value = false;
+    messageProp.value = event.message;
+  }
 };
 const handleFailed = (event: BaseNodeEvent) => {
-  showWorking.value = false;
-  showError.value = true;
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = false;
+    showError.value = true;
+  }
 };
 </script>
 

@@ -121,33 +121,48 @@ async function sendMessage() {
     await updateChatHistory(); // Save history (this will update the node data)
     //console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
+    const messageId = Date.now() + '';
+    let messageResult = '';
     try {
-      emitter.emit('node:message-requested', { nodeId: props.selectedNodeId });
+      messages.value.push({
+        id: messageId,
+        sender: 'model',
+        message: '',
+        createdAt: Date.now(),
+        error: false,
+        typing: true,
+        selected: false,
+        isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
+      });
+
+      await updateChatHistory();
+
+      //update the specific last message with the new response
+
+      emitter.emit('node:message-requested', { nodeId: messageId });
 
       const response = await chatService.sendMessage(
         props.selectedNodeId,
         tempVal
       );
-
-      //console.log('chat response:', response);
-
       // Extract relevant data and create a Message object:
+      messageResult = response.result;
 
-      messages.value.push({
-        id: Date.now() + '',
-        sender: 'model',
-        message: response.result + '',
-        createdAt: Date.now(),
-        error: false,
-        typing: false,
-        selected: false,
-        isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
-      });
-      await updateChatHistory();
+      const messageToUpdate = messages.value.find(
+        (msg) => msg.id === messageId
+      );
+      if (messageToUpdate) {
+        messageToUpdate.message = messageResult;
+        messageToUpdate.typing = false;
+        await updateChatHistory();
+      }
     } catch (error) {
-      emitter.emit('node:message-failed', { nodeId: props.selectedNodeId });
+      emitter.emit('node:message-failed', { nodeId: messageId });
     } finally {
-      emitter.emit('node:message-received', { nodeId: props.selectedNodeId });
+      emitter.emit('node:message-received', {
+        nodeId: messageId,
+        message: messageResult,
+      });
     }
   } catch (error) {
     // ... [error handling - potentially re-add the user input]
@@ -186,19 +201,6 @@ async function pushDelayedMessage(
 
 async function pushDelayedResponse(msg: string) {
   await pushDelayedMessage(msg, assistantName.value, 1500);
-}
-
-function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
-  messages.value.push({
-    id: Date.now() + '',
-    sender: 'model',
-    message: msg ?? '',
-    createdAt: Date.now(),
-    error: false,
-    typing: typing,
-    selected: false,
-    isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
-  });
 }
 
 function pushImmediateRequest(msg: string): void {
