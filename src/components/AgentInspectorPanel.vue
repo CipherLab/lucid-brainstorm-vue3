@@ -229,7 +229,7 @@ async function updateChatHistory() {
   if (!messages.value || messages.value.length === 0) {
     messages.value = [
       {
-        id: 'textInputMessage',
+        id: Date.now() + '',
         sender: 'input',
         message: textInputData.value,
         createdAt: Date.now(),

@@ -115,6 +115,10 @@ const userInput = ref('');
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const scrollAreaRef = ref<any>(null);
 const props = defineProps({
+  parentNodeId: {
+    type: String,
+    default: '',
+  },
   selectedNodeId: {
     type: String,
     default: '',
@@ -150,7 +154,8 @@ function toggleMessageEnabled(connectedMessage: Message) {
   }
 
   // Toggle the isEnabled state for the current node
-  message.isEnabledByNode[nodeId] = !message.isEnabledByNode[nodeId];
+  message.isEnabledByNode[props.parentNodeId] =
+    !message.isEnabledByNode[props.parentNodeId];
 
   updateChatHistory();
 }
@@ -160,7 +165,7 @@ const isEnabledByNode = (connectedMessage: Message) => {
   const currentMessage = messages.value.find(
     (message) => message.id === connectedMessage.id
   );
-  return currentMessage?.isEnabledByNode[nodeId] ?? true;
+  return currentMessage?.isEnabledByNode[props.parentNodeId] ?? true;
 };
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {

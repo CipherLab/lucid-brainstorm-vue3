@@ -25,7 +25,11 @@
           </div>
         </div>
       </template>
-      <ChatViewer :selectedNodeId="nodeId" :isPrimaryChat="isPrimary" />
+      <ChatViewer
+        :parentNodeId="selectedNodeId"
+        :selectedNodeId="nodeId"
+        :isPrimaryChat="isPrimary"
+      />
     </q-expansion-item>
   </q-list>
 </template>
