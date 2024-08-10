@@ -69,12 +69,15 @@ function isChatEnabled(nodeId: string): boolean {
   // Check if the message is enabled for the given nodeId
   return chatData.every((message) => message.isEnabledByNode[nodeId] ?? true);
 }
-
 function toggleChatEnabled(nodeId: string) {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   if (chatData) {
     const newEnabledState = !isChatEnabled(nodeId);
     chatData.forEach((message) => {
+      // Update isEnabledByNode for the specific node ONLY
+      if (!message.isEnabledByNode) {
+        message.isEnabledByNode = {};
+      }
       message.isEnabledByNode[nodeId] = newEnabledState;
     });
     lucidFlow.updateNodeChatData(nodeId, chatData);

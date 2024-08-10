@@ -57,7 +57,10 @@ abstract class BaseChatService implements ChatService {
         connectedNodeId
       );
       if (connectedChatHistory) {
-        const formattedHistory = this.formatChatHistory(connectedChatHistory);
+        const formattedHistory = this.formatChatHistory(
+          connectedChatHistory,
+          connectedNodeId
+        );
         this.ensurePattern(fullHistory, formattedHistory);
         fullHistory.push(...formattedHistory);
       }
@@ -93,14 +96,22 @@ abstract class BaseChatService implements ChatService {
       }
     }
   }
-
-  private formatChatHistory(messages: Message[]): ChatHistory[] {
+  private formatChatHistory(
+    messages: Message[],
+    nodeId: string
+  ): ChatHistory[] {
+    // Pass nodeId
     const nonReactive = JSON.parse(JSON.stringify(messages));
 
-    return nonReactive.map((message) => ({
-      role: message.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: message.isEnabled ? message.message || '' : '' }],
-    }));
+    return nonReactive.map((message) => {
+      // Check isEnabledByNode for the specific nodeId
+      const isEnabled = message.isEnabledByNode[nodeId] ?? true; // Default to true if not set
+
+      return {
+        role: message.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: isEnabled ? message.message || '' : '' }],
+      };
+    });
   }
 }
 

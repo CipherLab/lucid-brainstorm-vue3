@@ -52,7 +52,7 @@
                                 ? 'visibility'
                                 : 'visibility_off'
                             "
-                            @click.stop="toggleMessageEnabled(index)"
+                            @click.stop="toggleMessageEnabled(element)"
                           />
 
                           <!-- Delete Button (only for primary chat) -->
@@ -139,13 +139,14 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-function toggleMessageEnabled(index: number) {
+function toggleMessageEnabled(connectedMessage: Message) {
   const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
-  const message = messages.value[index];
-
-  // Check if isEnabledByNode exists, if not, create it
-  if (!message.isEnabledByNode) {
-    message.isEnabledByNode = {};
+  const message = messages.value.find(
+    (message) => message.id === connectedMessage.id
+  );
+  if (!message) {
+    console.error('Message not found:', connectedMessage);
+    return;
   }
 
   // Toggle the isEnabled state for the current node
@@ -154,8 +155,12 @@ function toggleMessageEnabled(index: number) {
   updateChatHistory();
 }
 
-const isEnabledByNode = (message: Message) => {
-  return message.isEnabledByNode[props.selectedNodeId] ?? true;
+const isEnabledByNode = (connectedMessage: Message) => {
+  const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
+  const currentMessage = messages.value.find(
+    (message) => message.id === connectedMessage.id
+  );
+  return currentMessage?.isEnabledByNode[nodeId] ?? true;
 };
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
