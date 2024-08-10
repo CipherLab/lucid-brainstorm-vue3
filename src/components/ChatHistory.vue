@@ -29,12 +29,13 @@
     </q-expansion-item>
   </q-list>
 </template>
+
 <script setup lang="ts">
 import ChatViewer from './ChatViewer.vue';
 import { inject, ref, onMounted, watchEffect } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import { emitter, NodeToggledEvent } from '../eventBus';
-//import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
+
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
@@ -51,14 +52,17 @@ const props = defineProps({
     default: false,
   },
 });
+
 const connectedNodeIds = ref<string[]>([]);
 const expandedStates = ref<boolean[]>([]);
+
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
   expandedStates.value = connectedNodeIds.value.map((_, index) => {
     return index === 0; // Last item open by default
   });
 };
+
 function isChatEnabled(nodeId: string): boolean {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   return chatData ? chatData.every((message) => message.isEnabled) : true;
@@ -73,11 +77,7 @@ function toggleChatEnabled(nodeId: string) {
   }
 }
 onMounted(() => {
-  // const toggledEvent: NodeToggledEvent = {
-  //   nodeId: connectedNodeIds.value[connectedNodeIds.value.length - 1],
-  //   totalConnections: connectedNodeIds.value.length,
-  // };
-  // emitter.emit('node:accordion-toggled', toggledEvent);
+  // Additional setup if needed
 });
 
 // Update expandedStates whenever connectedNodeIds changes
@@ -102,7 +102,6 @@ const getAccordionLabel = (nodeId: string) => {
     return 'Unknown';
   }
   if (nodeId === props.selectedNodeId) {
-    //console.log('Current node:', nodeProps.data.agent.name);
     return `${nodeProps.data.agent.name} (Current)`;
   }
   return nodeProps ? nodeProps.data.agent.name : 'Unknown';

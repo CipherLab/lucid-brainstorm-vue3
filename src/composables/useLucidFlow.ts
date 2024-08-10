@@ -117,11 +117,6 @@ export default function useLucidFlow(): LucidFlowComposable {
   const getConnectedNodes = (nodeId: string, includeSelf = false): string[] => {
     const connectedNodeIds: string[] = includeSelf ? [nodeId] : [];
     gatherConnectedNodesRecursively(nodeId, connectedNodeIds);
-    if (includeSelf && connectedNodeIds.indexOf(nodeId) === -1) {
-      connectedNodeIds.push(nodeId);
-    } else {
-      connectedNodeIds.splice(connectedNodeIds.indexOf(nodeId), 1);
-    }
     return connectedNodeIds;
   };
 
@@ -130,29 +125,27 @@ export default function useLucidFlow(): LucidFlowComposable {
     connectedNodeIds: string[]
   ): void => {
     vueFlow.edges.value.forEach((edge: Edge) => {
-      if (edge.source === nodeId && !connectedNodeIds.includes(edge.target)) {
-        connectedNodeIds.push(edge.target);
-        gatherConnectedNodesRecursively(edge.target, connectedNodeIds);
-      } else if (
-        edge.target === nodeId &&
-        !connectedNodeIds.includes(edge.source)
-      ) {
+      if (edge.target === nodeId && !connectedNodeIds.includes(edge.source)) {
         connectedNodeIds.push(edge.source);
         gatherConnectedNodesRecursively(edge.source, connectedNodeIds);
       }
     });
   };
+
   // Saving the Session:
   function saveSession() {
-    //console.log('Saving session');
-    localStorage.setItem(flowKey, JSON.stringify(vueFlow.toObject()));
+    const flowData = vueFlow.toObject();
+
+    // Optionally, you can prettify the JSON to make it more readable (though it increases size):
+    const prettyFlowData = JSON.stringify(flowData, null, 2);
+
+    localStorage.setItem(flowKey, prettyFlowData);
   }
 
-  // Loading the Session (UPDATED):
+  // Loading the Session:
   function loadSession() {
     const savedFlow = localStorage.getItem(flowKey);
     if (savedFlow) {
-      // 1. Restore the internal state:
       vueFlow.fromObject(JSON.parse(savedFlow));
     }
   }

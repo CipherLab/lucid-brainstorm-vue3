@@ -136,25 +136,50 @@ const assistantName = computed(() => {
   }
   return 'Assistant';
 });
-
-onMounted(async () => {
+onMounted(() => {
   emitter.on('node:selected', handleNodeSelected);
-  if (
-    selectedNode.value &&
-    selectedNode.value.data.agent.subtype === 'input' &&
-    messages.value &&
-    messages.value.length > 0 &&
-    messages.value[0].message !== ''
-  ) {
-    textInputData.value = messages.value[0].message + '';
-  }
 });
+
+onUnmounted(() => {
+  emitter.off('node:selected', handleNodeSelected);
+});
+
 const handleNodeSelected = (event: BaseNodeEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     const node = lucidFlow.findNodeProps(event.nodeId);
     selectedNode.value = node ?? null;
+
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData && chatData.length > 0) {
+      messages.value = [...chatData];
+      textInputData.value = messages.value[0]?.message || ''; // Sync input data with message
+    } else {
+      messages.value = [];
+      textInputData.value = ''; // Clear input if no message data
+    }
   }
 };
+
+// Watch for changes to selectedNodeId
+watchEffect(() => {
+  if (props.selectedNodeId) {
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    selectedNode.value = node ?? null;
+
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData) {
+      messages.value = [...chatData];
+      textInputData.value = chatData[0]?.message || ''; // Load the text into the input
+    } else {
+      messages.value = [];
+      textInputData.value = ''; // Clear input if no message data
+    }
+  } else {
+    selectedNode.value = null;
+    textInputData.value = ''; // Clear input when no node is selected
+  }
+});
+
 const shouldShowAgentControls = computed(() => {
   if (selectedNode.value) {
     if (
@@ -170,7 +195,6 @@ const shouldShowAgentControls = computed(() => {
   return 'Assistant';
 });
 
-const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 watchEffect(() => {
   if (props.selectedNodeId) {
     // Find and set the selected node, or null if not found
@@ -193,7 +217,6 @@ watchEffect(() => {
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 
 // ... your other methods ...
-
 async function updateChatHistory() {
   if (textInputData.value && textInputData.value.trim() !== '') {
     if (!messages.value || messages.value.length === 0) {

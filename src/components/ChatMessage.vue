@@ -10,7 +10,7 @@
       <q-icon name="error" color="red" />
     </q-item-label>
     <q-item-label v-else>
-      {{ message }}
+      <div v-html="renderedMessage"></div>
     </q-item-label>
     <q-item-label caption class="text-grey-8 text-right">
       {{ formattedTime }}
@@ -21,6 +21,7 @@
 <script setup lang="ts">
 import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
+import markdownIt from 'markdown-it';
 import { BaseNodeEvent, emitter } from '../eventBus';
 
 const props = defineProps({
@@ -36,16 +37,21 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-
   assistantName: {
     type: String,
     default: 'Assistant',
   },
 });
+
+const md = markdownIt({ breaks: true }); // breaks: true ensures that line breaks are preserved
+
 const showWorking = ref<boolean>(false);
 const showError = ref<boolean>(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
+
+const renderedMessage = computed(() => md.render(props.message));
+
 onMounted(() => {
   emitter.on('node:message-requested', handleRequested);
   emitter.on('node:message-received', handleReceived);

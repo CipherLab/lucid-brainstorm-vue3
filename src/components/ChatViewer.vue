@@ -199,7 +199,6 @@ const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
 const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
-
 const formattedMessages = computed(() => {
   if (!messages.value) return [];
 
@@ -213,7 +212,7 @@ const formattedMessages = computed(() => {
 </script>
 <style scoped>
 .scroll-wrapper {
-  height: 52vh;
+  height: 45vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */
