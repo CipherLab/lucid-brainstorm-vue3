@@ -31,7 +31,6 @@ abstract class BaseChatService implements ChatService {
     // To be implemented by derived classes
     return { result: '' };
   }
-
   protected async buildChatHistory(
     nodeId: string,
     systemInstructions: string
@@ -43,14 +42,11 @@ abstract class BaseChatService implements ChatService {
     };
     this.model = genAI.getGenerativeModel(modelParams);
 
-    const fullHistory: ChatHistory[] = [];
-    fullHistory.push({
-      role: 'user', // Dummy message
-      parts: [{ text: '' }],
-    });
+    const fullHistoryMap = new Map<string, ChatHistory>(); // Use a Map
+    fullHistoryMap.set('initialDummy', { role: 'user', parts: [{ text: '' }] });
 
     // Get connected nodes using lucidFlow
-    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true); // Include self
+    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true);
 
     for (const connectedNodeId of connectedNodeIds) {
       const connectedChatHistory = await this.lucidFlow.getNodeChatData(
@@ -59,12 +55,21 @@ abstract class BaseChatService implements ChatService {
       if (connectedChatHistory) {
         const formattedHistory = this.formatChatHistory(
           connectedChatHistory,
-          connectedNodeId
+          nodeId
         );
-        this.ensurePattern(fullHistory, formattedHistory);
-        fullHistory.push(...formattedHistory);
+
+        // Call ensurePattern before adding to the Map:
+        this.ensurePattern(fullHistoryMap, formattedHistory);
+
+        formattedHistory.forEach((item) => {
+          if (item.parts[0].text !== '') {
+            fullHistoryMap.set(item.parts[0].text, item);
+          }
+        });
       }
     }
+
+    const fullHistory = Array.from(fullHistoryMap.values());
 
     // Create the chat with the combined history:
     const updatedStartChatParams: StartChatParams = {
@@ -78,22 +83,25 @@ abstract class BaseChatService implements ChatService {
 
     return updatedStartChatParams;
   }
-
+  // Modify ensurePattern to work with the Map
   private ensurePattern(
-    fullHistory: ChatHistory[],
+    fullHistoryMap: Map<string, ChatHistory>,
     newHistory: ChatHistory[]
   ): void {
-    if (fullHistory.length > 0 && newHistory.length > 0) {
-      const lastMessage = fullHistory[fullHistory.length - 1];
-      const firstNewMessage = newHistory[0];
+    if (newHistory.length === 0) {
+      return;
+    }
 
-      if (lastMessage.role === firstNewMessage.role) {
-        const dummyMessage: ChatHistory = {
-          role: lastMessage.role === 'user' ? 'model' : 'user',
-          parts: [{ text: '' }],
-        };
-        fullHistory.push(dummyMessage);
-      }
+    // Get the last message in the Map (which maintains order)
+    const lastMessage = Array.from(fullHistoryMap.values()).pop();
+    const firstNewMessage = newHistory[0];
+
+    if (lastMessage && lastMessage.role === firstNewMessage.role) {
+      const dummyMessage: ChatHistory = {
+        role: lastMessage.role === 'user' ? 'model' : 'user',
+        parts: [{ text: '' }],
+      };
+      fullHistoryMap.set('dummy' + Date.now(), dummyMessage); // Ensure unique ID for dummy message
     }
   }
   private formatChatHistory(
@@ -106,9 +114,11 @@ abstract class BaseChatService implements ChatService {
     return nonReactive.map((message) => {
       // Check isEnabledByNode for the specific nodeId
       const isEnabled = message.isEnabledByNode[nodeId] ?? true; // Default to true if not set
-
+      if (message.sender !== 'user' && message.sender !== 'model') {
+        message.sender = 'user';
+      }
       return {
-        role: message.sender === 'user' ? 'user' : 'model',
+        role: message.sender + '',
         parts: [{ text: isEnabled ? message.message || '' : '' }],
       };
     });

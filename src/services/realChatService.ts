@@ -27,11 +27,11 @@ class RealChatService extends BaseChatService {
       const nodeProps = this.lucidFlow.findNodeProps(nodeId);
       const systemInstructions = nodeProps?.data.agent.systemInstructions;
       const chat = await this.startChat(nodeId, systemInstructions);
-      const chatHistory = await super.buildChatHistory(
-        nodeId,
-        systemInstructions
-      );
-      //console.log('Real chatHistory', chatHistory);
+      // const chatHistory = await super.buildChatHistory(
+      //   nodeId,
+      //   systemInstructions
+      // );
+      console.log('Real chatHistory', chat);
 
       const result = await chat.sendMessage(text);
       const responseText = result.response.text();

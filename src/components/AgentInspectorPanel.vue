@@ -189,7 +189,7 @@ watchEffect(() => {
       messages.value = [
         {
           id: 'textInputMessage',
-          sender: 'input',
+          sender: 'user',
           message: '', // Start with an empty message
           createdAt: Date.now(),
           error: false,
@@ -230,7 +230,7 @@ async function updateChatHistory() {
     messages.value = [
       {
         id: Date.now() + '',
-        sender: 'input',
+        sender: 'user',
         message: textInputData.value,
         createdAt: Date.now(),
         error: false,

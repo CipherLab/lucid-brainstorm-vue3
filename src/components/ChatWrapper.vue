@@ -200,7 +200,7 @@ async function pushDelayedMessage(
 }
 
 async function pushDelayedResponse(msg: string) {
-  await pushDelayedMessage(msg, assistantName.value, 1500);
+  await pushDelayedMessage(msg, 'model', 1500);
 }
 
 function pushImmediateRequest(msg: string): void {
