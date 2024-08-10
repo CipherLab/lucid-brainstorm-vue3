@@ -49,7 +49,7 @@
       :tokenCount="props.data.tokenCount"
       :nodeId="props.id"
       :nodeType="props.data.agent.type"
-      :subType="props.data.agent.subType"
+      :subtype="props.data.agent.subtype"
     />
   </div>
 </template>

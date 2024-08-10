@@ -12,7 +12,7 @@
       draggable="true"
       @dragstart="onAgentDragStart(agent, $event)"
     >
-      <q-card v-if="agent.subtype == 'agent'">
+      <q-card v-if="agent.type == 'agent'">
         <q-card-section>
           <!-- Add agent details here -->
           <q-input

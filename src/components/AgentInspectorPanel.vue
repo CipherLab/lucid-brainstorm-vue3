@@ -22,11 +22,7 @@
           :input-style="{ color: 'white' }"
         />
       </div>
-      <div
-        :style="
-          selectedNode.data.agent.subtype == 'agent' ? 'display: none' : ''
-        "
-      >
+      <div :style="shouldShowAgentControls ? '' : 'display: none'">
         <div class="q-pa-sm">
           <span class="label" style="padding: 0.25em">
             <span class="left-detail">
@@ -63,14 +59,27 @@
       />
     </div> -->
     </div>
+
     <div style="flex-grow: 1; display: flex">
-      <ChatWrapper
-        v-if="selectedNode"
-        :selectedNodeId="selectedNodeId"
-        :assistantNameProp="assistantName"
-        :assistantIcon="selectedNode.data.agent.icon"
-        style="flex-grow: 1"
-      />
+      <div :style="shouldShowAgentControls ? '' : 'display: none'">
+        <ChatWrapper
+          v-if="selectedNode"
+          :selectedNodeId="selectedNodeId"
+          :assistantNameProp="assistantName"
+          :assistantIcon="selectedNode.data.agent.icon"
+          style="flex-grow: 1"
+        />
+      </div>
+      <div :style="!shouldShowAgentControls ? '' : 'display: none'">
+        <q-input
+          style="flex-grow: 1"
+          v-if="selectedNode"
+          v-model="selectedNode.data.agent.inputData"
+          label="Prompt Text"
+          filled
+          type="textarea"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -95,6 +104,21 @@ if (!lucidFlow) {
 const assistantName = computed(() => {
   if (selectedNode.value) {
     return selectedNode.value.data.label;
+  }
+  return 'Assistant';
+});
+
+const shouldShowAgentControls = computed(() => {
+  if (selectedNode.value) {
+    if (
+      !selectedNode.value.data.agent.subtype ||
+      selectedNode.value.data.agent.subtype === ''
+    ) {
+      return true;
+    }
+    if (selectedNode.value.data.agent.subtype !== 'agent') {
+      return false;
+    }
   }
   return 'Assistant';
 });

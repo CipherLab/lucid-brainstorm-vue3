@@ -61,7 +61,6 @@ import {
   watch,
 } from 'vue';
 import moment from 'moment';
-import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
