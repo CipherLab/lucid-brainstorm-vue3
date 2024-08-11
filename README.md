@@ -41,19 +41,18 @@ You're right! Let's make those installation instructions more complete and inclu
    ```
 
 4. **Set Up Environment Variables:** 
-   - Update the Gemini API key value in the 
+   - Update the Gemini API key value in [this](https://github.com/CipherLab/lucid-brainstorm-vue3/blob/147b2a0bda1bb37fabdb2185c0d3f11617e3c03b/src/boot/chat-service.ts#L11) file 
 
 5. **Run Development Server:**
    ```bash
-   quasar dev   # Start the Quasar development server
+   yarn dev   # Start the Quasar development server
    ```
    
 **Explanation:**
 
 - **`yarn install`:** This command installs all the dependencies listed in your `package.json` file, which should include Vue.js, Quasar, Vue Flow, any Axios or CORS proxy libraries you're using, and other project-specific packages.
 - **`yarn global add @quasar/cli`:** This installs the Quasar CLI globally if it's not already installed. The Quasar CLI provides commands for creating, building, and running Quasar projects.
-- **`.env` File:**  This file stores sensitive information (like API keys) that shouldn't be directly committed to your repository.  
-- **`quasar dev`:**  This command starts the Quasar development server, allowing you to run your app locally and see live updates as you make changes to the code.
+- **`yarnv`:**  This command starts the Quasar development server, allowing you to run your app locally and see live updates as you make changes to the code.
 
 **Additional Notes:**
 
