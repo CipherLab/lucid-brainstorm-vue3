@@ -52,24 +52,26 @@ abstract class BaseChatService implements ChatService {
       const connectedChatHistory = await this.lucidFlow.getNodeChatData(
         connectedNodeId
       );
+
       if (connectedChatHistory) {
+        connectedChatHistory.sort((a, b) => a.id.localeCompare(b.id));
         const formattedHistory = this.formatChatHistory(
           connectedChatHistory,
           nodeId
         );
 
-        // Call ensurePattern before adding to the Map:
-        this.ensurePattern(fullHistoryMap, formattedHistory);
-
         formattedHistory.forEach((item) => {
-          if (item.parts[0].text !== '') {
-            fullHistoryMap.set(item.parts[0].text, item);
-          }
+          //if (item.parts[0].text !== '') {
+          fullHistoryMap.set(item.parts[0].text, item);
+          //}
         });
       }
     }
 
     const fullHistory = Array.from(fullHistoryMap.values());
+
+    const finalHistory = this.ensurePattern(fullHistory);
+    console.log('finalHistory', finalHistory);
 
     // Create the chat with the combined history:
     const updatedStartChatParams: StartChatParams = {
@@ -78,32 +80,40 @@ abstract class BaseChatService implements ChatService {
         role: 'system',
         parts: [{ text: systemInstructions }],
       },
-      history: fullHistory,
+      history: finalHistory,
     };
 
     return updatedStartChatParams;
   }
   // Modify ensurePattern to work with the Map
-  private ensurePattern(
-    fullHistoryMap: Map<string, ChatHistory>,
-    newHistory: ChatHistory[]
-  ): void {
+  private ensurePattern(newHistory: ChatHistory[]): ChatHistory[] {
     if (newHistory.length === 0) {
-      return;
+      return newHistory;
     }
 
-    // Get the last message in the Map (which maintains order)
-    const lastMessage = Array.from(fullHistoryMap.values()).pop();
-    const firstNewMessage = newHistory[0];
+    const modifiedHistory: ChatHistory[] = [];
 
-    if (lastMessage && lastMessage.role === firstNewMessage.role) {
-      const dummyMessage: ChatHistory = {
-        role: lastMessage.role === 'user' ? 'model' : 'user',
-        parts: [{ text: '' }],
-      };
-      fullHistoryMap.set('dummy' + Date.now(), dummyMessage); // Ensure unique ID for dummy message
+    for (let i = 0; i < newHistory.length; i++) {
+      const currentMessage = newHistory[i];
+
+      // If there's a previous message and the roles match, add a dummy message
+      if (
+        i > 0 &&
+        modifiedHistory[modifiedHistory.length - 1].role === currentMessage.role
+      ) {
+        const dummyMessage: ChatHistory = {
+          role: currentMessage.role === 'user' ? 'model' : 'user',
+          parts: [{ text: '' }],
+        };
+        modifiedHistory.push(dummyMessage);
+      }
+
+      modifiedHistory.push(currentMessage);
     }
+
+    return modifiedHistory;
   }
+
   private formatChatHistory(
     messages: Message[],
     nodeId: string
@@ -114,9 +124,12 @@ abstract class BaseChatService implements ChatService {
     return nonReactive.map((message) => {
       // Check isEnabledByNode for the specific nodeId
       const isEnabled = message.isEnabledByNode[nodeId] ?? true; // Default to true if not set
-      if (message.sender !== 'user' && message.sender !== 'model') {
+      if (message.sender === 'input') {
         message.sender = 'user';
+      } else if (message.sender === 'Assistant') {
+        message.sender = 'model';
       }
+
       return {
         role: message.sender + '',
         parts: [{ text: isEnabled ? message.message || '' : '' }],

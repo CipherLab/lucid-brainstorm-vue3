@@ -48,13 +48,44 @@
           />
         </div>
       </div>
-
+      <div v-if="selectedNode.data.agent.subtype === 'file'">
+        <div class="q-pa-sm">
+          <q-file
+            v-model="files"
+            label="Pick files"
+            outlined
+            use-chips
+            multiple
+          />
+          <q-btn
+            label="Load File"
+            @click="loadFile"
+            :disable="!files || files.length <= 0"
+          />
+        </div>
+      </div>
+      <div v-if="selectedNode.data.agent.subtype === 'webpage'">
+        <div class="q-pa-sm">
+          <q-input
+            v-model="webUrl"
+            label="Web URL"
+            outlined
+            use-chips
+            multiple
+          />
+          <q-btn
+            label="Get Data"
+            @click="getDataFromUrl"
+            :disable="!webUrl || webUrl.length <= 0"
+          />
+        </div>
+      </div>
       <div v-if="!shouldShowAgentControls">
         <div class="q-pa-sm">
           <q-input
             class="text-light"
             v-model="textInputData"
-            label="Enter something"
+            :label="hintText"
             filled
             type="textarea"
             @input="updateChatHistory"
@@ -84,6 +115,7 @@ import { ChatService, Message } from '../models/chatInterfaces';
 import { debounce } from 'lodash';
 import { NodeProps } from '@vue-flow/core';
 import { BaseNodeEvent, emitter } from '../eventBus';
+import axios from 'axios';
 import {
   ref,
   inject,
@@ -104,6 +136,7 @@ const props = defineProps({
     default: null,
   },
 });
+const files = ref<FileList | null>(null);
 const messages = ref<Message[]>([]);
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 
@@ -114,6 +147,39 @@ if (!lucidFlow) {
 const assistantName = computed(() => {
   if (selectedNode.value) {
     return selectedNode.value.data.label;
+  }
+  return 'Assistant';
+});
+const loadFile = () => {
+  if (files.value && files.value?.length > 0) {
+    let fileData = '';
+
+    for (let i = 0; i < files.value.length; i++) {
+      const file = files.value[i];
+      console.log('File:', file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          fileData += e.target?.result as string;
+          // 1. Log fileData AFTER reading is complete
+          textInputData.value = fileData;
+          updateChatHistory();
+        };
+        reader.readAsText(file);
+      }
+    }
+  }
+};
+const hintText = computed(() => {
+  if (textInputData.value) {
+    return 'Data is loaded';
+  }
+  if (selectedNode.value?.data.agent.subtype === 'input') {
+    return 'Enter something';
+  } else if (selectedNode.value?.data.agent.subtype === 'file') {
+    return 'Select a file, your data will be loaded here';
+  } else if (selectedNode.value?.data.agent.subtype === 'webpage') {
+    return 'Enter a URL, your content will be loaded here';
   }
   return 'Assistant';
 });
@@ -140,7 +206,22 @@ const handleNodeSelected = (event: BaseNodeEvent) => {
     }
   }
 };
+const webUrl = ref('');
 
+const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // Or your own proxy URL
+
+const getDataFromUrl = async () => {
+  axios
+    .get(webUrl.value)
+    .then((response) => {
+      console.log(response.data);
+      textInputData.value = response.data;
+      updateChatHistory();
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+};
 // Watch for changes to selectedNodeId
 watchEffect(() => {
   if (props.selectedNodeId) {
