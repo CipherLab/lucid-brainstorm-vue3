@@ -70,8 +70,8 @@
             v-model="webUrl"
             label="Web URL"
             outlined
-            use-chips
-            multiple
+            @input="updateChatHistory"
+            @blur="updateChatHistory"
           />
           <q-btn
             label="Get Data"
@@ -129,6 +129,7 @@ import ChatWrapper from './ChatWrapper.vue';
 import { on } from 'events';
 import { text } from 'stream/consumers';
 import { debug } from 'console';
+import { useQuasar } from 'quasar';
 const textInputData = ref('');
 const props = defineProps({
   selectedNodeId: {
@@ -140,8 +141,15 @@ const files = ref<FileList | null>(null);
 const messages = ref<Message[]>([]);
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 
+const $q = useQuasar();
+
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 if (!lucidFlow) {
+  $q.notify({
+    message: 'LucidFlow composable not provided',
+    color: 'negative',
+    position: 'top',
+  });
   throw new Error('lucidFlow composable not provided');
 }
 const assistantName = computed(() => {
@@ -206,8 +214,7 @@ const handleNodeSelected = (event: BaseNodeEvent) => {
     }
   }
 };
-const webUrl = ref('');
-
+const webUrl = ref(selectedNode.value?.data.agent.webUrl ?? '');
 const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // Or your own proxy URL
 
 const getDataFromUrl = async () => {
@@ -219,7 +226,11 @@ const getDataFromUrl = async () => {
       updateChatHistory();
     })
     .catch((error) => {
-      console.error('Error:', error);
+      $q.notify({
+        message: `Failed to fetch data from URL: ${error.message}`,
+        color: 'negative',
+        position: 'top',
+      });
     });
 };
 // Watch for changes to selectedNodeId
@@ -227,7 +238,7 @@ watchEffect(() => {
   if (props.selectedNodeId) {
     const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
-
+    console.log('Selected Node:', selectedNode.value);
     const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData) {
       messages.value = [...chatData];
@@ -266,6 +277,7 @@ watchEffect(() => {
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || '';
+      webUrl.value = messages.value[0]?.webUrl || '';
     } else {
       messages.value = [
         {
@@ -313,6 +325,7 @@ async function updateChatHistory() {
         id: Date.now() + '',
         sender: 'user',
         message: textInputData.value,
+        webUrl: webUrl.value,
         createdAt: Date.now(),
         error: false,
         typing: false,
@@ -322,9 +335,11 @@ async function updateChatHistory() {
     ];
   } else {
     // Preserve existing isEnabledByNode!
+
     messages.value[0] = {
       ...messages.value[0], // Copy existing properties
       message: textInputData.value, // Update the message
+      webUrl: webUrl.value,
     };
   }
 

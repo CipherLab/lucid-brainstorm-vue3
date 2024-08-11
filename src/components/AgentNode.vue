@@ -17,6 +17,7 @@
     :tokenCount="props.data.agent.tokenCount"
     :systemInstructions="props.data.agent.systemInstructions"
     :subtype="props.data.agent.subtype"
+    :webUrl="props.data.agent.webUrl"
   >
   </BaseNode>
 </template>

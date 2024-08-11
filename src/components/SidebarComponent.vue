@@ -65,6 +65,7 @@ const availableAgents = reactive([
     type: 'agent',
     temperature: 0,
     subtype: 'agent',
+    webUrl: '',
   },
   {
     id: 2,
@@ -78,6 +79,7 @@ const availableAgents = reactive([
     type: 'agent',
     temperature: 1.5,
     subtype: 'agent',
+    webUrl: '',
   },
   {
     id: 3,
@@ -91,6 +93,7 @@ const availableAgents = reactive([
     type: 'agent',
     temperature: 0.5,
     subtype: 'agent',
+    webUrl: '',
   },
   {
     id: 3,
@@ -104,6 +107,7 @@ const availableAgents = reactive([
     type: 'agent',
     temperature: 0.8,
     subtype: 'agent',
+    webUrl: '',
   },
 ]);
 const availableInputs = reactive([
@@ -118,6 +122,7 @@ const availableInputs = reactive([
     hasInput: false,
     type: 'agent',
     inputData: '',
+    webUrl: '',
   },
   {
     id: 102,
@@ -130,6 +135,7 @@ const availableInputs = reactive([
     hasInput: false,
     type: 'agent',
     inputData: '',
+    webUrl: '',
   },
   {
     id: 103, // Unique ID
@@ -142,6 +148,7 @@ const availableInputs = reactive([
     type: 'agent', // New type
     inputData: '', // Initial text for the input
     subtype: 'input',
+    webUrl: '',
   },
 ]);
 const onAgentDragStart = (agent: any, event: DragEvent) => {

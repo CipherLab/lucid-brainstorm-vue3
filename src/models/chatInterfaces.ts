@@ -9,6 +9,7 @@ export interface Message {
   typing?: boolean;
   selected: boolean;
   isEnabledByNode: Record<string, boolean>;
+  webUrl?: string;
 }
 
 export interface ChatService {
