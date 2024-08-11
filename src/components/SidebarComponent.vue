@@ -3,7 +3,7 @@
     <q-item-label header>Agents</q-item-label>
     <q-expansion-item
       class="my-bg-grey-1"
-      v-for="agent in availableAgents"
+      v-for="agent in allAgents"
       :key="agent.id"
       expand-separator
       :icon="agent.icon"
@@ -12,9 +12,18 @@
       draggable="true"
       @dragstart="onAgentDragStart(agent, $event)"
     >
-      <q-card v-if="agent.type == 'agent'">
+      <q-card>
+        <q-card-section v-if="agent.subtype == 'custom'">
+          {{ agent }}
+          <q-btn
+            flat
+            dense
+            round
+            icon="delete"
+            @click="deleteCustomAgent(index)"
+          />
+        </q-card-section>
         <q-card-section>
-          <!-- Add agent details here -->
           <q-input
             v-model="agent.systemInstructions"
             label="System Instructions"
@@ -24,6 +33,13 @@
         </q-card-section>
       </q-card>
     </q-expansion-item>
+
+    <q-item clickable @click="showAddAgentDialog = true">
+      <q-item-section avatar>
+        <q-icon name="add" />
+      </q-item-section>
+      <q-item-section> Add New Agent </q-item-section>
+    </q-item>
   </q-list>
 
   <q-separator />
@@ -46,11 +62,141 @@
       </q-card>
     </q-expansion-item>
   </q-list>
+
+  <q-dialog v-model="showAddAgentDialog" class="q-pa-sm">
+    <q-card style="width: 500px; max-width: 80vw">
+      <q-card-section>
+        <div class="text-h6">Add New Agent</div>
+      </q-card-section>
+      <q-card-section class="q-pa-sm">
+        <div class="q-pa-sm">
+          <q-input v-model="newAgent.name" label="Name" filled />
+        </div>
+        <div class="q-pa-sm">
+          <q-input
+            v-model="newAgent.systemInstructions"
+            label="System Instructions"
+            filled
+            type="textarea"
+            autogrow
+          >
+            <template v-slot:append>
+              <q-btn round dense flat @click="generateSystemInstructions">
+                <img
+                  src="/src/assets/geminilogo.webp"
+                  alt="Send"
+                  class="message-send-button"
+                />
+              </q-btn>
+            </template>
+          </q-input>
+        </div>
+        <div class="q-pa-sm">
+          <q-color v-model="newAgent.color" label="Select Color" />
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancel" color="primary" v-close-popup />
+        <q-btn flat label="Create" color="primary" @click="addNewAgent" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, inject, onMounted, reactive, ref } from 'vue';
+import { ChatService } from '../models/chatInterfaces';
+import { useQuasar } from 'quasar';
+const chatService = inject<ChatService>('chatService')!;
 
+const $q = useQuasar();
+if (!chatService) {
+  console.error('Chat service not found');
+  $q.notify({
+    type: 'negative',
+    message: 'Chat service not found',
+  });
+  throw new Error('Chat service not found');
+}
+const showAddAgentDialog = ref(false);
+const allAgents = computed(() => [...availableAgents, ...loadCustomAgents()]);
+
+// Data for the new agent
+const newAgent = reactive({
+  id: 0, // We'll generate a unique ID later
+  systemInstructions: '',
+  name: '',
+  icon: 'psychology', // Default icon for now
+  color: '#145ea8',
+  hasOutput: true,
+  hasInput: true,
+  type: 'agent',
+  temperature: 1,
+  subtype: 'custom',
+  webUrl: '',
+});
+
+const deleteCustomAgent = (index: number) => {
+  // 1. Remove from the reactive array:
+  availableAgents.splice(index, 1);
+
+  // 2. Update local storage
+  saveCustomAgents(availableAgents);
+};
+const addNewAgent = () => {
+  // Generate a unique ID (e.g., using Date.now())
+  newAgent.id = Date.now();
+  newAgent.subtype = 'custom';
+  // Add the new agent to the availableAgents array
+
+  // Save the new agent to local storage
+  saveCustomAgents([...loadCustomAgents(), { ...newAgent }]);
+
+  // Clear the newAgent data and close the dialog
+  Object.assign(newAgent, {
+    id: 0,
+    systemInstructions: '',
+    name: '',
+    icon: 'psychology',
+    subtype: 'custom',
+    color: '#145ea8',
+  });
+
+  showAddAgentDialog.value = false;
+};
+
+// Load custom agents from local storage
+const loadCustomAgents = (): any[] => {
+  const storedAgents = localStorage.getItem('customAgents');
+  return storedAgents ? JSON.parse(storedAgents) : [];
+};
+
+// Save custom agents to local storage
+const saveCustomAgents = (agents: any[]) => {
+  localStorage.setItem('customAgents', JSON.stringify(agents));
+};
+
+async function generateSystemInstructions() {
+  // Use your chatService to generate system instructions
+  try {
+    const instructions = await chatService.sendMessage(
+      '', // or a dummy node ID, if needed
+      `Generate system instructions for an AI LLM agent named "${newAgent.name}". Stay within 150 words or less.`
+    );
+    newAgent.systemInstructions = instructions.result;
+  } catch (error) {
+    console.error('Error generating instructions:', error);
+    // Handle error (e.g., show a notification)
+  }
+}
+// Load custom agents on component mount
+onMounted(() => {
+  const customAgents = loadCustomAgents();
+  if (customAgents.length > 0) {
+    availableAgents.push(...customAgents);
+  }
+});
 const drawerOpen = ref(true);
 const availableAgents = reactive([
   {
@@ -173,5 +319,9 @@ const onInputDragStart = (input: any, event: DragEvent) => {
 
 :deep(.q-expansion-item__icon) {
   color: var(--agent-color);
+}
+.message-send-button {
+  height: 24px;
+  width: 24px;
 }
 </style>

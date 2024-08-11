@@ -241,7 +241,7 @@ const formattedMessages = computed(() => {
 </script>
 <style scoped>
 .scroll-wrapper {
-  height: 52vh;
+  height: 48vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */
