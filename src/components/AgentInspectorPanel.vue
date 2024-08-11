@@ -7,10 +7,6 @@
         class="label span-width"
         :style="{ backgroundColor: selectedNode.data.agent.color }"
       >
-        Token Count
-        <span class="right-detail">{{
-          selectedNode.data.tokenCount ?? 0
-        }}</span>
       </span>
       <div class="q-pa-md">
         <q-input

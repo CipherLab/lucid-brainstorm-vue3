@@ -9,6 +9,12 @@ class BaseNodeEvent {
     this.nodeId = nodeId;
   }
 }
+class GenericEvent {
+  data: any | undefined;
+  constructor(data: any | undefined) {
+    this.data = data;
+  }
+}
 
 // Define event types extending the base class
 class NodeSelectedEvent extends BaseNodeEvent {
@@ -53,6 +59,7 @@ type Events = {
   'node:message-received': MessageReceivedEvent;
   'node:message-requested': BaseNodeEvent;
   'node:message-failed': BaseNodeEvent;
+  'node:agent-created': GenericEvent;
 };
 
 // Create the event bus
@@ -68,4 +75,5 @@ export type {
   NodeToggledEvent,
   NodeTabbedEvent,
   MessageReceivedEvent,
+  GenericEvent,
 };

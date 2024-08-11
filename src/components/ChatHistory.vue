@@ -148,6 +148,7 @@ const handleAccordionToggle = (index: number) => {
 <style scoped>
 .custom-header {
   display: flex;
+  flex-direction: row;
   align-items: center; /* Vertical alignment */
   justify-content: space-between; /* Horizontal spacing */
   width: 100%;

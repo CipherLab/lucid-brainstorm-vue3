@@ -13,7 +13,7 @@
       <q-tab-panels
         transition-prev="jump-up"
         transition-next="jump-down"
-        class="text-white text-center tab-panels"
+        class="text-white tab-panels fit-width"
         v-model="activeTab"
         animated
       >

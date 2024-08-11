@@ -18,7 +18,8 @@
       <q-item>
         <q-item-section>
           <q-icon name="mdi-counter" />
-          <q-item-label>Token Count: {{ tokenCount }}</q-item-label>
+          <q-item-label></q-item-label>
+          <!-- <q-item-label>Token Count: {{ tokenCount }}</q-item-label> -->
         </q-item-section>
       </q-item>
     </div>
