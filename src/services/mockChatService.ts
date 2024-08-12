@@ -17,7 +17,7 @@ class MockChatService extends BaseChatService {
   ): Promise<StartChatParams> {
     // Mock implementation of startChat
     const updatedChatParams = super.startChat(nodeId, systemInstructions);
-    //console.log(
+    console.log(
       'Mock startChat',
       nodeId,
       systemInstructions,
