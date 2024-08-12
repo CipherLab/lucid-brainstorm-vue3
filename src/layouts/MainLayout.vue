@@ -59,7 +59,26 @@
         v-touch-pan.horizontal.prevent.mouse.preserveCursor="handleRightPan"
       ></div>
     </q-drawer>
+    <q-dialog v-model="prompt" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Your Gemini API key</div>
+        </q-card-section>
 
+        <q-card-section class="q-pt-none">
+          <q-input dense v-model="apikey" autofocus @keyup.enter="saveApiKey" />
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            @click="saveApiKey"
+            :disabled="apikey.length <= 0"
+            flat
+            label="Save"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -92,7 +111,8 @@ interface DraggedItem {
 defineOptions({
   name: 'MainLayout',
 });
-
+const prompt = ref(false);
+const apikey = ref('');
 const leftDrawerOpen = ref(false);
 const inspectorOpen = ref(false);
 const draggedItem = ref<DraggedItem | null>(null);
@@ -116,6 +136,13 @@ const onInputDragStart = (type: 'file' | 'prompt') => {
   draggedItem.value = { type: 'input', data: type };
 };
 
+const saveApiKey = () => {
+  if (!apikey.value || apikey.value.trim() == '') return;
+  console.log('API Key:', apikey.value);
+  prompt.value = false;
+
+  sessionStorage.setItem('apikey', apikey.value);
+};
 // Node Selection
 const selectedNodeId = ref<string | undefined>(undefined);
 const selectedType = ref<string | undefined>(undefined);
@@ -154,6 +181,11 @@ onMounted(() => {
   emitter.on('node:selected', handleNodeSelected);
   emitter.on('node:deselected', handleNodeDeselected);
   inspectorOpen.value = false;
+  const apiKey = sessionStorage.getItem('apikey');
+
+  if (!apiKey || apiKey === '') {
+    prompt.value = true;
+  }
 });
 
 onUnmounted(() => {
