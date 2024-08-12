@@ -10,7 +10,7 @@
       <q-icon name="error" color="red" />
     </q-item-label>
     <q-item-label v-else>
-      {{ message }}
+      <div v-html="renderedMessage"></div>
     </q-item-label>
     <q-item-label caption class="text-grey-8 text-right">
       {{ formattedTime }}
@@ -21,9 +21,14 @@
 <script setup lang="ts">
 import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
-import { BaseNodeEvent, emitter } from '../eventBus';
+import markdownIt from 'markdown-it';
+import { BaseNodeEvent, emitter, MessageReceivedEvent } from '../eventBus';
 
 const props = defineProps({
+  nodeId: {
+    type: String,
+    required: true,
+  },
   message: {
     type: String,
     required: true,
@@ -36,16 +41,21 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-
   assistantName: {
     type: String,
     default: 'Assistant',
   },
 });
+
+const md = markdownIt({ breaks: true }); // breaks: true ensures that line breaks are preserved
+
 const showWorking = ref<boolean>(false);
 const showError = ref<boolean>(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
+const messageProp = ref<string>(props.message);
+const renderedMessage = computed(() => md.render(messageProp.value));
+
 onMounted(() => {
   emitter.on('node:message-requested', handleRequested);
   emitter.on('node:message-received', handleReceived);
@@ -59,16 +69,23 @@ onUnmounted(() => {
 });
 
 const handleRequested = (event: BaseNodeEvent) => {
-  showWorking.value = true;
-  showError.value = false;
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = true;
+    showError.value = false;
+  }
 };
-const handleReceived = (event: BaseNodeEvent) => {
-  showWorking.value = false;
-  showError.value = false;
+const handleReceived = (event: MessageReceivedEvent) => {
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = false;
+    showError.value = false;
+    messageProp.value = event.message;
+  }
 };
 const handleFailed = (event: BaseNodeEvent) => {
-  showWorking.value = false;
-  showError.value = true;
+  if (event.nodeId === props.nodeId) {
+    showWorking.value = false;
+    showError.value = true;
+  }
 };
 </script>
 

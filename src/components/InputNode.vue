@@ -16,6 +16,7 @@
     :subtype="props.data.agent.subtype"
     :inputData="props.data.agent.inputData"
     :tokenCount="props.data.agent.tokenCount"
+    :webUrl="props.data.agent.webUrl"
   >
   </BaseNode>
 </template>

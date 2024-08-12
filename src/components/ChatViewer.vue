@@ -13,7 +13,9 @@
               <template #item="{ element, index }">
                 <div
                   :key="element.id"
-                  :class="{ 'disabled-message': !element.isEnabled }"
+                  :class="{
+                    'disabled-message': !isEnabledByNode(element),
+                  }"
                 >
                   <!-- Sticky Header -->
                   <q-item>
@@ -40,16 +42,17 @@
 
                           <!-- Eye Icon Button -->
                           <q-btn
+                            v-if="!primaryChat"
                             size="12px"
                             flat
                             dense
                             round
                             :icon="
-                              element.isEnabled
+                              isEnabledByNode(element)
                                 ? 'visibility'
                                 : 'visibility_off'
                             "
-                            @click.stop="toggleMessageEnabled(index)"
+                            @click.stop="toggleMessageEnabled(element)"
                           />
 
                           <!-- Delete Button (only for primary chat) -->
@@ -67,6 +70,7 @@
 
                       <!-- Chat Message Component -->
                       <ChatMessage
+                        :nodeId="element.id"
                         :message="element.message"
                         :sender="element.sender"
                         :createdAt="element.createdAt"
@@ -112,6 +116,10 @@ const userInput = ref('');
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const scrollAreaRef = ref<any>(null);
 const props = defineProps({
+  parentNodeId: {
+    type: String,
+    default: '',
+  },
   selectedNodeId: {
     type: String,
     default: '',
@@ -136,10 +144,29 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
   // emitter.off('node:q-tab-toggled', handleScrollToBottom);
 });
-function toggleMessageEnabled(index: number) {
-  messages.value[index].isEnabled = !messages.value[index].isEnabled;
+function toggleMessageEnabled(connectedMessage: Message) {
+  const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
+  const message = messages.value.find(
+    (message) => message.id === connectedMessage.id
+  );
+  if (!message) {
+    console.error('Message not found:', connectedMessage);
+    return;
+  }
+
+  // Toggle the isEnabled state for the current node
+  message.isEnabledByNode[props.parentNodeId] =
+    !message.isEnabledByNode[props.parentNodeId];
+
   updateChatHistory();
 }
+
+const isEnabledByNode = (connectedMessage: Message) => {
+  const currentMessage = messages.value.find(
+    (message) => message.id === connectedMessage.id
+  );
+  return currentMessage?.isEnabledByNode[props.parentNodeId] ?? true;
+};
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   if (event.nodeId === props.selectedNodeId) {
     //console.log('TAB scroll to bottom');
@@ -181,7 +208,9 @@ const onDragEnd = () => {
 
   updateChatHistory(); // Save the changes
 };
-
+const messageIsEnabledForNode = computed(() => (message: Message) => {
+  return message.isEnabledByNode[props.selectedNodeId] ?? true;
+});
 async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
@@ -199,7 +228,6 @@ const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
 const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
-
 const formattedMessages = computed(() => {
   if (!messages.value) return [];
 
@@ -213,7 +241,7 @@ const formattedMessages = computed(() => {
 </script>
 <style scoped>
 .scroll-wrapper {
-  height: 52vh;
+  height: 48vh;
   display: flex;
   width: 100%;
   flex: 1; /* Allows the wrapper to take up the remaining space */

@@ -7,11 +7,6 @@
         class="label span-width"
         :style="{ backgroundColor: selectedNode.data.agent.color }"
       >
-        Token Count
-        {{ selectedNode.data.agent }}
-        <span class="right-detail">{{
-          selectedNode.data.tokenCount ?? 0
-        }}</span>
       </span>
       <div class="q-pa-md">
         <q-input
@@ -22,11 +17,7 @@
           :input-style="{ color: 'white' }"
         />
       </div>
-      <div
-        :style="
-          selectedNode.data.agent.subtype == 'agent' ? 'display: none' : ''
-        "
-      >
+      <div v-if="shouldShowAgentControls">
         <div class="q-pa-sm">
           <span class="label" style="padding: 0.25em">
             <span class="left-detail">
@@ -53,19 +44,55 @@
           />
         </div>
       </div>
-
-      <!-- <div class="q-pa-sm">
-      <q-input
-        v-model="selectedNode.data.agent.inputData"
-        label="Prompt Text"
-        filled
-        type="textarea"
-      />
-    </div> -->
+      <div v-if="selectedNode.data.agent.subtype === 'file'">
+        <div class="q-pa-sm">
+          <q-file
+            v-model="files"
+            label="Pick files"
+            outlined
+            use-chips
+            multiple
+          />
+          <q-btn
+            label="Load File"
+            @click="loadFile"
+            :disable="!files || files.length <= 0"
+          />
+        </div>
+      </div>
+      <div v-if="selectedNode.data.agent.subtype === 'webpage'">
+        <div class="q-pa-sm">
+          <q-input
+            v-model="webUrl"
+            label="Web URL"
+            outlined
+            @input="updateChatHistory"
+            @blur="updateChatHistory"
+          />
+          <q-btn
+            label="Get Data"
+            @click="getDataFromUrl"
+            :disable="!webUrl || webUrl.length <= 0"
+          />
+        </div>
+      </div>
+      <div v-if="!shouldShowAgentControls">
+        <div class="q-pa-sm">
+          <q-input
+            class="text-light"
+            v-model="textInputData"
+            :label="hintText"
+            filled
+            type="textarea"
+            @input="updateChatHistory"
+            @blur="updateChatHistory"
+          />
+        </div>
+      </div>
     </div>
     <div style="flex-grow: 1; display: flex">
       <ChatWrapper
-        v-if="selectedNode"
+        v-if="selectedNode && shouldShowAgentControls"
         :selectedNodeId="selectedNodeId"
         :assistantNameProp="assistantName"
         :assistantIcon="selectedNode.data.agent.icon"
@@ -76,20 +103,49 @@
 </template>
 
 <script setup lang="ts">
-import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
-import { inject, ref, computed, watchEffect } from 'vue';
-import ChatWrapper from './ChatWrapper.vue';
+import moment from 'moment';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
+import draggable from 'vuedraggable';
+import ChatHistory from './ChatHistory.vue';
+import { ChatService, Message } from '../models/chatInterfaces';
+import { debounce } from 'lodash';
 import { NodeProps } from '@vue-flow/core';
+import { BaseNodeEvent, emitter } from '../eventBus';
+import axios from 'axios';
+import {
+  ref,
+  inject,
+  computed,
+  nextTick,
+  watchEffect,
+  onMounted,
+  onUnmounted,
+} from 'vue';
+import ChatWrapper from './ChatWrapper.vue';
+import { on } from 'events';
+import { text } from 'stream/consumers';
+import { debug } from 'console';
+import { useQuasar } from 'quasar';
+const textInputData = ref('');
 const props = defineProps({
   selectedNodeId: {
     type: String,
     default: null,
   },
 });
+const files = ref<FileList | null>(null);
+const messages = ref<Message[]>([]);
+const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
 
-const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
+const $q = useQuasar();
+
+const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 if (!lucidFlow) {
+  $q.notify({
+    message: 'LucidFlow composable not provided',
+    color: 'negative',
+    position: 'top',
+  });
   throw new Error('lucidFlow composable not provided');
 }
 const assistantName = computed(() => {
@@ -98,22 +154,196 @@ const assistantName = computed(() => {
   }
   return 'Assistant';
 });
+const loadFile = () => {
+  if (files.value && files.value?.length > 0) {
+    let fileData = '';
 
-const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
+    for (let i = 0; i < files.value.length; i++) {
+      const file = files.value[i];
+      console.log('File:', file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          fileData += e.target?.result as string;
+          // 1. Log fileData AFTER reading is complete
+          textInputData.value = fileData;
+          updateChatHistory();
+        };
+        reader.readAsText(file);
+      }
+    }
+  }
+};
+const hintText = computed(() => {
+  if (textInputData.value) {
+    return 'Data is loaded';
+  }
+  if (selectedNode.value?.data.agent.subtype === 'input') {
+    return 'Enter something';
+  } else if (selectedNode.value?.data.agent.subtype === 'file') {
+    return 'Select a file, your data will be loaded here';
+  } else if (selectedNode.value?.data.agent.subtype === 'webpage') {
+    return 'Enter a URL, your content will be loaded here';
+  }
+  return 'Assistant';
+});
+onMounted(() => {
+  emitter.on('node:selected', handleNodeSelected);
+});
+
+onUnmounted(() => {
+  emitter.off('node:selected', handleNodeSelected);
+});
+
+const handleNodeSelected = (event: BaseNodeEvent) => {
+  if (event.nodeId === props.selectedNodeId) {
+    const node = lucidFlow.findNodeProps(event.nodeId);
+    selectedNode.value = node ?? null;
+
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData && chatData.length > 0) {
+      messages.value = [...chatData];
+      textInputData.value = messages.value[0]?.message || ''; // Sync input data with message
+    } else {
+      messages.value = [];
+      textInputData.value = ''; // Clear input if no message data
+    }
+  }
+};
+const webUrl = ref(selectedNode.value?.data.agent.webUrl ?? '');
+const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // Or your own proxy URL
+
+const getDataFromUrl = async () => {
+  axios
+    .get(webUrl.value)
+    .then((response) => {
+      console.log(response.data);
+      textInputData.value = response.data;
+      updateChatHistory();
+    })
+    .catch((error) => {
+      $q.notify({
+        message: `Failed to fetch data from URL: ${error.message}`,
+        color: 'negative',
+        position: 'top',
+      });
+    });
+};
+// Watch for changes to selectedNodeId
 watchEffect(() => {
   if (props.selectedNodeId) {
-    // Find and set the selected node, or null if not found
-    const node = lucidFlow.findNodeProps(props.selectedNodeId); // Cast the result to MyNodeProps or undefined
-    selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    selectedNode.value = node ?? null;
+    console.log('Selected Node:', selectedNode.value);
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData) {
+      messages.value = [...chatData];
+      textInputData.value = chatData[0]?.message || ''; // Load the text into the input
+    } else {
+      messages.value = [];
+      textInputData.value = ''; // Clear input if no message data
+    }
   } else {
-    selectedNode.value = null; // Reset selectedNode if selectedNodeId is null
+    selectedNode.value = null;
+    textInputData.value = ''; // Clear input when no node is selected
   }
 });
-</script>
-<style scoped>
-.inspector-content {
-  padding: 10px;
+
+const shouldShowAgentControls = computed(() => {
+  if (selectedNode.value) {
+    if (
+      !selectedNode.value.data.agent.subtype ||
+      selectedNode.value.data.agent.subtype === ''
+    ) {
+      return true;
+    }
+    if (selectedNode.value.data.agent.subtype !== 'agent') {
+      return false;
+    }
+  }
+  return 'Assistant';
+});
+
+watchEffect(() => {
+  if (props.selectedNodeId) {
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    selectedNode.value = node ?? null;
+
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    if (chatData && chatData.length > 0) {
+      messages.value = [...chatData];
+      textInputData.value = messages.value[0]?.message || '';
+      webUrl.value = messages.value[0]?.webUrl || '';
+    } else {
+      messages.value = [
+        {
+          id: 'textInputMessage',
+          sender: 'user',
+          message: '', // Start with an empty message
+          createdAt: Date.now(),
+          error: false,
+          typing: false,
+          selected: false,
+          isEnabledByNode: {}, // Initialize isEnabledByNode
+        },
+      ];
+      textInputData.value = ''; // Clear input if no message data
+    }
+  } else {
+    selectedNode.value = null;
+    textInputData.value = '';
+  }
+});
+
+// Method to update the single-item message
+const updateTextInputMessage = debounce(() => {
+  if (selectedNode.value && selectedNode.value.data.agent.subtype === 'input') {
+    messages.value[0].message = textInputData.value;
+    updateChatHistory();
+  }
+}, 500); // Debounce for 500ms (adjust as needed)
+
+watchEffect(() => {
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+  if (chatData) {
+    messages.value = [...chatData]; // Use spread syntax to ensure reactivity
+  } else {
+    messages.value = [];
+  }
+});
+// Debounce the updateChatHistory function
+const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
+
+async function updateChatHistory() {
+  if (!messages.value || messages.value.length === 0) {
+    messages.value = [
+      {
+        id: Date.now() + '',
+        sender: 'user',
+        message: textInputData.value,
+        webUrl: webUrl.value,
+        createdAt: Date.now(),
+        error: false,
+        typing: false,
+        selected: true,
+        isEnabledByNode: {}, // Safe to initialize here (new message)
+      },
+    ];
+  } else {
+    // Preserve existing isEnabledByNode!
+
+    messages.value[0] = {
+      ...messages.value[0], // Copy existing properties
+      message: textInputData.value, // Update the message
+      webUrl: webUrl.value,
+    };
+  }
+
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
+</script>
+
+<style scoped>
 .inline-name-input {
   color: white !important;
   width: 100%;

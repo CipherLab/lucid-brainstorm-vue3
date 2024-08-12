@@ -49,7 +49,7 @@
       :tokenCount="props.data.tokenCount"
       :nodeId="props.id"
       :nodeType="props.data.agent.type"
-      :subType="props.data.agent.subType"
+      :subtype="props.data.agent.subtype"
     />
   </div>
 </template>
@@ -95,7 +95,7 @@ const handleInspector = () => {
   });
   //console.log('Open inspector for:', props.label);
   //console.log(' props.id:', props.id);
-  console.log(' props.data:', props.data);
+  //console.log(' props.data:', props.data);
 };
 
 // Handle clicks outside the node to deselect

@@ -13,7 +13,7 @@
       <q-tab-panels
         transition-prev="jump-up"
         transition-next="jump-down"
-        class="text-white text-center tab-panels"
+        class="text-white tab-panels fit-width"
         v-model="activeTab"
         animated
       >
@@ -61,16 +61,16 @@ import {
   watch,
 } from 'vue';
 import moment from 'moment';
-import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
 import { emitter } from '../eventBus';
+import { debounce } from 'lodash';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
-
+const textInputData = ref('');
 const messages = ref<Message[]>([]);
 const userInput = ref('');
 const assistantName = ref('Assistant');
@@ -108,6 +108,8 @@ watchEffect(() => {
     messages.value = [];
   }
 });
+const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
+
 async function sendMessage() {
   const tempVal = userInput.value;
   if (!tempVal || tempVal.trim() === '') return;
@@ -119,32 +121,48 @@ async function sendMessage() {
     await updateChatHistory(); // Save history (this will update the node data)
     //console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
+    const messageId = Date.now() + '';
+    let messageResult = '';
     try {
-      emitter.emit('node:message-requested', { nodeId: props.selectedNodeId });
+      messages.value.push({
+        id: messageId,
+        sender: 'model',
+        message: '',
+        createdAt: Date.now(),
+        error: false,
+        typing: true,
+        selected: false,
+        isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
+      });
+
+      await updateChatHistory();
+
+      //update the specific last message with the new response
+
+      emitter.emit('node:message-requested', { nodeId: messageId });
 
       const response = await chatService.sendMessage(
         props.selectedNodeId,
         tempVal
       );
-
-      //console.log('chat response:', response);
-
       // Extract relevant data and create a Message object:
-      messages.value.push({
-        id: Date.now() + '',
-        sender: 'model',
-        message: response.result + '',
-        createdAt: Date.now(),
-        error: false,
-        typing: false,
-        selected: false,
-        isEnabled: true,
-      });
-      await updateChatHistory();
+      messageResult = response.result;
+
+      const messageToUpdate = messages.value.find(
+        (msg) => msg.id === messageId
+      );
+      if (messageToUpdate) {
+        messageToUpdate.message = messageResult;
+        messageToUpdate.typing = false;
+        await updateChatHistory();
+      }
     } catch (error) {
-      emitter.emit('node:message-failed', { nodeId: props.selectedNodeId });
+      emitter.emit('node:message-failed', { nodeId: messageId });
     } finally {
-      emitter.emit('node:message-received', { nodeId: props.selectedNodeId });
+      emitter.emit('node:message-received', {
+        nodeId: messageId,
+        message: messageResult,
+      });
     }
   } catch (error) {
     // ... [error handling - potentially re-add the user input]
@@ -167,7 +185,7 @@ async function pushDelayedMessage(
     error: false,
     typing: true,
     selected: false,
-    isEnabled: true,
+    isEnabledByNode: { [props.selectedNodeId]: true },
   });
 
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -182,20 +200,7 @@ async function pushDelayedMessage(
 }
 
 async function pushDelayedResponse(msg: string) {
-  await pushDelayedMessage(msg, assistantName.value, 1500);
-}
-
-function pushImmediateResponse(msg: string | undefined, typing: boolean): void {
-  messages.value.push({
-    id: Date.now() + '',
-    sender: 'model',
-    message: msg ?? '',
-    createdAt: Date.now(),
-    error: false,
-    typing: typing,
-    selected: false,
-    isEnabled: true,
-  });
+  await pushDelayedMessage(msg, 'model', 1500);
 }
 
 function pushImmediateRequest(msg: string): void {
@@ -207,9 +212,10 @@ function pushImmediateRequest(msg: string): void {
     error: false,
     typing: false,
     selected: false,
-    isEnabled: true,
+    isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
   });
 }
+
 //watch not watcheffect for activetab
 watch(
   () => activeTab.value,

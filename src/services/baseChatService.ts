@@ -31,7 +31,6 @@ abstract class BaseChatService implements ChatService {
     // To be implemented by derived classes
     return { result: '' };
   }
-
   protected async buildChatHistory(
     nodeId: string,
     systemInstructions: string
@@ -43,25 +42,36 @@ abstract class BaseChatService implements ChatService {
     };
     this.model = genAI.getGenerativeModel(modelParams);
 
-    const fullHistory: ChatHistory[] = [];
-    fullHistory.push({
-      role: 'user', // Dummy message
-      parts: [{ text: '' }],
-    });
+    const fullHistoryMap = new Map<string, ChatHistory>(); // Use a Map
+    fullHistoryMap.set('initialDummy', { role: 'user', parts: [{ text: '' }] });
 
     // Get connected nodes using lucidFlow
-    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true); // Include self
+    const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true);
 
     for (const connectedNodeId of connectedNodeIds) {
       const connectedChatHistory = await this.lucidFlow.getNodeChatData(
         connectedNodeId
       );
+
       if (connectedChatHistory) {
-        const formattedHistory = this.formatChatHistory(connectedChatHistory);
-        this.ensurePattern(fullHistory, formattedHistory);
-        fullHistory.push(...formattedHistory);
+        connectedChatHistory.sort((a, b) => a.id.localeCompare(b.id));
+        const formattedHistory = this.formatChatHistory(
+          connectedChatHistory,
+          nodeId
+        );
+
+        formattedHistory.forEach((item) => {
+          //if (item.parts[0].text !== '') {
+          fullHistoryMap.set(item.parts[0].text, item);
+          //}
+        });
       }
     }
+
+    const fullHistory = Array.from(fullHistoryMap.values());
+
+    const finalHistory = this.ensurePattern(fullHistory);
+    console.log('finalHistory', finalHistory);
 
     // Create the chat with the combined history:
     const updatedStartChatParams: StartChatParams = {
@@ -70,37 +80,61 @@ abstract class BaseChatService implements ChatService {
         role: 'system',
         parts: [{ text: systemInstructions }],
       },
-      history: fullHistory,
+      history: finalHistory,
     };
 
     return updatedStartChatParams;
   }
+  // Modify ensurePattern to work with the Map
+  private ensurePattern(newHistory: ChatHistory[]): ChatHistory[] {
+    if (newHistory.length === 0) {
+      return newHistory;
+    }
 
-  private ensurePattern(
-    fullHistory: ChatHistory[],
-    newHistory: ChatHistory[]
-  ): void {
-    if (fullHistory.length > 0 && newHistory.length > 0) {
-      const lastMessage = fullHistory[fullHistory.length - 1];
-      const firstNewMessage = newHistory[0];
+    const modifiedHistory: ChatHistory[] = [];
 
-      if (lastMessage.role === firstNewMessage.role) {
+    for (let i = 0; i < newHistory.length; i++) {
+      const currentMessage = newHistory[i];
+
+      // If there's a previous message and the roles match, add a dummy message
+      if (
+        i > 0 &&
+        modifiedHistory[modifiedHistory.length - 1].role === currentMessage.role
+      ) {
         const dummyMessage: ChatHistory = {
-          role: lastMessage.role === 'user' ? 'model' : 'user',
+          role: currentMessage.role === 'user' ? 'model' : 'user',
           parts: [{ text: '' }],
         };
-        fullHistory.push(dummyMessage);
+        modifiedHistory.push(dummyMessage);
       }
+
+      modifiedHistory.push(currentMessage);
     }
+
+    return modifiedHistory;
   }
 
-  private formatChatHistory(messages: Message[]): ChatHistory[] {
+  private formatChatHistory(
+    messages: Message[],
+    nodeId: string
+  ): ChatHistory[] {
+    // Pass nodeId
     const nonReactive = JSON.parse(JSON.stringify(messages));
 
-    return nonReactive.map((message) => ({
-      role: message.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: message.isEnabled ? message.message || '' : '' }],
-    }));
+    return nonReactive.map((message) => {
+      // Check isEnabledByNode for the specific nodeId
+      const isEnabled = message.isEnabledByNode[nodeId] ?? true; // Default to true if not set
+      if (message.sender === 'input') {
+        message.sender = 'user';
+      } else if (message.sender === 'Assistant') {
+        message.sender = 'model';
+      }
+
+      return {
+        role: message.sender + '',
+        parts: [{ text: isEnabled ? message.message || '' : '' }],
+      };
+    });
   }
 }
 

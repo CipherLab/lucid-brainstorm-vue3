@@ -8,7 +8,8 @@ export interface Message {
   error: boolean;
   typing?: boolean;
   selected: boolean;
-  isEnabled: boolean;
+  isEnabledByNode: Record<string, boolean>;
+  webUrl?: string;
 }
 
 export interface ChatService {

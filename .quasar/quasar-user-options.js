@@ -13,7 +13,9 @@
 
 
 
+import {Notify,Dialog,LocalStorage,SessionStorage} from 'quasar'
 
 
-export default { config: {"dark":"true"} }
+
+export default { config: {"dark":"true"},plugins: {Notify,Dialog,LocalStorage,SessionStorage} }
 
