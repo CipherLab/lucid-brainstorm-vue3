@@ -59,8 +59,8 @@ Gemini Flow is an innovative visual programming application designed to make wor
 * **Showcase Gemini's Power:** Demonstrate the versatility and potential of the Google Gemini API through a unique and user-friendly application.
 
 
-## Demo 
-[![Video Title](https://img.youtube.com/vi/jXhrP8a5hiM/0.jpg)](https://www.youtube.com/watch?v=jXhrP8a5hiM)
+## Video Submission/Demo 
+[![Video Title](screenshot.jpg)](https://www.youtube.com/watch?v=jXhrP8a5hiM)
 
 
 ## Contributing
