@@ -1,37 +1,33 @@
-# Gemini Flow: Visual Programming for AI Workflows 
+# Gemini Flow: Revolutionizing AI Workflows with Visual Programming
 
-Gemini Flow is an innovative visual programming application designed to make working with Google Gemini LLMs (Large Language Models) more intuitive, efficient, and engaging. 
+Gemini Flow is an innovative visual programming application designed to make working with Google Gemini LLMs (Large Language Models) intuitive, efficient, and visually engaging.
 
 ## Key Features
 
-* **Interactive Flowchart:** Drag-and-drop nodes to represent different agents (with distinct personalities) and connect them visually to create your AI workflow.
-* **Customizable Agent Personalities:**  Create agents with unique roles (The Coder, The Architect, The Creative, etc.) and adjust their "temperature" (creativity) settings for varied responses.
-* **Context-Rich Inputs:**  Upload files, web content, or text prompts to provide context to specific agents or stages in your workflow.
-* **Real-time Chat:** Interact directly with individual agents to refine ideas or get instant feedback as they process your requests.
-* **Dynamic Visualization:** See how agents communicate, with animated "thought" pulses and visual cues that indicate the flow of information and the mood of the interaction.
-* **Automated Processes:** Build feedback loops where agents automatically receive updates to your code or data, streamlining your iterative process. 
-* **Custom Agent Creation:** Design and add your own specialized agents with specific instructions, skills, and personalities to tailor the app to your exact needs. 
+* **Design complex AI workflows visually:** Drag, drop, and connect agent nodes, like pieces of a puzzle, to create a flowchart that defines your AI pipeline.
+* **Craft unique agents with distinct personalities:** Define specialized agents with roles like 'The Coder,' 'The Analyst,' or 'The Creative.' Adjust their 'temperature' settings to control their creativity and risk-taking. 
+* **Seamlessly integrate context:**  Upload files, web pages, or text directly into your workflow, providing rich, dynamic input to specific agents or stages in your brainstorm.
+* **Engage in real-time conversations:** Chat directly with individual agents to refine ideas, provide additional instructions, or get instant feedback on their progress.
+* **Witness the magic of visual collaboration:** Watch as your agents "think" with animated pulses, demonstrating the flow of information, the mood of the interaction, and the synthesis of creative solutions. 
+* **Automate your iterative process:**  Build feedback loops where agents automatically receive updates to your code or data, eliminating manual re-uploads and streamlining your workflow. 
+* **Design your own AI team:**  Create and add specialized agents with custom instructions, skills, and personalities to tailor the application to your exact needs.  
 
 ## Built With
 
-* **UI Framework:** Vue.js and Quasar Framework for a fast, visually appealing interface.
-* **Graph Visualization:** Vue Flow library for creating and manipulating the interactive flowchart. 
-* **Backend:** Node.js (or alternative) for API interactions, file handling, and communication with the Google Gemini API.
-
-## Installation (Customize for your project)
-You're right! Let's make those installation instructions more complete and include the necessary steps for Quasar and yarn.
-
+* **UI Framework:** Vue.js and Quasar Framework deliver a fast, modern, and visually appealing interface.
+* **Graph Visualization:** Vue Flow library provides the mechanics for creating and manipulating the interactive flowchart, making it easy to connect and arrange agent nodes. 
+* **Backend:** Node.js (or an alternative backend language) handles API interactions, file handling, secure storage, user authentication, and seamless communication with the Google Gemini API. 
 
 ## Installation
 
 1. **Clone Repository:** 
    ```bash
-   git clone [repository URL]
+   git clone https://github.com/CipherLab/lucid-brainstorm-vue3
    ```
 
 2. **Install Dependencies:** 
    ```bash
-   cd [your-repo-name]
+   cd lucid-brainstorm-vue3
    yarn install  # Install all Node.js package dependencies
    ```
 
@@ -39,41 +35,39 @@ You're right! Let's make those installation instructions more complete and inclu
    ```bash
    yarn global add @quasar/cli  # If you don't have it already
    ```
-
-4. **Set Up Environment Variables:** 
-   - Update the Gemini API key value in [this](https://github.com/CipherLab/lucid-brainstorm-vue3/blob/147b2a0bda1bb37fabdb2185c0d3f11617e3c03b/src/boot/chat-service.ts#L11) file 
-
-5. **Run Development Server:**
+4. **Run Development Server:**
    ```bash
    yarn dev   # Start the Quasar development server
    ```
-   
-**Explanation:**
 
-- **`yarn install`:** This command installs all the dependencies listed in your `package.json` file, which should include Vue.js, Quasar, Vue Flow, any Axios or CORS proxy libraries you're using, and other project-specific packages.
-- **`yarn global add @quasar/cli`:** This installs the Quasar CLI globally if it's not already installed. The Quasar CLI provides commands for creating, building, and running Quasar projects.
-- **`yarnv`:**  This command starts the Quasar development server, allowing you to run your app locally and see live updates as you make changes to the code.
+## How Gemini Flow Works
 
-**Additional Notes:**
-
-- **Troubleshooting:** If you encounter any errors during installation, double-check that you have Node.js and yarn installed on your system. Refer to the official documentation for Vue.js, Quasar, and Vue Flow if needed.
-- **Production Build:**  For a production-ready build of your app, you'll need to use a command like `quasar build`. The specific build process may vary depending on how you're deploying the application (e.g., as a website, a desktop app, or a mobile app). 
-
+1. **Define Your Brainstorm:** Start by providing a prompt, question, or objective in the central "Prefrontal Cortex" node. This sets the stage for your AI collaboration. 
+2. **Assemble Your AI Team:** Drag and drop agent nodes from the palette. Each agent represents a unique persona or skill set (e.g., The Coder, The Architect, The Creative).
+3. **Connect the Dots:** Draw lines between agents to define the flow of information. This visual map determines how data and ideas are exchanged during the brainstorming process. 
+4. **Provide Context:** Upload files, web pages, or text to specific agents or stages in the flowchart. This adds rich, real-world data to guide the AI's thinking.
+5. **Watch the Magic Unfold:** Your agents will come to life! Witness animated pulses of information as they "think," process data, and communicate with each other. 
+6. **Get Instant Feedback:** Engage in real-time chat with any agent to ask questions, refine their output, or provide additional guidance. 
+7. **Synthesize Insights:** The "Prefrontal Cortex" node analyzes the entire brainstorm session, providing a clear, concise summary based on the agents' collective output.
 
 ## Project Goals
 
-* **Make AI More Accessible:**   Empower users with varying levels of coding experience to leverage LLMs effectively.
-* **Boost Developer Productivity:** Streamline complex tasks and provide a more intuitive way to integrate LLMs into development workflows.
-* **Visualize Creative Processes:**  Showcase how ideas evolve and are synthesized through visual interactions between AI agents.
+* **Democratize AI:** Make the power of LLMs accessible to everyone, regardless of their technical expertise. 
+* **Empower Developers:**  Streamline complex AI tasks and boost productivity by providing an intuitive and visually engaging workflow.
+* **Explore Creative Potential:**  Discover new solutions and perspectives through AI-powered collaboration and the visualization of ideas. 
+* **Showcase Gemini's Power:** Demonstrate the versatility and potential of the Google Gemini API through a unique and user-friendly application.
 
-## Contributing
-
-Contributions are welcome! Feel free to submit issues, pull requests, or suggestions. 
+[![Gemini Flow Screenshot](screenshot.png)](link-to-screenshot.png)
 
 ## Demo 
 
-[Link to your demo video or website, if available]
+[![Gemini Flow Demo](youtube-thumbnail.png)](https://geminiflowstorage.z5.web.core.windows.net/#/)
+## Contributing
+
+We welcome contributions! Feel free to open an issue for bug reports, feature requests, or submit pull requests to improve the code. Let's build the future of AI together! 
 
 ## Google Gemini App Competition
 
-This project is being developed for the Google Gemini App Competition. We aim to showcase the exciting possibilities of visual programming and AI collaboration. 
+This project is proudly submitted to the Google Gemini App Competition. We believe Gemini Flow represents a significant step forward in the world of visual programming and AI collaboration, empowering users to unlock the full creative potential of LLMs.  
+
+ 
