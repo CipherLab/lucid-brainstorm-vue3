@@ -1,4 +1,5 @@
 # Gemini Flow: Revolutionizing AI Workflows with Visual Programming
+![Gemini Flow Demo](youtube-thumbnail.jpg)
 
 Gemini Flow is an innovative visual programming application designed to make working with Google Gemini LLMs (Large Language Models) intuitive, efficient, and visually engaging.
 
@@ -57,11 +58,13 @@ Gemini Flow is an innovative visual programming application designed to make wor
 * **Explore Creative Potential:**  Discover new solutions and perspectives through AI-powered collaboration and the visualization of ideas. 
 * **Showcase Gemini's Power:** Demonstrate the versatility and potential of the Google Gemini API through a unique and user-friendly application.
 
-[![Gemini Flow Screenshot](screenshot.jpg)](screenshot.jpg)
 
 ## Demo 
+[![Video Title](https://img.youtube.com/vi/jXhrP8a5hiM/0.jpg)](https://www.youtube.com/watch?v=jXhrP8a5hiM)
 
+## Demo Site
 [![Gemini Flow Demo](youtube-thumbnail.jpg)](https://geminiflowstorage.z5.web.core.windows.net/#/)
+
 ## Contributing
 
 We welcome contributions! Feel free to open an issue for bug reports, feature requests, or submit pull requests to improve the code. Let's build the future of AI together! 
