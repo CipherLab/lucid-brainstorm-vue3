@@ -57,11 +57,11 @@ Gemini Flow is an innovative visual programming application designed to make wor
 * **Explore Creative Potential:**  Discover new solutions and perspectives through AI-powered collaboration and the visualization of ideas. 
 * **Showcase Gemini's Power:** Demonstrate the versatility and potential of the Google Gemini API through a unique and user-friendly application.
 
-[![Gemini Flow Screenshot](screenshot.png)](link-to-screenshot.png)
+[![Gemini Flow Screenshot](screenshot.png)](screenshot.png)
 
 ## Demo 
 
-[![Gemini Flow Demo](youtube-thumbnail.png)](https://geminiflowstorage.z5.web.core.windows.net/#/)
+[![Gemini Flow Demo](youtube-thumbnail.jpg)](https://geminiflowstorage.z5.web.core.windows.net/#/)
 ## Contributing
 
 We welcome contributions! Feel free to open an issue for bug reports, feature requests, or submit pull requests to improve the code. Let's build the future of AI together! 
