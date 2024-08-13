@@ -62,8 +62,6 @@ Gemini Flow is an innovative visual programming application designed to make wor
 ## Demo 
 [![Video Title](https://img.youtube.com/vi/jXhrP8a5hiM/0.jpg)](https://www.youtube.com/watch?v=jXhrP8a5hiM)
 
-## Demo Site
-[![Gemini Flow Demo](youtube-thumbnail.jpg)](https://geminiflowstorage.z5.web.core.windows.net/#/)
 
 ## Contributing
 
