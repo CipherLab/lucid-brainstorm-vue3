@@ -30,7 +30,7 @@ jobs:
           NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$NF++;print}')
           echo "NEW_VERSION: $NEW_VERSION"
           echo "Running sed..."
-          sed -i "s/const version = ref('.*')/const version = ref('$NEW_VERSION')/" src/layouts/MainLayout.vue
+          sed -i "s/const version = ref('.*')/const version = ref('$NEW_VERSION')/" lucid-brainstorm/src/layouts/MainLayout.vue
 
       - name: Build the project
         run: yarn build
