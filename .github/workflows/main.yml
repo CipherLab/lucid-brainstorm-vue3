@@ -16,10 +16,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Specify the Node.js version you need
+          node-version: '20'  # Specify the Node.js version you need
 
       - name: Install dependencies
         run: yarn install
+
+      - name: Ensure moment is installed
+        run: yarn add moment
 
       - name: Build the project
         run: yarn build
