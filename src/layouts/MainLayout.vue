@@ -95,7 +95,7 @@ import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 $q.dark.set(true);
-const version = ref('1.0.0'); // Initialize version
+const version = ref('1.0.1');
 
 interface Agent {
   id: number;
