@@ -240,7 +240,7 @@ const formattedMessages = computed(() => {
 .scroll-wrapper {
   height: 48vh;
   display: flex;
-  width: 100%;
+  width: 100% !important;
   flex: 1; /* Allows the wrapper to take up the remaining space */
   overflow: hidden; /* Prevents system scrollbar from appearing */
   border: 1px solid #383636;

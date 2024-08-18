@@ -80,13 +80,23 @@
       </q-card>
     </q-dialog>
     <q-page-container>
+      <q-banner
+        v-if="showUpdateBanner"
+        inline-actions
+        class="bg-primary text-white"
+      >
+        {{ updateMessages[version] }}
+        <template v-slot:action>
+          <q-btn flat label="OK" @click="showUpdateBanner = false" />
+        </template>
+      </q-banner>
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import SidebarComponent from '../components/SidebarComponent.vue';
 import AgentInspectorPanel from '../components/AgentInspectorPanel.vue';
 import InputInspectorPanel from '../components/InputInspectorPanel.vue';
@@ -95,7 +105,26 @@ import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 $q.dark.set(true);
-const version = ref('1.0.1');
+
+const version = ref('1.0.2');
+const updateMessages = {
+  '1.0.1': 'Welcome to Gemini Flow!',
+  '1.0.2': 'Welcome to Gemini Flow!',
+  '1.0.3': 'Showing this messaege now! Adding better markdown support (wip)!',
+  // Add more messages for future versions
+};
+
+const showUpdateBanner = ref(false);
+
+onMounted(() => {
+  const lastShownVersion = localStorage.getItem('lastShownVersion') || '';
+  if (lastShownVersion !== version.value) {
+    showUpdateBanner.value = true;
+    localStorage.setItem('lastShownVersion', version.value);
+  } else {
+    showUpdateBanner.value = false;
+  }
+});
 
 interface Agent {
   id: number;

@@ -1,21 +1,30 @@
 <template>
-  <div
+  <q-item
     class="chat-message"
     :class="{ 'user-message': isUser, 'agent-message': !isUser }"
   >
-    <q-item-label v-if="showWorking">
-      <q-spinner-dots size="1.5em" color="grey-7" />
-    </q-item-label>
-    <q-item-label v-else-if="!showWorking && showError">
-      <q-icon name="error" color="red" />
-    </q-item-label>
-    <q-item-label v-else>
-      <div v-html="renderedMessage"></div>
-    </q-item-label>
-    <q-item-label caption class="text-grey-8 text-right">
-      {{ formattedTime }}
-    </q-item-label>
-  </div>
+    <q-item-section>
+      <q-item-label class="message-content" style="width: 100%">
+        <q-spinner-dots v-if="showWorking" size="1.5em" color="grey-7" />
+        <q-icon
+          v-else-if="!showWorking && showError"
+          name="error"
+          color="red"
+        />
+        <template v-else v-for="(part, index) in messageParts" :key="index">
+          <CodeBlockWithCopy
+            class="fit"
+            v-if="part.isCode"
+            :code="part.content"
+          />
+          <div class="fit" v-else v-html="md.render(part.content)"></div>
+        </template>
+      </q-item-label>
+      <q-item-label caption class="text-grey-8 text-right">
+        {{ formattedTime }}
+      </q-item-label>
+    </q-item-section>
+  </q-item>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +32,7 @@ import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
 import markdownIt from 'markdown-it';
 import { BaseNodeEvent, emitter, MessageReceivedEvent } from '../eventBus';
+import CodeBlockWithCopy from './CodeBlockWithCopy.vue';
 
 const props = defineProps({
   nodeId: {
@@ -45,16 +55,35 @@ const props = defineProps({
     type: String,
     default: 'Assistant',
   },
+  agentIcon: {
+    type: String,
+    default: 'psychology', // Default icon, you can customize
+  },
 });
 
-const md = markdownIt({ breaks: true }); // breaks: true ensures that line breaks are preserved
+const md = markdownIt({ breaks: true });
 
-const showWorking = ref<boolean>(false);
-const showError = ref<boolean>(false);
+const showWorking = ref(false);
+const showError = ref(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
-const messageProp = ref<string>(props.message);
+const messageProp = ref(props.message);
 const renderedMessage = computed(() => md.render(messageProp.value));
+const messageParts = computed(() => {
+  const codeBlockRegex = /```([\s\S]*?)```/g;
+  const parts = props.message.split(codeBlockRegex);
+
+  let result: { isCode: boolean; content: string }[] = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 0) {
+      result.push({ isCode: false, content: parts[i] });
+    } else {
+      result.push({ isCode: true, content: parts[i] });
+    }
+  }
+  return result;
+});
 
 onMounted(() => {
   emitter.on('node:message-requested', handleRequested);
@@ -91,7 +120,7 @@ const handleFailed = (event: BaseNodeEvent) => {
 
 <style scoped>
 .chat-message {
-  padding: 10px;
+  width: 100%; /* Occupy full width */
   border: 1px solid #2b2929;
   margin-bottom: 5px;
 }
