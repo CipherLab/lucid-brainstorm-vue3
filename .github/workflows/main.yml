@@ -31,4 +31,4 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az storage blob upload-batch -d '$web' -s dist --account-name geminiflowstorage --account-key ${{ secrets.BLOB }}
+            az storage blob upload-batch -d '$web' -s dist --account-name geminiflowstorage --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
