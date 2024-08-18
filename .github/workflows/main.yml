@@ -23,13 +23,14 @@ jobs:
 
       - name: Increment version and create tag
         run: |
+          echo "Running grep..."
           VERSION=$(grep -oP 'const version = ref\("\K[0-9]+\.[0-9]+\.[0-9]+' src/layouts/MainLayout.vue)
+          echo "VERSION: $VERSION"
+          echo "Running awk..."
           NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$NF++;print}')
+          echo "NEW_VERSION: $NEW_VERSION"
+          echo "Running sed..."
           sed -i "s/const version = ref('.*')/const version = ref('$NEW_VERSION')/" src/layouts/MainLayout.vue
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag v$NEW_VERSION
-          git push --tags
 
       - name: Build the project
         run: yarn build
