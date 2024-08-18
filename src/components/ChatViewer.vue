@@ -99,20 +99,17 @@ import {
   nextTick,
   onUnmounted,
 } from 'vue';
-import moment from 'moment';
-import { useRoute } from 'vue-router';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
-import { emitter, BaseNodeEvent, NodeTabbedEvent } from '../eventBus';
+import { emitter, NodeTabbedEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
 
 const messages = ref<Message[]>([]);
-const userInput = ref('');
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const scrollAreaRef = ref<any>(null);
 const props = defineProps({

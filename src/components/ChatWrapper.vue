@@ -54,23 +54,18 @@ import {
   inject,
   ref,
   onMounted,
-  computed,
   watchEffect,
   defineComponent,
-  nextTick,
   watch,
 } from 'vue';
-import moment from 'moment';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
 import { emitter } from '../eventBus';
-import { debounce } from 'lodash';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
-const textInputData = ref('');
 const messages = ref<Message[]>([]);
 const userInput = ref('');
 const assistantName = ref('Assistant');
@@ -108,7 +103,6 @@ watchEffect(() => {
     messages.value = [];
   }
 });
-const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 
 async function sendMessage() {
   const tempVal = userInput.value;
@@ -219,7 +213,7 @@ function pushImmediateRequest(msg: string): void {
 //watch not watcheffect for activetab
 watch(
   () => activeTab.value,
-  (newValue) => {
+  () => {
     //console.log('activeTab:', newValue);
     emitter.emit('node:q-tab-toggled', { nodeId: props.selectedNodeId });
   }
