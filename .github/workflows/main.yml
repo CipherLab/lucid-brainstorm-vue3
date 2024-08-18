@@ -2,7 +2,7 @@ name: Build and Deploy to Azure Blob Storage
 on:
   push:
     branches:
-      - main  # Change this to your default branch
+      - main
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -12,7 +12,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Specify the Node.js version you need
+          node-version: '20'
       - name: Install dependencies
         run: yarn install
       - name: Ensure moment is installed
@@ -33,5 +33,5 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az storage blob upload-batch -d '$web' -s dist --account-name geminiflowstorage --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --overwrite
+            az storage blob upload-batch -d '$web' -s dist/spa --account-name geminiflowstorage --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --overwrite
           azcliversion: agentazcliversion
