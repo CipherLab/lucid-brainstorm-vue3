@@ -11,7 +11,7 @@
           @click="toggleLeftDrawer"
         />
         <q-toolbar-title>Gemini Flow</q-toolbar-title>
-        <div>Quasar v{{ $q.version }}</div>
+        <div>v{{ version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -95,6 +95,7 @@ import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 $q.dark.set(true);
+const version = ref('1.0.0'); // Initialize version
 
 interface Agent {
   id: number;
