@@ -9,18 +9,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'  # Specify the Node.js version you need
-
       - name: Install dependencies
         run: yarn install
-
       - name: Ensure moment is installed
         run: yarn add moment
-
       - name: Increment version and create tag
         run: |
           echo "Running grep..."
@@ -31,12 +27,11 @@ jobs:
           echo "NEW_VERSION: $NEW_VERSION"
           echo "Running sed..."
           sed -i "s/const version = ref('.*')/const version = ref('$NEW_VERSION')/" src/layouts/MainLayout.vue
-
       - name: Build the project
         run: yarn build
-
       - name: Upload to Azure Blob Storage
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az storage blob upload-batch -d '$web' -s dist --account-name geminiflowstorage --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+            az storage blob upload-batch -d '$web' -s dist --account-name geminiflowstorage --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} --overwrite
+          azcliversion: agentazcliversion
