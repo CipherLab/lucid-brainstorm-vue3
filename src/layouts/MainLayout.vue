@@ -138,10 +138,10 @@ onMounted(() => {
 
   if (limitedMessages.value.length <= 0) {
     showUpdateBanner.value = false;
-    localStorage.setItem('lastShownVersion', currentVersion);
   } else {
     showUpdateBanner.value = true;
   }
+  localStorage.setItem('lastShownVersion', currentVersion);
 });
 interface Agent {
   id: number;
