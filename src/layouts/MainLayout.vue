@@ -85,7 +85,9 @@
         inline-actions
         class="bg-primary text-white"
       >
-        {{ concatenatedUpdateMessages }}
+        <span v-for="message in limitedMessages" :key="message"
+          >{{ message }}<br
+        /></span>
         <template v-slot:action>
           <q-btn flat label="OK" @click="showUpdateBanner = false" />
         </template>
@@ -106,7 +108,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.4');
+const version = ref('1.0.5');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -114,33 +116,33 @@ const updateMessages: Record<string, string> = {
   '1.0.4':
     'Fixed up the reactive-ness of the chat view. If the api key is invalid, you will be prompted to enter a new one.',
   '1.0.5': 'Missing webp for chat message send button.',
+  '1.0.6': 'Fixing version history messages.',
   // Add more messages for future versions
 };
 
 const showUpdateBanner = ref<boolean>(false);
-const concatenatedUpdateMessages = ref<string>('');
-
+const limitedMessages = ref<string[]>([]);
 onMounted(() => {
   const lastShownVersion = localStorage.getItem('lastShownVersion') || '';
   const currentVersion = version.value;
   const versions = Object.keys(updateMessages).sort();
-  const newMessages: string[] = [];
 
   for (const v of versions) {
     if (v > lastShownVersion && v <= currentVersion) {
-      newMessages.push(updateMessages[v]);
+      limitedMessages.value.push(`${v}: ${updateMessages[v]}`);
     }
   }
+  if (limitedMessages.value.length > 3) {
+    limitedMessages.value = limitedMessages.value.slice(3);
+  }
 
-  if (newMessages.length > 0) {
-    concatenatedUpdateMessages.value = newMessages.join(' ');
-    showUpdateBanner.value = true;
+  if (limitedMessages.value.length <= 0) {
+    showUpdateBanner.value = false;
     localStorage.setItem('lastShownVersion', currentVersion);
   } else {
-    showUpdateBanner.value = false;
+    showUpdateBanner.value = true;
   }
 });
-
 interface Agent {
   id: number;
   name?: string;
