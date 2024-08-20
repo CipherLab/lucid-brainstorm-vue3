@@ -79,7 +79,10 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-page-container class="full-container">
+    <q-page-container
+      class="full-container"
+      style="padding-top: 50px !important"
+    >
       <q-banner
         v-if="showUpdateBanner"
         inline-actions
@@ -253,7 +256,10 @@ onUnmounted(() => {
 .full-container {
   height: 100vh;
   overflow: hidden;
-  padding: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-top: 50px !important;
 }
 .my-label {
   font-size: 14px;
@@ -262,11 +268,13 @@ onUnmounted(() => {
 
 .custom-drawer {
   position: relative;
+  top: 0px !important;
 }
 
 .resizable-drawer-content {
   width: 100%;
   height: 100%;
+  top: 0px !important;
 }
 
 .resize-handle {
@@ -288,6 +296,7 @@ onUnmounted(() => {
 }
 .vue-flow__node {
   visibility: visible !important;
+  top: 0px !important;
 }
 
 .toolbar-bg {

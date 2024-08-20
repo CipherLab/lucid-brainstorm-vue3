@@ -20,6 +20,25 @@
         <q-scroll-area class="col column no-wrap" ref="scrollAreaRef">
           <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="true" />
         </q-scroll-area>
+        <q-input
+          class="chat-box"
+          style="color: white !important; background"
+          v-model="userInput"
+          label="Chat"
+          dense
+          :input-style="{ color: 'white' }"
+          @keyup.enter="sendMessage"
+        >
+          <template v-slot:append>
+            <q-btn dense flat @click="sendMessage">
+              <img
+                src="../assets/geminilogo.webp"
+                alt="Send"
+                class="message-send-button"
+              />
+            </q-btn>
+          </template>
+        </q-input>
       </q-tab-panel>
 
       <q-tab-panel
@@ -31,25 +50,6 @@
         </q-scroll-area>
       </q-tab-panel>
     </q-tab-panels>
-    <q-input
-      class="chat-box"
-      style="color: white !important; background"
-      v-model="userInput"
-      label="Chat"
-      dense
-      :input-style="{ color: 'white' }"
-      @keyup.enter="sendMessage"
-    >
-      <template v-slot:append>
-        <q-btn dense flat @click="sendMessage">
-          <img
-            src="../assets/geminilogo.webp"
-            alt="Send"
-            class="message-send-button"
-          />
-        </q-btn>
-      </template>
-    </q-input>
   </q-card>
 </template>
 
@@ -292,8 +292,7 @@ async function updateChatHistory() {
 
 <style scoped>
 .chat-box {
-  background-color: #222121;
-  padding: 6px;
+  padding-top: 8px;
   border-top: 1px solid #383636;
   position: relative;
 }

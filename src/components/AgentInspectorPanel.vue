@@ -1,5 +1,8 @@
 <template>
-  <div class="chat-wrapper">
+  <div
+    class="chat-wrapper"
+    :style="{ paddingTop: shouldShowAgentControls ? '0px' : '0px' }"
+  >
     <div v-if="selectedNode" class="inspector-content">
       <span
         class="label span-width"
@@ -340,6 +343,8 @@ async function updateChatHistory() {
 
 <style scoped>
 .chat-wrapper {
+  top: 0px !important;
+  padding-top: 50px !important;
   color: white;
   height: 100%;
   overflow: hidden !important;
