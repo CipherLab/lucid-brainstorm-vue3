@@ -241,4 +241,7 @@ const formattedMessages = computed(() => {
 .disabled-message {
   opacity: 0.3; /* Adjust opacity as needed */
 }
+.q-drawer {
+  top: 0 !important;
+}
 </style>

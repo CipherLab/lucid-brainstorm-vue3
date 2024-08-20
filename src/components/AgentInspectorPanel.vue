@@ -344,7 +344,6 @@ async function updateChatHistory() {
 <style scoped>
 .chat-wrapper {
   top: 0px !important;
-  padding-top: 50px !important;
   color: white;
   height: 100%;
   overflow: hidden !important;

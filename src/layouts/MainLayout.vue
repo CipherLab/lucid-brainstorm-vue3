@@ -37,6 +37,8 @@
 
     <!-- Right Drawer (Similar logic, adjust handleRightPan) -->
     <q-drawer
+      overlay
+      top="0"
       side="right"
       v-model="inspectorOpen"
       show-if-above
@@ -111,7 +113,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.5');
+const version = ref('1.0.6');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -120,7 +122,7 @@ const updateMessages: Record<string, string> = {
     'Fixed up the reactive-ness of the chat view. If the api key is invalid, you will be prompted to enter a new one.',
   '1.0.5': 'Missing webp for chat message send button.',
   '1.0.6': 'Fixing version history messages.',
-  // Add more messages for future versions
+  '1.0.7': 'Fixing issue with side bar top padding.',
 };
 
 const showUpdateBanner = ref<boolean>(false);
@@ -252,6 +254,15 @@ onUnmounted(() => {
 /* Import Vue Flow Styles */
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
+
+.q-drawer-container {
+  top: 0px !important;
+  padding-top: 0px !important;
+}
+aside {
+  top: 0px !important;
+  padding-top: 0px !important;
+}
 
 .full-container {
   height: 100vh;
