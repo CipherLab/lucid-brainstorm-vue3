@@ -1,5 +1,5 @@
 <template>
-  <q-list bordered separator class="rounded-borders overflow-hidden">
+  <q-list bordered separator class="rounded-borders chat-list">
     <q-expansion-item
       dense
       v-for="(nodeId, index) in connectedNodeIds"
@@ -150,11 +150,17 @@ const handleAccordionToggle = (index: number) => {
   display: flex;
   flex-direction: row;
   align-items: center; /* Vertical alignment */
-  justify-content: space-between; /* Horizontal spacing */
   width: 100%;
+  background: #0e0e0e;
+  position: sticky;
 }
 
 .custom-label {
   flex-grow: 1; /* Allow the label to take up available space */
+}
+
+.chat-list {
+  border-radius: 1px;
+  background-color: #2d2d2d;
 }
 </style>

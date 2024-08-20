@@ -79,7 +79,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-page-container>
+    <q-page-container class="full-container">
       <q-banner
         v-if="showUpdateBanner"
         inline-actions
@@ -111,6 +111,8 @@ const updateMessages = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
   '1.0.3': 'Showing this messaege now! Adding better markdown support (wip)!',
+  '1.0.4':
+    'Fixed up the reactive-ness of the chat view. If the api key is invalid, you will be prompted to enter a new one.',
   // Add more messages for future versions
 };
 
@@ -210,6 +212,10 @@ onMounted(() => {
   inspectorOpen.value = false;
   emitter.on('node:selected', handleNodeSelected);
   emitter.on('node:deselected', handleNodeDeselected);
+  emitter.on('node:api-key-invalid', () => {
+    sessionStorage.removeItem('apikey');
+    prompt.value = true;
+  });
   inspectorOpen.value = false;
   const apiKey = sessionStorage.getItem('apikey');
 
@@ -229,6 +235,11 @@ onUnmounted(() => {
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
 
+.full-container {
+  height: 100vh;
+  overflow: hidden;
+  padding: 0px;
+}
 .my-label {
   font-size: 14px;
   color: #757575;

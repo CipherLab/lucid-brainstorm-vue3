@@ -30,10 +30,12 @@
 <script setup lang="ts">
 import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
+import { useQuasar } from 'quasar';
 import markdownIt from 'markdown-it';
 import { BaseNodeEvent, emitter, MessageReceivedEvent } from '../eventBus';
 import CodeBlockWithCopy from './CodeBlockWithCopy.vue';
 
+const $q = useQuasar();
 const props = defineProps({
   nodeId: {
     type: String,
@@ -70,19 +72,31 @@ const formattedTime = computed(() => moment(props.createdAt).fromNow());
 const messageProp = ref(props.message);
 const renderedMessage = computed(() => md.render(messageProp.value));
 const messageParts = computed(() => {
-  const codeBlockRegex = /```([\s\S]*?)```/g;
-  const parts = props.message.split(codeBlockRegex);
+  if (props.message == null) return [];
 
-  let result: { isCode: boolean; content: string }[] = [];
+  if (props.message.length <= 0) return [];
 
-  for (let i = 0; i < parts.length; i++) {
-    if (i % 2 === 0) {
-      result.push({ isCode: false, content: parts[i] });
-    } else {
-      result.push({ isCode: true, content: parts[i] });
+  try {
+    const codeBlockRegex = /```([\s\S]*?)```/g;
+    const parts = props.message.split(codeBlockRegex);
+
+    let result: { isCode: boolean; content: string }[] = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        result.push({ isCode: false, content: parts[i] });
+      } else {
+        result.push({ isCode: true, content: parts[i] });
+      }
     }
+    return result;
+  } catch (e) {
+    $q.notify({
+      type: 'negative',
+      message: 'Error parsing a message',
+    });
+    return [];
   }
-  return result;
 });
 
 onMounted(() => {

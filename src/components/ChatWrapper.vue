@@ -1,69 +1,77 @@
 <template>
-  <div style="height: 100%">
-    <q-layout
-      view="lHh lpr lFf"
-      container
-      class="rounded-borders overflow-hidden"
+  <q-card class="col column no-wrap my-qcard">
+    <q-tabs align="justify" v-model="activeTab" dense narrow-indicator>
+      <q-tab name="primary" label="Selected Chat History" />
+      <q-tab name="contextual" label="Connected Chat History" />
+    </q-tabs>
+
+    <q-tab-panels
+      transition-prev="jump-up"
+      transition-next="jump-down"
+      class="col column no-wrap items-stretch my-qtabpanels"
+      v-model="activeTab"
+      animated
+      ref="chatHistory"
     >
-      <q-tabs align="justify" v-model="activeTab" dense narrow-indicator>
-        <q-tab name="primary" label="Selected Chat History" />
-        <q-tab name="contextual" label="Connected Chat History" />
-      </q-tabs>
-
-      <q-tab-panels
-        transition-prev="jump-up"
-        transition-next="jump-down"
-        class="text-white tab-panels fit-width"
-        v-model="activeTab"
-        animated
+      <q-tab-panel
+        name="primary"
+        class="col column no-wrap full-height my-qtabpanel"
       >
-        <q-tab-panel name="primary">
+        <q-scroll-area class="col column no-wrap" ref="scrollAreaRef">
           <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="true" />
-        </q-tab-panel>
-        <q-tab-panel name="contextual">
-          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="false" />
-        </q-tab-panel>
-      </q-tab-panels>
+        </q-scroll-area>
+      </q-tab-panel>
 
-      <q-footer bordered class="bg-grey-9 text-primary chat-box">
-        <q-input
-          style="color: white !important; background"
-          v-model="userInput"
-          label="Chat"
-          dense
-          :input-style="{ color: 'white' }"
-          @keyup.enter="sendMessage"
-        >
-          <template v-slot:append>
-            <q-btn dense flat @click="sendMessage">
-              <img
-                src="/src/assets/geminilogo.webp"
-                alt="Send"
-                class="message-send-button"
-              />
-            </q-btn>
-          </template>
-        </q-input>
-      </q-footer>
-    </q-layout>
-  </div>
+      <q-tab-panel
+        name="contextual"
+        class="col column no-wrap full-height my-qtabpanel"
+      >
+        <q-scroll-area class="col column no-wrap" ref="scrollAreaRef">
+          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="false" />
+        </q-scroll-area>
+      </q-tab-panel>
+    </q-tab-panels>
+    <q-input
+      class="chat-box"
+      style="color: white !important; background"
+      v-model="userInput"
+      label="Chat"
+      dense
+      :input-style="{ color: 'white' }"
+      @keyup.enter="sendMessage"
+    >
+      <template v-slot:append>
+        <q-btn dense flat @click="sendMessage">
+          <img
+            src="/src/assets/geminilogo.webp"
+            alt="Send"
+            class="message-send-button"
+          />
+        </q-btn>
+      </template>
+    </q-input>
+  </q-card>
 </template>
 
 <script setup lang="ts">
 import {
   inject,
   ref,
+  onUnmounted,
   onMounted,
   watchEffect,
   defineComponent,
   watch,
+  nextTick,
 } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
-import { emitter } from '../eventBus';
+import { emitter, NodeTabbedEvent, GenericEvent } from '../eventBus';
+import { useQuasar } from 'quasar';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
+const $q = useQuasar();
 
 defineComponent(draggable);
 const messages = ref<Message[]>([]);
@@ -72,6 +80,30 @@ const assistantName = ref('Assistant');
 const chatService = inject<ChatService>('chatService')!;
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 const activeTab = ref('primary');
+const scrollAreaRef = ref<any>(null);
+const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
+
+onMounted(() => {
+  scrollToBottom();
+  emitter.on('node:accordion-toggled', handleTabScrollToBottom);
+});
+
+onUnmounted(() => {
+  emitter.off('node:accordion-toggled', handleTabScrollToBottom);
+});
+const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
+  console.log('1TAB scroll to bottom');
+  if (event.nodeId === props.selectedNodeId) {
+    console.log('2TAB scroll to bottom');
+    nextTick(scrollToBottom);
+  }
+};
+const scrollToBottom = () => {
+  console.log('Scrolling to bottom');
+  if (chatHistory.value && scrollAreaRef.value) {
+    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
+  }
+};
 const props = defineProps({
   selectedNodeId: {
     type: String,
@@ -112,7 +144,9 @@ async function sendMessage() {
   try {
     //console.log('1chatService.sendMessage:', tempVal);
     pushImmediateRequest(tempVal); // Push user message
+
     await updateChatHistory(); // Save history (this will update the node data)
+    scrollToBottom();
     //console.log('2chatService.sendMessage:', tempVal);
     // Get the Gemini response:
     const messageId = Date.now() + '';
@@ -135,12 +169,41 @@ async function sendMessage() {
 
       emitter.emit('node:message-requested', { nodeId: messageId });
 
-      const response = await chatService.sendMessage(
-        props.selectedNodeId,
-        tempVal
-      );
-      // Extract relevant data and create a Message object:
-      messageResult = response.result;
+      try {
+        const response = await chatService.sendMessage(
+          props.selectedNodeId,
+          tempVal
+        );
+        // Extract relevant data and create a Message object:
+        messageResult = response.result;
+      } catch (error) {
+        let errorMessage = 'Error sending message';
+        let isApiKeyError = false;
+        // Check for specific error conditions
+        console.log('error.message:', error.message);
+        if (error.message.includes('API key expired')) {
+          errorMessage = 'API key expired. Please renew the API key.';
+          isApiKeyError = true;
+        } else if (error.message.includes('API_KEY_INVALID')) {
+          errorMessage = 'Invalid API key. Please check your API key.';
+          isApiKeyError = true;
+        } else if (error.message.includes('Error fetching from')) {
+          errorMessage =
+            'Error fetching data from the API. Please try again later.';
+        }
+
+        if (isApiKeyError) {
+          emitter.emit('node:api-key-invalid', {
+            data: '',
+          });
+        }
+
+        $q.notify({
+          message: errorMessage,
+          color: 'negative',
+          position: 'top',
+        });
+      }
 
       const messageToUpdate = messages.value.find(
         (msg) => msg.id === messageId
@@ -157,6 +220,8 @@ async function sendMessage() {
         nodeId: messageId,
         message: messageResult,
       });
+
+      scrollToBottom();
     }
   } catch (error) {
     // ... [error handling - potentially re-add the user input]
@@ -227,16 +292,40 @@ async function updateChatHistory() {
 
 <style scoped>
 .chat-box {
-  background-color: #2b2929;
+  background-color: #222121;
   padding: 6px;
   border-top: 1px solid #383636;
+  position: relative;
 }
+
 .message-send-button {
   height: 24px;
   width: 24px;
 }
-.tab-panels {
+
+.tab-wrapper {
+  height: 100%;
   display: flex;
-  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+.my-qcard {
+  height: 100%;
+  width: 100%;
+  border: 1px solid #2b2929;
+  border-radius: 0px;
+}
+.my-qtabpanels {
+  height: 100%;
+  width: 100%;
+  border: 1px solid #2b2929;
+  border-radius: 0px;
+  padding: 0px !important;
+}
+.my-qtabpanel {
+  height: 100%;
+  width: 100%;
+  border: 1px solid #2b2929;
+  border-radius: 0px;
 }
 </style>

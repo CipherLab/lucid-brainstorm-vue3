@@ -24,6 +24,7 @@ class RealChatService extends BaseChatService {
 
   async sendMessage(nodeId: string, text: string): Promise<{ result: string }> {
     try {
+      this.apiKey = this.getApiKey();
       const nodeProps = this.lucidFlow.findNodeProps(nodeId);
       const systemInstructions = nodeProps?.data.agent.systemInstructions;
       const chat = await this.startChat(nodeId, systemInstructions);

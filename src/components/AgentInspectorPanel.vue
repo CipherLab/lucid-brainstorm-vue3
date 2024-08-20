@@ -1,7 +1,5 @@
 <template>
-  <div
-    style="color: white; height: 100%; display: flex; flex-direction: column"
-  >
+  <div class="chat-wrapper">
     <div v-if="selectedNode" class="inspector-content">
       <span
         class="label span-width"
@@ -77,7 +75,7 @@
         </div>
       </div>
       <div v-if="!shouldShowAgentControls">
-        <div class="q-pa-sm">
+        <div class="q-pa-md">
           <q-input
             class="text-light"
             v-model="textInputData"
@@ -90,15 +88,13 @@
         </div>
       </div>
     </div>
-    <div style="flex-grow: 1; display: flex">
-      <ChatWrapper
-        v-if="selectedNode && shouldShowAgentControls"
-        :selectedNodeId="selectedNodeId"
-        :assistantNameProp="assistantName"
-        :assistantIcon="selectedNode.data.agent.icon"
-        style="flex-grow: 1"
-      />
-    </div>
+
+    <ChatWrapper
+      v-if="selectedNode && shouldShowAgentControls"
+      :selectedNodeId="selectedNodeId"
+      :assistantNameProp="assistantName"
+      :assistantIcon="selectedNode.data.agent.icon"
+    />
   </div>
 </template>
 
@@ -106,7 +102,6 @@
 import moment from 'moment';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
-import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
 import { debounce } from 'lodash';
 import { NodeProps } from '@vue-flow/core';
@@ -344,6 +339,14 @@ async function updateChatHistory() {
 </script>
 
 <style scoped>
+.chat-wrapper {
+  color: white;
+  height: 100%;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+
 .inline-name-input {
   color: white !important;
   width: 100%;

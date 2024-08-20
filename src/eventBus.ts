@@ -60,6 +60,7 @@ type Events = {
   'node:message-requested': BaseNodeEvent;
   'node:message-failed': BaseNodeEvent;
   'node:agent-created': GenericEvent;
+  'node:api-key-invalid': GenericEvent;
 };
 
 // Create the event bus

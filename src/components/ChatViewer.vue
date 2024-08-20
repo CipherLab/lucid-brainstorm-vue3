@@ -1,91 +1,89 @@
 <template>
-  <q-scroll-area ref="scrollAreaRef" class="scroll-wrapper">
-    <q-page-container>
-      <q-page class="reverse-list">
-        <div bordered class="rounded-borders chat-history" ref="chatHistory">
-          <div>
-            <draggable
-              :list="formattedMessages"
-              item-key="id"
-              handle=".drag-handle"
-              @end="onDragEnd"
-            >
-              <template #item="{ element, index }">
-                <div
-                  :key="element.id"
-                  :class="{
-                    'disabled-message': !isEnabledByNode(element),
-                  }"
-                >
-                  <!-- Sticky Header -->
-                  <q-item>
-                    <q-item-section>
-                      <q-header
-                        v-if="isHeaderVisible(index)"
-                        class="bg-grey-10 sticky-header"
-                      >
-                        <q-toolbar>
-                          <q-btn
-                            class="drag-handle"
-                            size="12px"
-                            flat
-                            dense
-                            round
-                            icon="drag_indicator"
-                          />
+  <q-page-container class="my-qpagecontainer">
+    <q-page class="reverse-list">
+      <div bordered class="rounded-borders">
+        <div>
+          <draggable
+            :list="formattedMessages"
+            item-key="id"
+            handle=".drag-handle"
+            @end="onDragEnd"
+          >
+            <template #item="{ element, index }">
+              <div
+                :key="element.id"
+                :class="{
+                  'disabled-message': !isEnabledByNode(element),
+                }"
+              >
+                <!-- Sticky Header -->
+                <q-item>
+                  <q-item-section>
+                    <q-header
+                      v-if="isHeaderVisible(index)"
+                      class="bg-grey-10 sticky-header"
+                    >
+                      <q-toolbar>
+                        <q-btn
+                          class="drag-handle"
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="drag_indicator"
+                        />
 
-                          <q-toolbar-title
-                            style="font-size: small"
-                            class="text-grey-8"
-                            >{{ getSenderName(element.sender) }}
-                          </q-toolbar-title>
+                        <q-toolbar-title
+                          style="font-size: small"
+                          class="text-grey-8"
+                          >{{ getSenderName(element.sender) }}
+                        </q-toolbar-title>
 
-                          <!-- Eye Icon Button -->
-                          <q-btn
-                            v-if="!primaryChat"
-                            size="12px"
-                            flat
-                            dense
-                            round
-                            :icon="
-                              isEnabledByNode(element)
-                                ? 'visibility'
-                                : 'visibility_off'
-                            "
-                            @click.stop="toggleMessageEnabled(element)"
-                          />
+                        <!-- Eye Icon Button -->
+                        <q-btn
+                          v-if="!primaryChat"
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          :icon="
+                            isEnabledByNode(element)
+                              ? 'visibility'
+                              : 'visibility_off'
+                          "
+                          @click.stop="toggleMessageEnabled(element)"
+                        />
 
-                          <!-- Delete Button (only for primary chat) -->
-                          <q-btn
-                            v-if="primaryChat"
-                            size="12px"
-                            flat
-                            dense
-                            round
-                            icon="delete"
-                            @click.stop="deleteMessage(index)"
-                          />
-                        </q-toolbar>
-                      </q-header>
+                        <!-- Delete Button (only for primary chat) -->
+                        <q-btn
+                          v-if="primaryChat"
+                          size="12px"
+                          flat
+                          dense
+                          round
+                          icon="delete"
+                          @click.stop="deleteMessage(index)"
+                        />
+                      </q-toolbar>
+                    </q-header>
 
-                      <!-- Chat Message Component -->
-                      <ChatMessage
-                        :nodeId="element.id"
-                        :message="element.message"
-                        :sender="element.sender"
-                        :createdAt="element.createdAt"
-                        :assistantName="getSenderName(element.sender)"
-                      />
-                    </q-item-section>
-                  </q-item>
-                </div>
-              </template>
-            </draggable>
-          </div>
+                    <!-- Chat Message Component -->
+                    <ChatMessage
+                      :nodeId="element.id"
+                      :message="element.message"
+                      :sender="element.sender"
+                      :createdAt="element.createdAt"
+                      :assistantName="getSenderName(element.sender)"
+                    />
+                  </q-item-section>
+                </q-item>
+              </div>
+            </template>
+          </draggable>
         </div>
-      </q-page>
-    </q-page-container>
-  </q-scroll-area>
+      </div>
+    </q-page>
+  </q-page-container>
 </template>
 
 <script setup lang="ts">
@@ -111,7 +109,6 @@ defineComponent(draggable);
 
 const messages = ref<Message[]>([]);
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
-const scrollAreaRef = ref<any>(null);
 const props = defineProps({
   parentNodeId: {
     type: String,
@@ -130,17 +127,6 @@ const primaryChat = computed(() => props.isPrimaryChat); // New computed propert
 
 const nodeProps = ref<NodeProps>();
 
-onMounted(() => {
-  // emitter.on('node:selected', handleScrollToBottom);
-  emitter.on('node:accordion-toggled', handleTabScrollToBottom);
-  // emitter.on('node:q-tab-toggled', handleScrollToBottom);
-});
-
-onUnmounted(() => {
-  // emitter.off('node:selected', handleScrollToBottom);
-  emitter.off('node:accordion-toggled', handleTabScrollToBottom);
-  // emitter.off('node:q-tab-toggled', handleScrollToBottom);
-});
 function toggleMessageEnabled(connectedMessage: Message) {
   const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
   const message = messages.value.find(
@@ -164,18 +150,7 @@ const isEnabledByNode = (connectedMessage: Message) => {
   );
   return currentMessage?.isEnabledByNode[props.parentNodeId] ?? true;
 };
-const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
-  if (event.nodeId === props.selectedNodeId) {
-    //console.log('TAB scroll to bottom');
-    nextTick(scrollToBottom);
-  }
-};
-const scrollToBottom = () => {
-  //console.log('Scrolling to bottom');
-  if (chatHistory.value && scrollAreaRef.value) {
-    scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
-  }
-};
+
 watchEffect(() => {
   nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
   const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
@@ -187,7 +162,6 @@ watchEffect(() => {
   } else {
     messages.value = []; // Initialize with an empty array if no data
   }
-  nextTick(scrollToBottom);
 });
 
 async function updateChatHistory() {
@@ -224,7 +198,6 @@ const isHeaderVisible = (index: number) => {
 const getSenderName = (sender: string) => {
   return sender === 'user' ? 'User' : nodeProps.value?.data.agent.name;
 };
-const chatHistory = ref<HTMLDivElement | null>(null); // Ref for the chat history div
 const formattedMessages = computed(() => {
   if (!messages.value) return [];
 
@@ -237,13 +210,9 @@ const formattedMessages = computed(() => {
 });
 </script>
 <style scoped>
-.scroll-wrapper {
-  height: 48vh;
-  display: flex;
-  width: 100% !important;
-  flex: 1; /* Allows the wrapper to take up the remaining space */
-  overflow: hidden; /* Prevents system scrollbar from appearing */
-  border: 1px solid #383636;
+/*  */
+.my-qpagecontainer {
+  padding: 0px !important;
 }
 .sticky-header {
   position: sticky;
@@ -257,13 +226,18 @@ const formattedMessages = computed(() => {
 }
 
 .q-page-container {
-  padding-top: 0px !important;
+  padding: 0px !important;
 }
+
 .reverse-list {
+  min-height: calc(100vh - 34em) !important;
   display: flex;
   flex-direction: column-reverse;
   overflow: hidden !important;
+  height: 100%;
+  scroll-behavior: smooth;
 }
+
 .disabled-message {
   opacity: 0.3; /* Adjust opacity as needed */
 }

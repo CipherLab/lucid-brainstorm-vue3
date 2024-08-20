@@ -116,6 +116,11 @@ abstract class BaseChatService implements ChatService {
       const currentMessage = newHistory[i];
 
       // If there's a previous message and the roles match, add a dummy message
+      if (currentMessage.role !== 'user' && currentMessage.role !== 'model') {
+        currentMessage.role = 'model';
+      }
+      console.log('currentMessage', currentMessage.role);
+
       if (
         i > 0 &&
         modifiedHistory[modifiedHistory.length - 1].role === currentMessage.role
