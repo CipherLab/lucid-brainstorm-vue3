@@ -85,7 +85,7 @@
         inline-actions
         class="bg-primary text-white"
       >
-        {{ updateMessages[version] }}
+        {{ concatenatedUpdateMessages }}
         <template v-slot:action>
           <q-btn flat label="OK" @click="showUpdateBanner = false" />
         </template>
@@ -106,23 +106,36 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.3');
-const updateMessages = {
+const version = ref('1.0.4');
+const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
-  '1.0.3': 'Showing this messaege now! Adding better markdown support (wip)!',
+  '1.0.3': 'Showing this message now! Adding better markdown support (wip)!',
   '1.0.4':
     'Fixed up the reactive-ness of the chat view. If the api key is invalid, you will be prompted to enter a new one.',
+  '1.0.5': 'Missing webp for chat message send button.',
   // Add more messages for future versions
 };
 
-const showUpdateBanner = ref(false);
+const showUpdateBanner = ref<boolean>(false);
+const concatenatedUpdateMessages = ref<string>('');
 
 onMounted(() => {
   const lastShownVersion = localStorage.getItem('lastShownVersion') || '';
-  if (lastShownVersion !== version.value) {
+  const currentVersion = version.value;
+  const versions = Object.keys(updateMessages).sort();
+  const newMessages: string[] = [];
+
+  for (const v of versions) {
+    if (v > lastShownVersion && v <= currentVersion) {
+      newMessages.push(updateMessages[v]);
+    }
+  }
+
+  if (newMessages.length > 0) {
+    concatenatedUpdateMessages.value = newMessages.join(' ');
     showUpdateBanner.value = true;
-    localStorage.setItem('lastShownVersion', version.value);
+    localStorage.setItem('lastShownVersion', currentVersion);
   } else {
     showUpdateBanner.value = false;
   }

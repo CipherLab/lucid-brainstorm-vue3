@@ -43,7 +43,7 @@
       <template v-slot:append>
         <q-btn dense flat @click="sendMessage">
           <img
-            src="/src/assets/geminilogo.webp"
+            src="../assets/geminilogo.webp"
             alt="Send"
             class="message-send-button"
           />
