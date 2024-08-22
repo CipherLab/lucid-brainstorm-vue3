@@ -48,8 +48,9 @@ const connectionMode = ref(ConnectionMode.Loose);
 const nodeTypes = ref(['agent', 'input', 'file', 'prompt', 'webpage']); // Add all your node types here
 const nodesTotal = ref(0);
 
-import { emitter } from '../eventBus';
+import { BooleanToggledEvent, emitter } from '../eventBus';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
+import { watch } from 'fs';
 
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
@@ -63,13 +64,18 @@ const edges = computed(() => lucidFlow.getEdges());
 onMounted(() => {
   //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
   lucidFlow.loadSession();
+  emitter.on('node:watcher-toggled', handleWatcherToggled);
   //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
 
 onUnmounted(() => {
   lucidFlow.saveSession();
+  emitter.off('node:watcher-toggled', handleWatcherToggled);
 });
 // Watch for changes in lucidFlow and update local refs
+const handleWatcherToggled = (event: BooleanToggledEvent) => {
+  lucidFlow.loadSession();
+};
 
 const onConnect = (connection: Edge | Connection) => {
   //console.log('New connection:', connection);
@@ -132,6 +138,7 @@ const onDrop = (event: any) => {
           subtype: eventData.subtype ?? 'agent',
           tokenCount: eventData.tokenCount ?? 0,
           webUrl: eventData.webUrl,
+          watcher: eventData.watcher,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown agent',
@@ -161,6 +168,7 @@ const onDrop = (event: any) => {
           inputData: eventData.inputData,
           tokenCount: eventData.tokenCount,
           webUrl: eventData.webUrl,
+          watcher: eventData.watcher,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown input',
@@ -190,6 +198,7 @@ const onDrop = (event: any) => {
           inputData: eventData.inputData,
           tokenCount: eventData.tokenCount,
           webUrl: eventData.webUrl,
+          watcher: eventData.watcher,
         },
         onRemoveNode: removeNodeFromCanvas,
         label: eventData.name || 'unknown input',

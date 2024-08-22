@@ -36,6 +36,15 @@ class NodeToggledEvent extends BaseNodeEvent {
   }
 }
 
+class BooleanToggledEvent extends BaseNodeEvent {
+  boolState: boolean;
+
+  constructor(nodeId: string | undefined, boolState: boolean) {
+    super(nodeId);
+    this.boolState = boolState;
+  }
+}
+
 class MessageReceivedEvent extends BaseNodeEvent {
   message: string;
 
@@ -61,6 +70,7 @@ type Events = {
   'node:message-failed': BaseNodeEvent;
   'node:agent-created': GenericEvent;
   'node:api-key-invalid': GenericEvent;
+  'node:watcher-toggled': BooleanToggledEvent;
 };
 
 // Create the event bus
@@ -77,4 +87,5 @@ export type {
   NodeTabbedEvent,
   MessageReceivedEvent,
   GenericEvent,
+  BooleanToggledEvent,
 };

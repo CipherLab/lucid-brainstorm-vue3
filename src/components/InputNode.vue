@@ -17,6 +17,7 @@
     :inputData="props.data.agent.inputData"
     :tokenCount="props.data.agent.tokenCount"
     :webUrl="props.data.agent.webUrl"
+    :watcher="props.data.agent.watcher"
   >
   </BaseNode>
 </template>

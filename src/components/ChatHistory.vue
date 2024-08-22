@@ -152,7 +152,7 @@ const handleAccordionToggle = (index: number) => {
   align-items: center; /* Vertical alignment */
   width: 100%;
   background: #0e0e0e;
-  position: sticky;
+  position: sticky !important;
   top: 0; /* Add this line to make the header sticky */
   z-index: 1; /* Optional: Ensure the header stays on top */
 }
@@ -162,8 +162,6 @@ const handleAccordionToggle = (index: number) => {
 }
 
 .chat-list {
-  display: flex;
-  flex-direction: column;
   border-radius: 1px;
   background-color: #2d2d2d;
 }

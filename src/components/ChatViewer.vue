@@ -19,10 +19,7 @@
                 <!-- Sticky Header -->
                 <q-item>
                   <q-item-section>
-                    <q-header
-                      v-if="isHeaderVisible(index)"
-                      class="bg-grey-10 sticky-header"
-                    >
+                    <q-header reveal class="bg-grey-10 sticky-header">
                       <q-toolbar>
                         <q-btn
                           class="drag-handle"
@@ -216,6 +213,7 @@ const formattedMessages = computed(() => {
 }
 .sticky-header {
   position: sticky;
+  position: -webkit-sticky;
   top: 0;
   z-index: 10;
   background-color: black;

@@ -50,6 +50,7 @@
       :nodeId="props.id"
       :nodeType="props.data.agent.type"
       :subtype="props.data.agent.subtype"
+      :watcher="props.data.watcher"
     />
   </div>
 </template>

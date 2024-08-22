@@ -10,6 +10,7 @@ import {
   NodeRemoveChange,
 } from '@vue-flow/core'; // Import applyNodeChanges
 import { Message } from '../models/chatInterfaces';
+import { forEach, get } from 'lodash';
 
 export interface LucidFlowComposable {
   getNodes: () => Node[];
@@ -21,6 +22,7 @@ export interface LucidFlowComposable {
   addEdge: (edge: Edge) => void;
   updateNodePosition: (nodeId: string, x: number, y: number) => void;
   getNodeChatData: (nodeId: string) => Message[] | null;
+  toggleEdgeAnimation: (nodeId: string, boolState: boolean) => void;
 
   updateNodeChatData: (nodeId: string, newData: any) => void;
   getConnectedNodes: (nodeId: string, includeSelf: boolean) => string[];
@@ -131,7 +133,18 @@ export default function useLucidFlow(): LucidFlowComposable {
       }
     });
   };
-
+  const toggleEdgeAnimation = (nodeId: string, boolState: boolean) => {
+    const edges = getEdges().filter(
+      (edge) => edge.source === nodeId || edge.target === nodeId
+    );
+    console.log('Toggling edge animation', boolState);
+    forEach(edges, (edge) => {
+      edge.animated = boolState;
+    });
+    console.log('saveSession-start');
+    saveSession();
+    console.log('saveSession-done');
+  };
   // Saving the Session:
   function saveSession() {
     const flowData = vueFlow.toObject();
@@ -160,6 +173,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     addEdge,
     updateNodePosition,
     getNodeChatData,
+    toggleEdgeAnimation,
 
     updateNodeChatData,
     getConnectedNodes,

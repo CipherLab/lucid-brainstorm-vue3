@@ -61,20 +61,53 @@
           />
         </div>
       </div>
-      <div v-if="selectedNode.data.agent.subtype === 'webpage'">
-        <div class="q-pa-sm">
-          <q-input
-            v-model="webUrl"
-            label="Web URL"
-            outlined
-            @input="updateChatHistory"
-            @blur="updateChatHistory"
-          />
+      <div
+        v-if="selectedNode.data.agent.subtype === 'webpage'"
+        class="q-pa-sm row items-center"
+      >
+        <q-input
+          v-model="webUrl"
+          label="Web URL"
+          outlined
+          dense
+          class="col-grow text-white"
+          @input="updateChatHistory"
+          @blur="updateChatHistory"
+        />
+
+        <div class="q-gutter-sm">
           <q-btn
             label="Get Data"
             @click="getDataFromUrl"
             :disable="!webUrl || webUrl.length <= 0"
+            color="primary"
+            unelevated
+            dense
           />
+
+          <q-btn
+            icon="watch_later"
+            :color="selectedNode.data.agent.watcher ? 'green-5' : 'grey-7'"
+            @click="toggleWatcher"
+            :disable="!webUrl || webUrl.length <= 0"
+            dense
+            unelevated
+            v-tooltip.bottom="{
+              content: 'Enable Live Updates',
+              delay: 500,
+            }"
+          >
+            <q-tooltip
+              anchor="bottom middle"
+              :offset="[0, 10]"
+              v-if="selectedNode.data.agent.watcher"
+            >
+              Watcher Active
+            </q-tooltip>
+            <q-tooltip anchor="bottom middle" :offset="[0, 10]" v-else>
+              Watcher Inactive
+            </q-tooltip>
+          </q-btn>
         </div>
       </div>
       <div v-if="!shouldShowAgentControls">
@@ -121,9 +154,9 @@ import {
 } from 'vue';
 import ChatWrapper from './ChatWrapper.vue';
 import { on } from 'events';
-import { text } from 'stream/consumers';
 import { debug } from 'console';
 import { useQuasar } from 'quasar';
+import { WebDataFetcher } from '../services/webDataFetcher';
 const textInputData = ref('');
 const props = defineProps({
   selectedNodeId: {
@@ -152,6 +185,24 @@ const assistantName = computed(() => {
   }
   return 'Assistant';
 });
+const toggleWatcher = () => {
+  if (selectedNode.value) {
+    selectedNode.value.data.agent.watcher =
+      !selectedNode.value.data.agent.watcher;
+    updateChatHistory();
+
+    lucidFlow.toggleEdgeAnimation(
+      selectedNode.value.id,
+      selectedNode.value.data.agent.watcher
+    );
+
+    emitter.emit('node:watcher-toggled', {
+      nodeId: selectedNode.value.id,
+      boolState: selectedNode.value.data.agent.watcher,
+    });
+  }
+};
+
 const loadFile = () => {
   if (files.value && files.value?.length > 0) {
     let fileData = '';
@@ -208,31 +259,31 @@ const handleNodeSelected = (event: BaseNodeEvent) => {
     }
   }
 };
+const dataFetcher = new WebDataFetcher(); // Create an instance
+
 const webUrl = ref(selectedNode.value?.data.agent.webUrl ?? '');
-const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // Or your own proxy URL
+const corsProxy = 'https://api.allorigins.win/get?url='; // Different CORS proxy
 
 const getDataFromUrl = async () => {
-  axios
-    .get(webUrl.value)
-    .then((response) => {
-      console.log(response.data);
-      textInputData.value = response.data;
+  if (webUrl.value) {
+    try {
+      textInputData.value = await dataFetcher.fetchData(webUrl.value);
       updateChatHistory();
-    })
-    .catch((error) => {
+    } catch (error) {
       $q.notify({
-        message: `Failed to fetch data from URL: ${error.message}`,
+        message: error.message, // Use the error message from the service
         color: 'negative',
         position: 'top',
       });
-    });
+    }
+  }
 };
 // Watch for changes to selectedNodeId
 watchEffect(() => {
   if (props.selectedNodeId) {
     const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
-    console.log('Selected Node:', selectedNode.value);
+    //console.log('Selected Node:', selectedNode.value);
     const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData) {
       messages.value = [...chatData];

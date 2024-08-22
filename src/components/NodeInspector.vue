@@ -38,6 +38,7 @@ interface NodeInspectorProps {
   nodeId: string;
   nodeType: string;
   subtype: string;
+  watcher: boolean;
 }
 
 watch(isExpanded, (expanded) => {

@@ -298,10 +298,7 @@ async function updateChatHistory() {
   border-top: 1px solid #383636;
   position: relative;
 }
-.q-scroll-area {
-  flex-grow: 1; /* Allow the scroll area to take up the available space */
-  /* ... other styles ... */
-}
+
 .message-send-button {
   height: 24px;
   width: 24px;
@@ -326,8 +323,6 @@ async function updateChatHistory() {
   padding: 0px !important;
 }
 .my-qtabpanel {
-  display: flex; /* Enable Flexbox */
-  flex-direction: column; /* Stack children vertically */
   height: 100%;
   width: 100%;
   border: 1px solid #2b2929;
