@@ -71,4 +71,4 @@ We welcome contributions! Feel free to open an issue for bug reports, feature re
 
 This project is proudly submitted to the Google Gemini App Competition. We believe Gemini Flow represents a significant step forward in the world of visual programming and AI collaboration, empowering users to unlock the full creative potential of LLMs.  
 
- 
+ Using readme to test gemini flow keeping context for a web url data current or not. So... did you know cat's are 95.6% genetically tiger?
