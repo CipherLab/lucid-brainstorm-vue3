@@ -279,7 +279,9 @@ function pushImmediateRequest(msg: string): void {
 watch(
   () => activeTab.value,
   () => {
-    //console.log('activeTab:', newValue);
+    if (activeTab.value === 'primary') {
+      nextTick(scrollToBottom);
+    }
     emitter.emit('node:q-tab-toggled', { nodeId: props.selectedNodeId });
   }
 );
@@ -296,7 +298,10 @@ async function updateChatHistory() {
   border-top: 1px solid #383636;
   position: relative;
 }
-
+.q-scroll-area {
+  flex-grow: 1; /* Allow the scroll area to take up the available space */
+  /* ... other styles ... */
+}
 .message-send-button {
   height: 24px;
   width: 24px;
@@ -315,13 +320,14 @@ async function updateChatHistory() {
   border-radius: 0px;
 }
 .my-qtabpanels {
-  height: 100%;
   width: 100%;
   border: 1px solid #2b2929;
   border-radius: 0px;
   padding: 0px !important;
 }
 .my-qtabpanel {
+  display: flex; /* Enable Flexbox */
+  flex-direction: column; /* Stack children vertically */
   height: 100%;
   width: 100%;
   border: 1px solid #2b2929;

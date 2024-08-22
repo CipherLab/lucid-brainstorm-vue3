@@ -153,6 +153,8 @@ const handleAccordionToggle = (index: number) => {
   width: 100%;
   background: #0e0e0e;
   position: sticky;
+  top: 0; /* Add this line to make the header sticky */
+  z-index: 1; /* Optional: Ensure the header stays on top */
 }
 
 .custom-label {
@@ -160,6 +162,8 @@ const handleAccordionToggle = (index: number) => {
 }
 
 .chat-list {
+  display: flex;
+  flex-direction: column;
   border-radius: 1px;
   background-color: #2d2d2d;
 }

@@ -7,16 +7,20 @@ import {
   ChatHistory,
   ChatPart,
 } from '../models/startChatParams.ts';
+import { DataFetcher } from './dataFetcher.ts';
+import { WebDataFetcher } from './webDataFetcher.ts';
 
 abstract class BaseChatService implements ChatService {
   protected apiKey: string;
   protected chats: Map<string, any> = new Map();
   protected model: any;
   protected lucidFlow: LucidFlowComposable;
+  protected webDataFetcher: DataFetcher;
 
   constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
     this.apiKey = apiKey;
     this.lucidFlow = lucidFlow;
+    this.webDataFetcher = new WebDataFetcher();
   }
 
   async startChat(
