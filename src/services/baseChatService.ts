@@ -66,7 +66,10 @@ abstract class BaseChatService implements ChatService {
       });
 
       // Get connected nodes using lucidFlow
-      const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true);
+      const connectedNodeIds = await this.lucidFlow.getConnectedNodes(
+        nodeId,
+        true
+      );
 
       for (const connectedNodeId of connectedNodeIds) {
         const connectedChatHistory = await this.lucidFlow.getNodeChatData(

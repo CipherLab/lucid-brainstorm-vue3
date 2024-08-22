@@ -67,17 +67,8 @@ const updateAccordionStates = () => {
   });
 };
 
-function isChatEnabled(nodeId: string): boolean {
-  const chatData = lucidFlow.getNodeChatData(nodeId);
-  if (!chatData) return true;
-  // Check if the message is enabled for the given nodeId
-  return chatData.every(
-    (message) => message.isEnabledByNode[props.selectedNodeId] ?? true
-  );
-}
-
-function toggleChatEnabled(nodeId: string) {
-  const chatData = lucidFlow.getNodeChatData(nodeId);
+async function toggleChatEnabled(nodeId: string) {
+  const chatData = await lucidFlow.getNodeChatData(nodeId);
   if (chatData) {
     const newEnabledState = !isChatEnabled(nodeId);
     chatData.forEach((message) => {
@@ -87,7 +78,7 @@ function toggleChatEnabled(nodeId: string) {
       }
       message.isEnabledByNode[props.selectedNodeId] = newEnabledState;
     });
-    lucidFlow.updateNodeChatData(nodeId, chatData);
+    await lucidFlow.updateNodeChatData(nodeId, chatData);
   }
 }
 onMounted(() => {
@@ -95,12 +86,12 @@ onMounted(() => {
 });
 
 // Update expandedStates whenever connectedNodeIds changes
-watchEffect(() => {
+watchEffect(async () => {
   if (props.selectedNodeId) {
     if (props.isPrimary) {
       connectedNodeIds.value = [props.selectedNodeId];
     } else {
-      connectedNodeIds.value = lucidFlow.getConnectedNodes(
+      connectedNodeIds.value = await lucidFlow.getConnectedNodes(
         props.selectedNodeId,
         false
       );
@@ -109,19 +100,36 @@ watchEffect(() => {
     updateAccordionStates(); // Update accordion states when nodes change
   }
 });
+const { propertyValues: accordionLabels, getPropertyValue: getAccordionLabel } =
+  await lucidFlow.useNodeProperty(connectedNodeIds, async (nodeId) => {
+    const nodeProps = await lucidFlow.findNodeProps(nodeId);
 
-const getAccordionLabel = (nodeId: string) => {
-  const nodeProps = lucidFlow.findNodeProps(nodeId);
+    if (!nodeProps) {
+      return 'Unknown';
+    }
+    if (nodeId === props.selectedNodeId) {
+      return `${nodeProps.data.agent.name} (Current)`;
+    }
+    return nodeProps
+      ? `${nodeProps.data.agent.name} - ${nodeProps.data.label}`
+      : 'Unknown';
+  });
 
-  if (!nodeProps) {
-    return 'Unknown';
+// 2. Chat Enabled States
+const { propertyValues: chatEnabledStates, getPropertyValue: isChatEnabled } =
+  await lucidFlow.useNodeProperty(connectedNodeIds, async (nodeId) => {
+    const chatData = await lucidFlow.getNodeChatData(nodeId);
+    if (!chatData) return true;
+    // Check if the message is enabled for the given nodeId
+    return chatData.every(
+      (message) => message.isEnabledByNode[props.selectedNodeId] ?? true
+    );
+  });
+
+const updateAccordionLabels = async () => {
+  for (const nodeId of connectedNodeIds.value) {
+    accordionLabels.value[nodeId] = await getAccordionLabel(nodeId);
   }
-  if (nodeId === props.selectedNodeId) {
-    return `${nodeProps.data.agent.name} (Current)`;
-  }
-  return nodeProps
-    ? `${nodeProps.data.agent.name} - ${nodeProps.data.label}`
-    : 'Unknown';
 };
 
 const handleAccordionToggle = (index: number) => {

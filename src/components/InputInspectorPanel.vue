@@ -46,10 +46,10 @@ if (!lucidFlow) {
   throw new Error('lucidFlow composable not provided');
 }
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
-watchEffect(() => {
+watchEffect(async () => {
   if (props.selectedNodeId) {
     // Find and set the selected node, or null if not found
-    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    const node = await lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null; // Use nullish coalescing operator to handle undefined
     //console.log('input panel selectedNode:', selectedNode.value);
   } else {

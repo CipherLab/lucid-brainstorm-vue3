@@ -148,9 +148,9 @@ const isEnabledByNode = (connectedMessage: Message) => {
   return currentMessage?.isEnabledByNode[props.parentNodeId] ?? true;
 };
 
-watchEffect(() => {
-  nodeProps.value = lucidFlow.findNodeProps(props.selectedNodeId);
-  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+watchEffect(async () => {
+  nodeProps.value = await lucidFlow.findNodeProps(props.selectedNodeId);
+  const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
     messages.value = chatData.map((message: Message) => ({
       ...message,
@@ -162,19 +162,19 @@ watchEffect(() => {
 });
 
 async function updateChatHistory() {
-  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+  await lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
-function deleteMessage(index: number) {
+async function deleteMessage(index: number) {
   messages.value.splice(index, 1);
-  updateChatHistory();
+  await updateChatHistory();
 }
 
-const onDragEnd = () => {
+const onDragEnd = async () => {
   // Force a re-evaluation of the computed property:
   const temp = formattedMessages.value; // Trigger a re-evaluation
   messages.value = [...temp]; // Update the original array
 
-  updateChatHistory(); // Save the changes
+  await updateChatHistory(); // Save the changes
 };
 const messageIsEnabledForNode = computed(() => (message: Message) => {
   return message.isEnabledByNode[props.selectedNodeId] ?? true;
@@ -183,7 +183,7 @@ async function clearChat() {
   try {
     if (messages.value && messages.value.length > 0) {
       messages.value = messages.value.slice(0, 1); // Keep the first message (assistant greeting
-      lucidFlow.updateNodeChatData(props.selectedNodeId, null); // Clear chat history in the graph
+      await lucidFlow.updateNodeChatData(props.selectedNodeId, null); // Clear chat history in the graph
     }
   } catch (error) {
     console.error('Failed to clear chat:', error);

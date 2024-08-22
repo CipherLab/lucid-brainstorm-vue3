@@ -1,5 +1,5 @@
 // src/composables/useLucidFlow.ts
-import { ref, reactive } from 'vue';
+import { ref, reactive, Ref, watchEffect } from 'vue';
 import {
   useVueFlow,
   Node,
@@ -8,7 +8,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   NodeRemoveChange,
-} from '@vue-flow/core'; // Import applyNodeChanges
+} from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
 import { forEach, get } from 'lodash';
 
@@ -17,22 +17,28 @@ export interface LucidFlowComposable {
   getEdges: () => Edge[];
   findNodeProps: (nodeId: string) => NodeProps | undefined;
   getNodeCount: () => number;
-  addNode: (node: Node) => void;
-  removeNode: (nodeId: string) => void;
-  addEdge: (edge: Edge) => void;
-  updateNodePosition: (nodeId: string, x: number, y: number) => void;
+  addNode: (node: Node) => Promise<void>;
+  removeNode: (nodeId: string) => Promise<void>;
+  addEdge: (edge: Edge) => Promise<void>;
+  updateNodePosition: (nodeId: string, x: number, y: number) => Promise<void>;
   getNodeChatData: (nodeId: string) => Message[] | null;
-  toggleEdgeAnimation: (nodeId: string, boolState: boolean) => void;
-
-  updateNodeChatData: (nodeId: string, newData: any) => void;
+  toggleEdgeAnimation: (nodeId: string, boolState: boolean) => Promise<void>;
+  updateNodeChatData: (nodeId: string, newData: any) => Promise<void>;
   getConnectedNodes: (nodeId: string, includeSelf: boolean) => string[];
-  saveSession: () => void;
-  loadSession: () => void;
+  saveSession: () => Promise<void>;
+  loadSession: () => Promise<void>;
+  useNodeProperty<T>(
+    connectedNodeIds: Ref<string[]>,
+    getProperty: (nodeId: string) => Promise<T>
+  ): Promise<{
+    propertyValues: Ref<Record<string, T>>;
+    getPropertyValue: (nodeId: string) => T;
+  }>;
 }
-const flowKey = 'lucid-flow-session'; // Your storage key
-//const nodes = ref<Node[]>([]); // Ref for nodes
+
+const flowKey = 'lucid-flow-session';
+
 export default function useLucidFlow(): LucidFlowComposable {
-  // Call useVueFlow only ONCE:
   const vueFlow = useVueFlow();
   const {
     onConnect,
@@ -45,75 +51,73 @@ export default function useLucidFlow(): LucidFlowComposable {
     removeEdges,
   } = vueFlow;
 
-  // Update addNode:
-  const addNode = (node: Node) => {
-    //console.log('Adding node', node);
+  const addNode = async (node: Node): Promise<void> => {
     vueFlow.addNodes(node);
-    saveSession();
+    await saveSession(); // Wait for saveSession to complete
   };
-  const addEdge = (edge: Edge) => {
-    //console.log('Adding edge', edge);
+
+  const addEdge = async (edge: Edge): Promise<void> => {
     vueFlow.addEdges(edge);
-    saveSession();
+    await saveSession(); // Wait for saveSession to complete
   };
 
   const getNodes = () => {
     return vueFlow.nodes.value;
   };
+
   const getEdges = () => {
     return vueFlow.edges.value;
   };
-  // Update removeNode:
-  const removeNode = (nodeId: string) => {
-    //removeEdges(nodeId); // Remove edges connected to the node
+
+  const removeNode = async (nodeId: string): Promise<void> => {
     const changes: NodeRemoveChange[] = [{ type: 'remove', id: nodeId }];
     applyNodeChanges(changes);
     const edgesToRemove = vueFlow.edges.value.filter(
       (edge) => edge.source === nodeId || edge.target === nodeId
     );
     edgesToRemove.forEach((edge) => removeEdges(edge.id));
-    saveSession();
+    await saveSession(); // Wait for saveSession to complete
   };
 
   const findNodeProps = (nodeId: string) => {
     const node = vueFlow.nodes.value.find((node) => node.id === nodeId) as
       | NodeProps
       | undefined;
-
     return node;
   };
 
   const getNodeCount = () => {
-    if (vueFlow.nodes.value) {
-      return vueFlow.nodes.value.length;
-    }
-    return 0;
+    return vueFlow.nodes.value ? vueFlow.nodes.value.length : 0;
   };
 
-  const updateNodePosition = (nodeId: string, x: number, y: number) => {
-    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
+  const updateNodePosition = async (
+    nodeId: string,
+    x: number,
+    y: number
+  ): Promise<void> => {
+    const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
       nodeToUpdate.position = { x, y };
+      //await saveSession(); // Wait for saveSession to complete
     }
   };
 
   const getNodeChatData = (nodeId: string) => {
-    const node = vueFlow.nodes.value.find((node) => node.id === nodeId); // Access from vueFlow.nodes.value
+    const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
     return node ? node.data.chatData : null;
   };
 
-  const updateNodeChatData = (
+  const updateNodeChatData = async (
     nodeId: string,
     newChatData: Message[] | null
-  ) => {
-    // Accept an array of Messages
+  ): Promise<void> => {
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
-      nodeToUpdate.data.chatData = newChatData; // Update the entire chatData array
+      nodeToUpdate.data.chatData = newChatData;
     } else {
       console.error('Node not found');
     }
-    saveSession();
+    await saveSession(); // Wait for saveSession to complete
   };
 
   const getConnectedNodes = (nodeId: string, includeSelf = false): string[] => {
@@ -133,36 +137,64 @@ export default function useLucidFlow(): LucidFlowComposable {
       }
     });
   };
-  const toggleEdgeAnimation = (nodeId: string, boolState: boolean) => {
+
+  const toggleEdgeAnimation = async (
+    nodeId: string,
+    boolState: boolean
+  ): Promise<void> => {
     const edges = getEdges().filter(
       (edge) => edge.source === nodeId || edge.target === nodeId
     );
-    console.log('Toggling edge animation', boolState);
     forEach(edges, (edge) => {
       edge.animated = boolState;
     });
-    console.log('saveSession-start');
-    saveSession();
-    console.log('saveSession-done');
+    await saveSession(); // Wait for saveSession to complete
   };
-  // Saving the Session:
-  function saveSession() {
+
+  async function saveSession(): Promise<void> {
     const flowData = vueFlow.toObject();
-
-    // Optionally, you can prettify the JSON to make it more readable (though it increases size):
     const prettyFlowData = JSON.stringify(flowData, null, 2);
-
     localStorage.setItem(flowKey, prettyFlowData);
   }
 
-  // Loading the Session:
-  function loadSession() {
-    const savedFlow = localStorage.getItem(flowKey);
-    if (savedFlow) {
-      vueFlow.fromObject(JSON.parse(savedFlow));
+  async function loadSession(): Promise<void> {
+    const flowData = localStorage.getItem(flowKey);
+    if (flowData) {
+      const parsedFlowData = JSON.parse(flowData);
+      vueFlow.fromObject(parsedFlowData);
     }
   }
 
+  // Generic function to handle async data loading and caching for node properties
+  async function useNodeProperty<T>(
+    connectedNodeIds: Ref<string[]>,
+    getProperty: (nodeId: string) => Promise<T>
+  ): Promise<{
+    propertyValues: Ref<Record<string, T>>;
+    getPropertyValue: (nodeId: string) => T;
+  }> {
+    const propertyValues = ref<Record<string, T>>({});
+
+    const updatePropertyValues = async () => {
+      for (const nodeId of connectedNodeIds.value) {
+        propertyValues.value[nodeId] = await getProperty(nodeId);
+      }
+    };
+
+    const getPropertyValue = (nodeId: string): T => {
+      return propertyValues.value[nodeId];
+    };
+
+    // Initial update
+    await updatePropertyValues();
+
+    // Watch for changes in connectedNodeIds to update the values
+    watchEffect(async () => {
+      await updatePropertyValues();
+    });
+
+    return { propertyValues, getPropertyValue };
+  }
   return {
     getNodes,
     getEdges,
@@ -174,10 +206,10 @@ export default function useLucidFlow(): LucidFlowComposable {
     updateNodePosition,
     getNodeChatData,
     toggleEdgeAnimation,
-
     updateNodeChatData,
     getConnectedNodes,
     saveSession,
     loadSession,
+    useNodeProperty,
   };
 }

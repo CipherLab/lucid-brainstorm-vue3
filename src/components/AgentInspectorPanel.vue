@@ -185,16 +185,18 @@ const assistantName = computed(() => {
   }
   return 'Assistant';
 });
-const toggleWatcher = () => {
+const toggleWatcher = async () => {
   if (selectedNode.value) {
     selectedNode.value.data.agent.watcher =
       !selectedNode.value.data.agent.watcher;
-    updateChatHistory();
+
+    //await updateChatHistory();
 
     lucidFlow.toggleEdgeAnimation(
       selectedNode.value.id,
       selectedNode.value.data.agent.watcher
     );
+    await updateChatHistory();
 
     emitter.emit('node:watcher-toggled', {
       nodeId: selectedNode.value.id,
@@ -244,12 +246,12 @@ onUnmounted(() => {
   emitter.off('node:selected', handleNodeSelected);
 });
 
-const handleNodeSelected = (event: BaseNodeEvent) => {
+const handleNodeSelected = async (event: BaseNodeEvent) => {
   if (event.nodeId === props.selectedNodeId) {
-    const node = lucidFlow.findNodeProps(event.nodeId);
+    const node = await lucidFlow.findNodeProps(event.nodeId);
     selectedNode.value = node ?? null;
 
-    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || ''; // Sync input data with message
@@ -279,12 +281,12 @@ const getDataFromUrl = async () => {
   }
 };
 // Watch for changes to selectedNodeId
-watchEffect(() => {
+watchEffect(async () => {
   if (props.selectedNodeId) {
-    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    const node = await lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
     //console.log('Selected Node:', selectedNode.value);
-    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData) {
       messages.value = [...chatData];
       textInputData.value = chatData[0]?.message || ''; // Load the text into the input
@@ -313,12 +315,12 @@ const shouldShowAgentControls = computed(() => {
   return 'Assistant';
 });
 
-watchEffect(() => {
+watchEffect(async () => {
   if (props.selectedNodeId) {
-    const node = lucidFlow.findNodeProps(props.selectedNodeId);
+    const node = await lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
 
-    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || '';
@@ -352,8 +354,8 @@ const updateTextInputMessage = debounce(() => {
   }
 }, 500); // Debounce for 500ms (adjust as needed)
 
-watchEffect(() => {
-  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
+watchEffect(async () => {
+  const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
     messages.value = [...chatData]; // Use spread syntax to ensure reactivity
   } else {
@@ -388,7 +390,7 @@ async function updateChatHistory() {
     };
   }
 
-  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+  await lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 </script>
 

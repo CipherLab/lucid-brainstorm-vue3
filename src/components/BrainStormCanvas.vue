@@ -30,6 +30,7 @@ import {
   onUnmounted,
   inject,
   watchEffect,
+  nextTick,
 } from 'vue';
 import {
   ConnectionMode,
@@ -61,32 +62,34 @@ if (!lucidFlow) {
 const nodes = computed(() => lucidFlow.getNodes());
 const edges = computed(() => lucidFlow.getEdges());
 
-onMounted(() => {
+onMounted(async () => {
   //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
-  lucidFlow.loadSession();
   emitter.on('node:watcher-toggled', handleWatcherToggled);
+  await lucidFlow.loadSession();
   //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
 
-onUnmounted(() => {
-  lucidFlow.saveSession();
+onUnmounted(async () => {
   emitter.off('node:watcher-toggled', handleWatcherToggled);
+  await lucidFlow.saveSession();
 });
 // Watch for changes in lucidFlow and update local refs
-const handleWatcherToggled = (event: BooleanToggledEvent) => {
-  lucidFlow.loadSession();
+const handleWatcherToggled = async (event: BooleanToggledEvent) => {
+  setTimeout(async () => {
+    await lucidFlow.loadSession();
+  }, 1000);
 };
 
-const onConnect = (connection: Edge | Connection) => {
+const onConnect = async (connection: Edge | Connection) => {
   //console.log('New connection:', connection);
-  lucidFlow.addEdge({
+  await lucidFlow.addEdge({
     id: `${connection.source}-${connection.target}`,
     source: connection.source,
     target: connection.target,
     type: 'smoothstep',
     animated: false,
   });
-  lucidFlow.saveSession();
+  await lucidFlow.saveSession();
 
   // if (sourceNode && targetNode) {
   //   lucidFlow.handleNodeConnection(connection.source, connection.target);
@@ -101,13 +104,13 @@ const handleClickOutside = (changes: any) => {
   emitter.emit('node:deselected', {});
 };
 
-const removeNodeFromCanvas = (nodeId: string) => {
+const removeNodeFromCanvas = async (nodeId: string) => {
   //console.log('Removing node:', nodeId);
-  lucidFlow.removeNode(nodeId);
+  await lucidFlow.removeNode(nodeId);
   nodesTotal.value--;
 };
 
-const onDrop = (event: any) => {
+const onDrop = async (event: any) => {
   if (!event.dataTransfer) return;
 
   const eventData = JSON.parse(event.dataTransfer.getData('text/plain'));
@@ -148,7 +151,7 @@ const onDrop = (event: any) => {
     newNode.type = 'agent';
     //console.log('New agent node:', newNode);
     nodesTotal.value++;
-    lucidFlow.addNode(newNode);
+    await lucidFlow.addNode(newNode);
   } else if (eventData.type === 'input') {
     //console.log('Input dropped:', eventData);
     newNode = {
@@ -178,7 +181,7 @@ const onDrop = (event: any) => {
     newNode.type = 'agent';
     //console.log('New input node:', newNode);
     nodesTotal.value++;
-    lucidFlow.addNode(newNode);
+    await lucidFlow.addNode(newNode);
   } else if (eventData.type === 'textInput') {
     //console.log('Input dropped:', eventData);
     newNode = {
@@ -208,7 +211,7 @@ const onDrop = (event: any) => {
     newNode.type = 'agent';
     //console.log('New input node:', newNode);
     nodesTotal.value++;
-    lucidFlow.addNode(newNode);
+    await lucidFlow.addNode(newNode);
   } else {
     //console.log('Unknown type:', eventData);
   }
@@ -221,7 +224,7 @@ const onDrop = (event: any) => {
     });
   }
 };
-const handleNodesChange = (changes: NodeChange[]) => {
+const handleNodesChange = async (changes: NodeChange[]) => {
   //loop
   //  changes.forEach((change: NodeChange) => {
   if (!lucidFlow || !changes || changes.length == 0) return;
@@ -230,7 +233,7 @@ const handleNodesChange = (changes: NodeChange[]) => {
   } else if (change.type === 'remove') {
   } else if (change.type === 'position') {
     if (change.id && change.position) {
-      lucidFlow.updateNodePosition(
+      await lucidFlow.updateNodePosition(
         change.id,
         change.position.x,
         change.position.y
@@ -247,9 +250,8 @@ watchEffect(() => {
   //console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
 });
 
-const debounceSave = debounce(() => {
-  //console.log('Saving session...');
-  lucidFlow.saveSession();
+const debounceSave = debounce(async () => {
+  await lucidFlow.saveSession();
 }, 100);
 </script>
 <style scoped>
