@@ -2,9 +2,13 @@
   "extends": "@quasar/app-vite/tsconfig-preset",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["vite/client", "vue"]
   },
-  "include": ["src/**/*.d.ts"],
+  "include": ["src/**/*.vue", "src/**/*.d.ts"],
   "exclude": [
     "./dist",
     "./.quasar",

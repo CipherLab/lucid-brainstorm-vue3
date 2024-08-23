@@ -1,25 +1,6 @@
 <template>
-  <div class="q-pa-sm row items-center">
-    <q-input
-      v-model="webUrl"
-      label="Web URL"
-      outlined
-      dense
-      class="col-grow text-white"
-      @input="props.updateChatHistoryData"
-      @blur="props.updateChatHistoryData"
-    />
-
-    <div class="q-gutter-sm">
-      <q-btn
-        label="Get Data"
-        @click="getDataFromUrl"
-        :disable="!webUrl || webUrl.length <= 0"
-        color="primary"
-        unelevated
-        dense
-      />
-
+  <div class="full-width">
+    <div class="row items-center q-gutter-sm">
       <q-btn
         icon="watch_later"
         :color="watcher ? 'green-5' : 'grey-7'"
@@ -39,14 +20,32 @@
           Watcher Inactive
         </q-tooltip>
       </q-btn>
+
+      <q-input
+        v-model="webUrl"
+        label="Web URL"
+        outlined
+        dense
+        class="col-grow text-white"
+        @input="props.updateChatHistoryData"
+        @blur="onTextBlur"
+        style="flex: 1"
+      />
+
+      <q-btn
+        label="Get Data"
+        @click="getDataFromUrl"
+        :disable="!webUrl || webUrl.length <= 0"
+        color="primary"
+        unelevated
+        dense
+      />
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref, inject, computed, watchEffect } from 'vue';
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { debounce } from 'lodash';
 import { WebDataFetcher } from '../services/webDataFetcher';
 import { emitter } from '../eventBus';
 
@@ -69,12 +68,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['webpage-data-updated', 'watcher-toggled']);
-
 const $q = useQuasar();
 
 const dataFetcher = new WebDataFetcher();
-
+const watcher = computed(() => props.selectedNode?.data.agent.watcher);
 const getDataFromUrl = async () => {
   if (webUrl.value) {
     try {
@@ -99,6 +96,11 @@ const toggleWatcher = async () => {
       nodeId: selectedNode.value.id,
       boolState: selectedNode.value.data.agent.watcher,
     });
+  }
+};
+const onTextBlur = () => {
+  if (selectedNode.value) {
+    props.updateChatHistoryData();
   }
 };
 </script>

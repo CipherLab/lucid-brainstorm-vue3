@@ -72,19 +72,6 @@
           :webUrlProp="webUrl"
         />
       </div>
-      <div v-if="!shouldShowAgentControls">
-        <div class="q-pa-md">
-          <q-input
-            class="text-light"
-            v-model="textInputData"
-            :label="hintText"
-            filled
-            type="textarea"
-            @input="updateChatHistory"
-            @blur="updateChatHistory"
-          />
-        </div>
-      </div>
     </div>
 
     <ChatWrapper
@@ -93,6 +80,27 @@
       :assistantNameProp="assistantName"
       :assistantIcon="selectedNode.data.agent.icon"
     />
+
+    <div v-if="!shouldShowAgentControls">
+      <div class="q-pa-md full-height">
+        <q-scroll-area
+          class="col column no-wrap"
+          style="height: 90vh !important"
+          ref="scrollAreaRef"
+        >
+          <q-input
+            class="text-light full-height input-textarea"
+            v-model="textInputData"
+            :label="hintText"
+            filled
+            autogrow
+            type="textarea"
+            @input="updateChatHistory"
+            @blur="updateChatHistory"
+          />
+        </q-scroll-area>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -133,6 +141,7 @@ import WebPageAgent from './WebPageAgent.vue';
 const files = ref<FileList | null>(null);
 const messages = ref<Message[]>([]);
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
+const scrollAreaRef = ref<any>(null);
 
 const $q = useQuasar();
 
@@ -384,14 +393,5 @@ const currentAgentComponent = computed(() => {
   align-items: center;
   text-align: center;
   border-radius: 2px;
-}
-
-.scroll {
-  overflow: hidden !important;
-  /* Ensure the element has a defined height */
-  height: 100vh; /* or any specific height */
-}
-body.mobile .scroll--mobile {
-  overflow: hidden !important;
 }
 </style>
