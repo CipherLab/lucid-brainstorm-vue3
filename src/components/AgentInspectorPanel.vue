@@ -45,71 +45,7 @@
           />
         </div>
       </div>
-      <div v-if="selectedNode.data.agent.subtype === 'file'">
-        <div class="q-pa-sm">
-          <q-file
-            v-model="files"
-            label="Pick files"
-            outlined
-            use-chips
-            multiple
-          />
-          <q-btn
-            label="Load File"
-            @click="loadFile"
-            :disable="!files || files.length <= 0"
-          />
-        </div>
-      </div>
-      <div
-        v-if="selectedNode.data.agent.subtype === 'webpage'"
-        class="q-pa-sm row items-center"
-      >
-        <q-input
-          v-model="webUrl"
-          label="Web URL"
-          outlined
-          dense
-          class="col-grow text-white"
-          @input="updateChatHistory"
-          @blur="updateChatHistory"
-        />
-
-        <div class="q-gutter-sm">
-          <q-btn
-            label="Get Data"
-            @click="getDataFromUrl"
-            :disable="!webUrl || webUrl.length <= 0"
-            color="primary"
-            unelevated
-            dense
-          />
-
-          <q-btn
-            icon="watch_later"
-            :color="selectedNode.data.agent.watcher ? 'green-5' : 'grey-7'"
-            @click="toggleWatcher"
-            :disable="!webUrl || webUrl.length <= 0"
-            dense
-            unelevated
-            v-tooltip.bottom="{
-              content: 'Enable Live Updates',
-              delay: 500,
-            }"
-          >
-            <q-tooltip
-              anchor="bottom middle"
-              :offset="[0, 10]"
-              v-if="selectedNode.data.agent.watcher"
-            >
-              Watcher Active
-            </q-tooltip>
-            <q-tooltip anchor="bottom middle" :offset="[0, 10]" v-else>
-              Watcher Inactive
-            </q-tooltip>
-          </q-btn>
-        </div>
-      </div>
+     
       <div v-if="!shouldShowAgentControls">
         <div class="q-pa-md">
           <q-input
