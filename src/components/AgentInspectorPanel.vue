@@ -65,50 +65,12 @@
         v-if="selectedNode.data.agent.subtype === 'webpage'"
         class="q-pa-sm row items-center"
       >
-        <q-input
-          v-model="webUrl"
-          label="Web URL"
-          outlined
-          dense
-          class="col-grow text-white"
-          @input="updateChatHistory"
-          @blur="updateChatHistory"
+        <WebPageAgent
+          :selectedNode="selectedNode"
+          :updateChatHistoryData="updateChatHistoryData"
+          :toggleWatcherState="toggleWatcher"
+          :webUrlProp="webUrl"
         />
-
-        <div class="q-gutter-sm">
-          <q-btn
-            label="Get Data"
-            @click="getDataFromUrl"
-            :disable="!webUrl || webUrl.length <= 0"
-            color="primary"
-            unelevated
-            dense
-          />
-
-          <q-btn
-            icon="watch_later"
-            :color="selectedNode.data.agent.watcher ? 'green-5' : 'grey-7'"
-            @click="toggleWatcher"
-            :disable="!webUrl || webUrl.length <= 0"
-            dense
-            unelevated
-            v-tooltip.bottom="{
-              content: 'Enable Live Updates',
-              delay: 500,
-            }"
-          >
-            <q-tooltip
-              anchor="bottom middle"
-              :offset="[0, 10]"
-              v-if="selectedNode.data.agent.watcher"
-            >
-              Watcher Active
-            </q-tooltip>
-            <q-tooltip anchor="bottom middle" :offset="[0, 10]" v-else>
-              Watcher Inactive
-            </q-tooltip>
-          </q-btn>
-        </div>
       </div>
       <div v-if="!shouldShowAgentControls">
         <div class="q-pa-md">
@@ -164,6 +126,10 @@ const props = defineProps({
     default: null,
   },
 });
+import WebPageAgent from './WebPageAgent.vue';
+// import FileAgent from './FileAgent.vue';
+// import InputAgent from './InputAgent.vue';
+
 const files = ref<FileList | null>(null);
 const messages = ref<Message[]>([]);
 const selectedNode = ref<NodeProps | null>(null); // Declare ref for selectedNode
@@ -185,18 +151,16 @@ const assistantName = computed(() => {
   }
   return 'Assistant';
 });
-const toggleWatcher = async () => {
+const toggleWatcher = () => {
   if (selectedNode.value) {
     selectedNode.value.data.agent.watcher =
       !selectedNode.value.data.agent.watcher;
-
-    //await updateChatHistory();
+    //pdateChatHistory();
 
     lucidFlow.toggleEdgeAnimation(
       selectedNode.value.id,
       selectedNode.value.data.agent.watcher
     );
-    await updateChatHistory();
 
     emitter.emit('node:watcher-toggled', {
       nodeId: selectedNode.value.id,
@@ -246,12 +210,12 @@ onUnmounted(() => {
   emitter.off('node:selected', handleNodeSelected);
 });
 
-const handleNodeSelected = async (event: BaseNodeEvent) => {
+const handleNodeSelected = (event: BaseNodeEvent) => {
   if (event.nodeId === props.selectedNodeId) {
-    const node = await lucidFlow.findNodeProps(event.nodeId);
+    const node = lucidFlow.findNodeProps(event.nodeId);
     selectedNode.value = node ?? null;
 
-    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || ''; // Sync input data with message
@@ -281,12 +245,12 @@ const getDataFromUrl = async () => {
   }
 };
 // Watch for changes to selectedNodeId
-watchEffect(async () => {
+watchEffect(() => {
   if (props.selectedNodeId) {
-    const node = await lucidFlow.findNodeProps(props.selectedNodeId);
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
     //console.log('Selected Node:', selectedNode.value);
-    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData) {
       messages.value = [...chatData];
       textInputData.value = chatData[0]?.message || ''; // Load the text into the input
@@ -315,16 +279,17 @@ const shouldShowAgentControls = computed(() => {
   return 'Assistant';
 });
 
-watchEffect(async () => {
+watchEffect(() => {
   if (props.selectedNodeId) {
-    const node = await lucidFlow.findNodeProps(props.selectedNodeId);
+    const node = lucidFlow.findNodeProps(props.selectedNodeId);
     selectedNode.value = node ?? null;
 
-    const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
+    const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || '';
       webUrl.value = messages.value[0]?.webUrl || '';
+      console.log('Web URL:', webUrl.value);
     } else {
       messages.value = [
         {
@@ -354,8 +319,8 @@ const updateTextInputMessage = debounce(() => {
   }
 }, 500); // Debounce for 500ms (adjust as needed)
 
-watchEffect(async () => {
-  const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
+watchEffect(() => {
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
     messages.value = [...chatData]; // Use spread syntax to ensure reactivity
   } else {
@@ -364,14 +329,13 @@ watchEffect(async () => {
 });
 // Debounce the updateChatHistory function
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
-
-async function updateChatHistory() {
+async function updateChatHistoryData(data: string) {
   if (!messages.value || messages.value.length === 0) {
     messages.value = [
       {
         id: Date.now() + '',
         sender: 'user',
-        message: textInputData.value,
+        message: data,
         webUrl: webUrl.value,
         createdAt: Date.now(),
         error: false,
@@ -385,13 +349,30 @@ async function updateChatHistory() {
 
     messages.value[0] = {
       ...messages.value[0], // Copy existing properties
-      message: textInputData.value, // Update the message
+      message: data, // Update the message
       webUrl: webUrl.value,
     };
   }
 
-  await lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
+async function updateChatHistory() {
+  await updateChatHistoryData(textInputData.value);
+}
+
+const currentAgentComponent = computed(() => {
+  if (!selectedNode.value) return null;
+  switch (selectedNode.value.data.agent.subtype) {
+    case 'webpage':
+      return WebPageAgent;
+    // case 'file':
+    //   return FileAgent;
+    // case 'input':
+    //   return InputAgent;
+    default:
+      return null;
+  }
+});
 </script>
 
 <style scoped>

@@ -113,7 +113,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.6');
+const version = ref('1.0.7');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -123,6 +123,8 @@ const updateMessages: Record<string, string> = {
   '1.0.5': 'Missing webp for chat message send button.',
   '1.0.6': 'Fixing version history messages.',
   '1.0.7': 'Fixing issue with side bar top padding.',
+  '1.0.8':
+    'Adjusting Web URL input so that it will optionally get the latest data from the URL.',
 };
 
 const showUpdateBanner = ref<boolean>(false);
