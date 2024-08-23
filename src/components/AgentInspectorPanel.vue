@@ -225,25 +225,9 @@ const handleNodeSelected = (event: BaseNodeEvent) => {
     }
   }
 };
-const dataFetcher = new WebDataFetcher(); // Create an instance
 
 const webUrl = ref(selectedNode.value?.data.agent.webUrl ?? '');
-const corsProxy = 'https://api.allorigins.win/get?url='; // Different CORS proxy
 
-const getDataFromUrl = async () => {
-  if (webUrl.value) {
-    try {
-      textInputData.value = await dataFetcher.fetchData(webUrl.value);
-      updateChatHistory();
-    } catch (error) {
-      $q.notify({
-        message: error.message, // Use the error message from the service
-        color: 'negative',
-        position: 'top',
-      });
-    }
-  }
-};
 // Watch for changes to selectedNodeId
 watchEffect(() => {
   if (props.selectedNodeId) {
