@@ -66,10 +66,10 @@ import {
 } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
+import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
 import { emitter, NodeTabbedEvent, GenericEvent } from '../eventBus';
 import { useQuasar } from 'quasar';
-import ChatHistory from './ChatHistory.vue';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const $q = useQuasar();
 
@@ -127,8 +127,8 @@ onMounted(async () => {
   assistantName.value = props.assistantNameProp + ' agent';
 });
 
-watchEffect(async () => {
-  const chatData = await lucidFlow.getNodeChatData(props.selectedNodeId);
+watchEffect(() => {
+  const chatData = lucidFlow.getNodeChatData(props.selectedNodeId);
   if (chatData) {
     messages.value = [...chatData]; // Use spread syntax to ensure reactivity
   } else {
@@ -288,7 +288,7 @@ watch(
 
 async function updateChatHistory() {
   //console.log('updateChatHistory', messages.value);
-  await lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 </script>
 

@@ -8,16 +8,6 @@
     >
       x
     </q-badge>
-    <q-badge
-      v-if="props.data.agent.watcher !== undefined"
-      transparent
-      class="watcher-badge"
-      :color="props.data.agent.watcher ? 'green' : 'grey'"
-    >
-      <q-icon
-        :name="props.data.agent.watcher ? 'visibility' : 'visibility_off'"
-      />
-    </q-badge>
     <Handle
       v-if="props.data.agent.hasInput"
       type="target"
@@ -87,12 +77,12 @@ const showDeleteConfirm = ref(false);
 
 const props = defineProps<Node>();
 
-const handleDelete = async () => {
+const handleDelete = () => {
   if (showDeleteConfirm.value) {
     showDeleteConfirm.value = false;
     //props.onRemoveNode(props.id); // Call the callback to remove the node\
     //console.log('Delete node:', props.id);
-    await lucidFlow.removeNode(props.id);
+    lucidFlow.removeNode(props.id);
     emitter.emit('node:deselected', { nodeId: props.id });
   } else {
     showDeleteConfirm.value = true;
@@ -217,14 +207,6 @@ onUnmounted(() => {
   top: -20px;
   right: 0px;
   cursor: pointer;
-}
-.watcher-badge {
-  float: right;
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  border-radius: 50%;
-  opacity: 80%;
 }
 </style>
 <style scoped></style>
