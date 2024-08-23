@@ -59,20 +59,19 @@ if (!lucidFlow) {
 const nodes = computed(() => lucidFlow.getNodes());
 const edges = computed(() => lucidFlow.getEdges());
 
-onMounted(() => {
+onMounted(async () => {
   //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
-  lucidFlow.loadSession();
+  await lucidFlow.loadSession();
   emitter.on('node:watcher-toggled', handleWatcherToggled);
   //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
 
-onUnmounted(() => {
-  lucidFlow.saveSession();
+onUnmounted(async () => {
   emitter.off('node:watcher-toggled', handleWatcherToggled);
 });
 // Watch for changes in lucidFlow and update local refs
-const handleWatcherToggled = () => {
-  lucidFlow.loadSession();
+const handleWatcherToggled = async () => {
+  await lucidFlow.loadSession();
 };
 
 const onConnect = (connection: Edge | Connection) => {
@@ -84,7 +83,6 @@ const onConnect = (connection: Edge | Connection) => {
     type: 'smoothstep',
     animated: false,
   });
-  lucidFlow.saveSession();
 
   // if (sourceNode && targetNode) {
   //   lucidFlow.handleNodeConnection(connection.source, connection.target);
@@ -219,7 +217,7 @@ const onDrop = (event: any) => {
     });
   }
 };
-const handleNodesChange = (changes: NodeChange[]) => {
+const handleNodesChange = async (changes: NodeChange[]) => {
   //loop
   //  changes.forEach((change: NodeChange) => {
   if (!lucidFlow || !changes || changes.length == 0) return;
@@ -233,8 +231,6 @@ const handleNodesChange = (changes: NodeChange[]) => {
         change.position.x,
         change.position.y
       );
-
-      debounceSave();
     }
   }
   //});
@@ -244,11 +240,6 @@ const handleNodesChange = (changes: NodeChange[]) => {
 watchEffect(() => {
   //console.log('Nodes in BrainStormCanvas:', lucidFlow.getNodeCount());
 });
-
-const debounceSave = debounce(() => {
-  //console.log('Saving session...');
-  lucidFlow.saveSession();
-}, 100);
 </script>
 <style scoped>
 .brainstorm-canvas {

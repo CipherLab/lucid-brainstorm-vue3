@@ -10,8 +10,9 @@ import {
   NodeRemoveChange,
 } from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
-import { forEach, get } from 'lodash';
-
+import { debounce, forEach, get } from 'lodash';
+import { IndexedDBStorageService } from '../services/indexedDBStorageService';
+import { StorageService } from '../services/StorageService';
 export interface LucidFlowComposable {
   getNodes: () => Node[];
   getEdges: () => Edge[];
@@ -39,6 +40,8 @@ export interface LucidFlowComposable {
 const flowKey = 'lucid-flow-session';
 
 export default function useLucidFlow(): LucidFlowComposable {
+  const storageService: StorageService = new IndexedDBStorageService();
+
   const vueFlow = useVueFlow();
   const {
     onConnect,
@@ -98,10 +101,17 @@ export default function useLucidFlow(): LucidFlowComposable {
     const nodeToUpdate = vueFlow.nodes.value.find((node) => node.id === nodeId);
     if (nodeToUpdate) {
       nodeToUpdate.position = { x, y };
-      //await saveSession(); // Wait for saveSession to complete
+      await debounceSave();
+
+      // setTimeout(() => {
+      //   loadSession();
+      // }, 1000);
     }
   };
-
+  const debounceSave = debounce(async () => {
+    console.log('Saving session...');
+    await saveSession();
+  }, 100);
   const getNodeChatData = (nodeId: string) => {
     const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
     return node ? node.data.chatData : null;
@@ -153,15 +163,13 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   async function saveSession(): Promise<void> {
     const flowData = vueFlow.toObject();
-    const prettyFlowData = JSON.stringify(flowData, null, 2);
-    localStorage.setItem(flowKey, prettyFlowData);
+    await storageService.save(flowKey, flowData);
   }
 
   async function loadSession(): Promise<void> {
-    const flowData = localStorage.getItem(flowKey);
+    const flowData = await storageService.load(flowKey);
     if (flowData) {
-      const parsedFlowData = JSON.parse(flowData);
-      vueFlow.fromObject(parsedFlowData);
+      vueFlow.fromObject(flowData);
     }
   }
 
