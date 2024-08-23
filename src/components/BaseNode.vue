@@ -56,14 +56,8 @@
 </template>
 <script setup lang="ts">
 import { inject, onMounted, onUnmounted } from 'vue';
-import {
-  Dimensions,
-  HandleConnectable,
-  Handle,
-  Position,
-  Node,
-} from '@vue-flow/core';
-import { defineProps, computed, PropType, VNode, ref } from 'vue';
+import { Handle, Position, Node } from '@vue-flow/core';
+import { defineProps, computed, ref } from 'vue';
 import { emitter } from '../eventBus';
 import NodeInspector from './NodeInspector.vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';

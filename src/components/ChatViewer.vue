@@ -84,22 +84,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-  inject,
-  ref,
-  onMounted,
-  computed,
-  watchEffect,
-  defineComponent,
-  nextTick,
-  onUnmounted,
-} from 'vue';
+import { inject, ref, computed, watchEffect, defineComponent } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatMessage from './ChatMessage.vue';
 import { Message } from '../models/chatInterfaces';
 import { NodeProps } from '@vue-flow/core';
-import { emitter, NodeTabbedEvent } from '../eventBus';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 
 defineComponent(draggable);
@@ -185,7 +175,7 @@ async function clearChat() {
       messages.value = messages.value.slice(0, 1); // Keep the first message (assistant greeting
       lucidFlow.updateNodeChatData(props.selectedNodeId, null); // Clear chat history in the graph
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to clear chat:', error);
   }
 }

@@ -34,7 +34,7 @@ const submitPrompt = async () => {
       prompt: promptText.value,
     });
     response.value = result.data.response; // Assuming your API returns a 'response' field
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting prompt:', error);
     // Handle errors (display error message, etc.)
   }

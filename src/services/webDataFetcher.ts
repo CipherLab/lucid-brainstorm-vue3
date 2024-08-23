@@ -14,7 +14,7 @@ export class WebDataFetcher implements DataFetcher {
         `${this.corsProxy}${encodeURIComponent(url)}`
       );
       return response.data.contents; // Extract from CORS proxy response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching webpage:', error);
       throw new Error(`Failed to fetch data from URL: ${error.message}`); // Re-throw to handle in calling code
     }

@@ -45,12 +45,10 @@ import InputNode from './InputNode.vue';
 import { debounce } from 'lodash-es';
 
 const connectionMode = ref(ConnectionMode.Loose);
-const nodeTypes = ref(['agent', 'input', 'file', 'prompt', 'webpage']); // Add all your node types here
 const nodesTotal = ref(0);
 
-import { BooleanToggledEvent, emitter } from '../eventBus';
+import { emitter } from '../eventBus';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import { watch } from 'fs';
 
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
 if (!lucidFlow) {
@@ -73,7 +71,7 @@ onUnmounted(() => {
   emitter.off('node:watcher-toggled', handleWatcherToggled);
 });
 // Watch for changes in lucidFlow and update local refs
-const handleWatcherToggled = (event: BooleanToggledEvent) => {
+const handleWatcherToggled = () => {
   lucidFlow.loadSession();
 };
 
@@ -93,11 +91,11 @@ const onConnect = (connection: Edge | Connection) => {
   // }
 };
 
-const onEdgesChange = (changes: any) => {
-  //console.log('Edges Changes:', changes);
+const onEdgesChange = () => {
+  console.log('Edges Changes');
 };
 
-const handleClickOutside = (changes: any) => {
+const handleClickOutside = () => {
   emitter.emit('node:deselected', {});
 };
 

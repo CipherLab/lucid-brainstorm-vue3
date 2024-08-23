@@ -103,7 +103,7 @@ abstract class BaseChatService implements ChatService {
         history: finalHistory,
       };
       return updatedStartChatParams;
-    } catch (error) {
+    } catch (error: any) {
       sessionStorage.removeItem('apikey');
       throw error;
     }

@@ -41,9 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, inject, computed } from 'vue';
+import { reactive, inject, computed } from 'vue';
 import { ChatService } from '../models/chatInterfaces';
-import { emitter, GenericEvent } from '../eventBus';
+import { emitter } from '../eventBus';
 
 const props = defineProps<{
   show: boolean;
@@ -102,7 +102,7 @@ async function generateSystemInstructions() {
       `Generate system instructions for an AI LLM agent named "${newAgent.name}". Stay within 150 words or less.`
     );
     newAgent.systemInstructions = instructions.result;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating instructions:', error);
   }
 }

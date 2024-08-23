@@ -77,7 +77,7 @@ const getDataFromUrl = async () => {
     try {
       const data = await dataFetcher.fetchData(webUrl.value);
       props.updateChatHistoryData(data);
-    } catch (error) {
+    } catch (error: any) {
       $q.notify({
         message: error.message,
         color: 'negative',

@@ -68,7 +68,7 @@ import { LucidFlowComposable } from '../composables/useLucidFlow';
 import draggable from 'vuedraggable';
 import ChatHistory from './ChatHistory.vue';
 import { ChatService, Message } from '../models/chatInterfaces';
-import { emitter, NodeTabbedEvent, GenericEvent } from '../eventBus';
+import { emitter, NodeTabbedEvent } from '../eventBus';
 import { useQuasar } from 'quasar';
 //import { QMarkdown } from '@quasar/quasar-ui-qmarzkdown';
 const $q = useQuasar();
@@ -176,7 +176,7 @@ async function sendMessage() {
         );
         // Extract relevant data and create a Message object:
         messageResult = response.result;
-      } catch (error) {
+      } catch (error: any) {
         let errorMessage = 'Error sending message';
         let isApiKeyError = false;
         // Check for specific error conditions
@@ -213,7 +213,7 @@ async function sendMessage() {
         messageToUpdate.typing = false;
         await updateChatHistory();
       }
-    } catch (error) {
+    } catch (error: any) {
       emitter.emit('node:message-failed', { nodeId: messageId });
     } finally {
       emitter.emit('node:message-received', {
@@ -223,7 +223,7 @@ async function sendMessage() {
 
       scrollToBottom();
     }
-  } catch (error) {
+  } catch (error: any) {
     // ... [error handling - potentially re-add the user input]
     userInput.value = tempVal;
   } finally {

@@ -37,7 +37,7 @@ class RealChatService extends BaseChatService {
       const result = await chat.sendMessage(text);
       const responseText = result.response.text();
       return { result: responseText };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       throw error;
     }

@@ -70,7 +70,6 @@ const showError = ref(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
 const messageProp = ref(props.message);
-const renderedMessage = computed(() => md.render(messageProp.value));
 const messageParts = computed(() => {
   if (props.message == null) return [];
 

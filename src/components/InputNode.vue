@@ -23,9 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed, resolveComponent } from 'vue'; // Import resolveComponent
+import { defineProps } from 'vue'; // Import resolveComponent
 import BaseNode from './BaseNode.vue'; // Import the BaseNode component
-import { Dimensions, HandleConnectable, NodeProps } from '@vue-flow/core';
+import { NodeProps } from '@vue-flow/core';
 
 const props = defineProps<NodeProps>();
 

@@ -105,28 +105,21 @@
 </template>
 
 <script setup lang="ts">
-import moment from 'moment';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import draggable from 'vuedraggable';
-import { ChatService, Message } from '../models/chatInterfaces';
+import { Message } from '../models/chatInterfaces';
 import { debounce } from 'lodash';
 import { NodeProps } from '@vue-flow/core';
 import { BaseNodeEvent, emitter } from '../eventBus';
-import axios from 'axios';
 import {
   ref,
   inject,
   computed,
-  nextTick,
   watchEffect,
   onMounted,
   onUnmounted,
 } from 'vue';
 import ChatWrapper from './ChatWrapper.vue';
-import { on } from 'events';
-import { debug } from 'console';
 import { useQuasar } from 'quasar';
-import { WebDataFetcher } from '../services/webDataFetcher';
 const textInputData = ref('');
 const props = defineProps({
   selectedNodeId: {

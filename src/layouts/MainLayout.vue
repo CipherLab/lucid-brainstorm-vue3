@@ -218,11 +218,11 @@ const handleNodeDeselected = () => {
 };
 
 // Resizing Handlers
-const handleLeftPan = (event) => {
+const handleLeftPan = (event: any) => {
   leftDrawerWidth.value = Math.max(200, leftDrawerWidth.value + event.delta.x);
 };
 
-const handleRightPan = (event) => {
+const handleRightPan = (event: any) => {
   rightDrawerWidth.value = Math.max(
     200,
     rightDrawerWidth.value - event.delta.x

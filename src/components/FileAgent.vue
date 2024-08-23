@@ -11,12 +11,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { LucidFlowComposable } from '../composables/useLucidFlow';
 
 const files = ref<FileList | null>(null);
-const $q = useQuasar();
-const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 
 const emit = defineEmits(['file-loaded']);
 

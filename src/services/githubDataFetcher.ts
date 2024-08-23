@@ -13,7 +13,7 @@ export class GitHubDataFetcher implements DataFetcher {
       // ... (Implement logic to fetch data from GitHub API based on 'input')
       // For example, fetch file content, issue details, etc.
       return 'GitHub data'; // Placeholder
-    } catch (error) {
+    } catch (error: any) {
       // ... handle errors
       throw new Error(`Failed to fetch data from GitHub: ${error.message}`);
     }

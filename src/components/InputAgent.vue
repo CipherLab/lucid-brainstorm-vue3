@@ -17,6 +17,7 @@ import { ref, inject, computed, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import { debounce } from 'lodash';
+import { Message } from '@/models/chatInterfaces';
 
 const props = defineProps({
   selectedNodeId: {
@@ -64,7 +65,7 @@ watchEffect(async () => {
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500);
 
 async function updateChatHistory() {
-  let messages = [];
+  let messages: Message[] = [];
 
   if (!messages || messages.length === 0) {
     messages = [

@@ -41,4 +41,6 @@ const startChatParams: StartChatParams = {
   },
 };
 
-export { startChatParams, StartChatParams, ChatHistory, ChatPart };
+// Use 'export type' for type-only exports
+export { startChatParams };
+export type { StartChatParams, ChatHistory, ChatPart };
