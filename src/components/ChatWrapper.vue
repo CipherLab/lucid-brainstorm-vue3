@@ -18,7 +18,11 @@
         class="col column no-wrap full-height my-qtabpanel"
       >
         <q-scroll-area class="col column no-wrap" ref="scrollAreaRef">
-          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="true" />
+          <ChatHistory
+            :selectedNodeId="selectedNodeId"
+            :isPrimary="true"
+            :sendMessageData="sendMessageData"
+          />
         </q-scroll-area>
         <q-input
           class="chat-box"
@@ -46,7 +50,11 @@
         class="col column no-wrap full-height my-qtabpanel"
       >
         <q-scroll-area class="col column no-wrap" ref="scrollAreaRef">
-          <ChatHistory :selectedNodeId="selectedNodeId" :isPrimary="false" />
+          <ChatHistory
+            :selectedNodeId="selectedNodeId"
+            :isPrimary="false"
+            :sendMessageData="sendMessageData"
+          />
         </q-scroll-area>
       </q-tab-panel>
     </q-tab-panels>
@@ -135,9 +143,11 @@ watchEffect(() => {
     messages.value = [];
   }
 });
-
 async function sendMessage() {
-  const tempVal = userInput.value;
+  sendMessageData(userInput.value);
+}
+async function sendMessageData(data: string) {
+  const tempVal = data;
   if (!tempVal || tempVal.trim() === '') return;
   userInput.value = '';
 

@@ -44,6 +44,7 @@ abstract class BaseChatService implements ChatService {
     }
     return apiKey;
   }
+
   protected async buildChatHistory(
     nodeId: string,
     systemInstructions: string
@@ -133,6 +134,7 @@ abstract class BaseChatService implements ChatService {
       throw error;
     }
   }
+
   // Modify ensurePattern to work with the Map
   private ensurePattern(newHistory: ChatHistory[]): ChatHistory[] {
     if (newHistory.length === 0) {

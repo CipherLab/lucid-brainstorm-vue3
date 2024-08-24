@@ -177,7 +177,7 @@ const nodeSelectStarted = ref(false);
 
 // Drawer Widths
 const leftDrawerWidth = ref(250);
-const rightDrawerWidth = ref(500);
+const rightDrawerWidth = ref(850);
 
 // Drawer Toggle
 function toggleLeftDrawer() {

@@ -29,6 +29,7 @@
         :parentNodeId="selectedNodeId"
         :selectedNodeId="nodeId"
         :isPrimaryChat="isPrimary"
+        :sendMessageData="props.sendMessageData"
       />
     </q-expansion-item>
   </q-list>
@@ -55,6 +56,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  sendMessageData: {
+    type: Function,
+    required: true,
+  },
 });
 
 const connectedNodeIds = ref<string[]>([]);
@@ -63,7 +68,8 @@ const expandedStates = ref<boolean[]>([]);
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
   expandedStates.value = connectedNodeIds.value.map((_, index) => {
-    return index === 0; // Last item open by default
+    if (props.isPrimary) return true;
+    return false; // Last item open by default
   });
 };
 
@@ -129,12 +135,12 @@ const handleAccordionToggle = (index: number) => {
   if (props.isPrimary) {
     return;
   }
+
   expandedStates.value.forEach((_, i) => {
+    if (i === index) return;
     expandedStates.value[i] = false;
   });
-
-  // Open the selected accordion
-  expandedStates.value[index] = true;
+  expandedStates.value[index] = !expandedStates.value[index];
 
   const toggledEvent: NodeToggledEvent = {
     nodeId: connectedNodeIds.value[index],

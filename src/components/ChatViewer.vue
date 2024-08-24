@@ -61,6 +61,18 @@
                           icon="delete"
                           @click.stop="deleteMessage(index)"
                         />
+                        <q-btn
+                          dense
+                          flat
+                          @click="reRunMessage(index)"
+                          v-if="primaryChat && element.sender !== 'user'"
+                        >
+                          <img
+                            src="../assets/geminilogo.webp"
+                            alt="Send"
+                            class="message-send-button"
+                          />
+                        </q-btn>
                       </q-toolbar>
                     </q-header>
 
@@ -109,12 +121,16 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  sendMessageData: {
+    type: Function,
+    required: true,
+  },
 });
 const primaryChat = computed(() => props.isPrimaryChat); // New computed property
 
 const nodeProps = ref<NodeProps>();
 
-function toggleMessageEnabled(connectedMessage: Message) {
+async function toggleMessageEnabled(connectedMessage: Message) {
   const nodeId = props.selectedNodeId; // Get the ID of the currently selected node
   const message = messages.value.find(
     (message) => message.id === connectedMessage.id
@@ -128,7 +144,7 @@ function toggleMessageEnabled(connectedMessage: Message) {
   message.isEnabledByNode[props.parentNodeId] =
     !message.isEnabledByNode[props.parentNodeId];
 
-  updateChatHistory();
+  await updateChatHistory();
 }
 
 const isEnabledByNode = (connectedMessage: Message) => {
@@ -154,9 +170,9 @@ watchEffect(() => {
 async function updateChatHistory() {
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
-function deleteMessage(index: number) {
+async function deleteMessage(index: number) {
   messages.value.splice(index, 1);
-  updateChatHistory();
+  await updateChatHistory();
 }
 
 const onDragEnd = () => {
@@ -195,6 +211,35 @@ const formattedMessages = computed(() => {
     message: message.message,
   }));
 });
+
+async function reRunMessage(index: number) {
+  if (index <= 0 || index >= messages.value.length) {
+    return; // Invalid index, do nothing
+  }
+  await deleteMessage(index);
+
+  // Find the last user message
+  let lastUserMessageIndex = index - 1;
+  while (
+    lastUserMessageIndex >= 0 &&
+    messages.value[lastUserMessageIndex].sender !== 'user'
+  ) {
+    lastUserMessageIndex--;
+  }
+
+  if (lastUserMessageIndex < 0) {
+    console.warn('No user message found before this model message.');
+    return;
+  }
+
+  const lastUserMessage = messages.value[lastUserMessageIndex].message;
+
+  // Delete the current model message and any subsequent messages
+  await deleteMessage(lastUserMessageIndex);
+
+  // Trigger sending the last user message again
+  await props.sendMessageData(lastUserMessage);
+}
 </script>
 <style scoped>
 /*  */
