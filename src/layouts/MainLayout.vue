@@ -113,7 +113,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.7');
+const version = ref('1.0.8');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -125,6 +125,8 @@ const updateMessages: Record<string, string> = {
   '1.0.7': 'Fixing issue with side bar top padding.',
   '1.0.8':
     'Adjusting Web URL input so that it will optionally get the latest data from the URL.',
+  '1.0.9':
+    'Switched node saving to IndexedDB! Fix async issue when saving/loading causing nodes to jump position.',
 };
 
 const showUpdateBanner = ref<boolean>(false);
