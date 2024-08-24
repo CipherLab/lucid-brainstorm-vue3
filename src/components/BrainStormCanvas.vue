@@ -47,7 +47,11 @@ import { debounce } from 'lodash-es';
 const connectionMode = ref(ConnectionMode.Loose);
 const nodesTotal = ref(0);
 
-import { emitter } from '../eventBus';
+import {
+  emitter,
+  NodeToggledEvent,
+  NodeWatcherToggledEvent,
+} from '../eventBus';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow');
@@ -70,7 +74,13 @@ onUnmounted(async () => {
   emitter.off('node:watcher-toggled', handleWatcherToggled);
 });
 // Watch for changes in lucidFlow and update local refs
-const handleWatcherToggled = async () => {
+const handleWatcherToggled = async (event: NodeWatcherToggledEvent) => {
+  if (!event.nodeId) throw new Error('Node ID not provided');
+  // await lucidFlow.updateNodePosition(
+  //   event.nodeId,
+  //   event.nodeCoords.x,
+  //   event.nodeCoords.y
+  // );
   await lucidFlow.loadSession();
 };
 
@@ -220,6 +230,7 @@ const onDrop = (event: any) => {
 const handleNodesChange = async (changes: NodeChange[]) => {
   //loop
   //  changes.forEach((change: NodeChange) => {
+
   if (!lucidFlow || !changes || changes.length == 0) return;
   const change = changes[0];
   if (change.type === 'add') {

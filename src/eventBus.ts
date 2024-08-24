@@ -45,6 +45,17 @@ class BooleanToggledEvent extends BaseNodeEvent {
   }
 }
 
+class NodeWatcherToggledEvent extends BooleanToggledEvent {
+  nodeCoords: { x: number; y: number };
+  constructor(
+    nodeId: string | undefined,
+    boolState: boolean,
+    nodeCoords: { x: number; y: number }
+  ) {
+    super(nodeId, boolState);
+    this.nodeCoords = nodeCoords;
+  }
+}
 class MessageReceivedEvent extends BaseNodeEvent {
   message: string;
 
@@ -70,7 +81,7 @@ type Events = {
   'node:message-failed': BaseNodeEvent;
   'node:agent-created': GenericEvent;
   'node:api-key-invalid': GenericEvent;
-  'node:watcher-toggled': BooleanToggledEvent;
+  'node:watcher-toggled': NodeWatcherToggledEvent;
 };
 
 // Create the event bus
@@ -88,4 +99,5 @@ export type {
   MessageReceivedEvent,
   GenericEvent,
   BooleanToggledEvent,
+  NodeWatcherToggledEvent,
 };

@@ -37,7 +37,7 @@ abstract class BaseChatService implements ChatService {
 
   protected getApiKey(): string {
     const apiKey = sessionStorage.getItem('apikey');
-    console.log('apiKey', apiKey);
+    //console.log('apiKey', apiKey);
 
     if (!apiKey || apiKey === '') {
       throw new Error('API key not found in session storage');
@@ -91,7 +91,7 @@ abstract class BaseChatService implements ChatService {
       const fullHistory = Array.from(fullHistoryMap.values());
 
       const finalHistory = this.ensurePattern(fullHistory);
-      console.log('finalHistory', finalHistory);
+      //console.log('finalHistory', finalHistory);
 
       // Create the chat with the combined history:
       const updatedStartChatParams: StartChatParams = {
@@ -123,7 +123,7 @@ abstract class BaseChatService implements ChatService {
       if (currentMessage.role !== 'user' && currentMessage.role !== 'model') {
         currentMessage.role = 'model';
       }
-      console.log('currentMessage', currentMessage.role);
+      //console.log('currentMessage', currentMessage.role);
 
       if (
         i > 0 &&

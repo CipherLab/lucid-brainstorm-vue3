@@ -99,7 +99,7 @@ const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
   }
 };
 const scrollToBottom = () => {
-  console.log('Scrolling to bottom');
+  //console.log('Scrolling to bottom');
   if (chatHistory.value && scrollAreaRef.value) {
     scrollAreaRef.value.setScrollPosition('vertical', 110000000000, 300);
   }
@@ -160,7 +160,7 @@ async function sendMessage() {
         error: false,
         typing: true,
         selected: false,
-        isEnabledByNode: { [props.selectedNodeId]: true }, // Initialize for current node
+        isEnabledByNode: { [props.selectedNodeId]: true },
       });
 
       await updateChatHistory();

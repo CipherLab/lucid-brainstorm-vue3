@@ -27,7 +27,7 @@
         outlined
         dense
         class="col-grow text-white"
-        @input="props.updateChatHistoryData"
+        @input="props.updateChatHistoryUrl"
         @blur="onTextBlur"
         style="flex: 1"
       />
@@ -54,6 +54,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  updateChatHistoryUrl: {
+    type: Function,
+    required: true,
+  },
   updateChatHistoryData: {
     type: Function,
     required: true,
@@ -61,10 +65,6 @@ const props = defineProps({
   toggleWatcherState: {
     type: Function,
     required: true,
-  },
-  webUrlProp: {
-    type: String,
-    default: '',
   },
 });
 
@@ -86,21 +86,16 @@ const getDataFromUrl = async () => {
     }
   }
 };
-const webUrl = ref(props.webUrlProp);
+const webUrl = ref(props.selectedNode?.data.agent.webUrl || '');
 const selectedNode = computed(() => props.selectedNode);
 const toggleWatcher = async () => {
   if (selectedNode.value) {
     props.toggleWatcherState();
-
-    emitter.emit('node:watcher-toggled', {
-      nodeId: selectedNode.value.id,
-      boolState: selectedNode.value.data.agent.watcher,
-    });
   }
 };
 const onTextBlur = () => {
   if (selectedNode.value) {
-    props.updateChatHistoryData();
+    props.updateChatHistoryUrl(webUrl.value);
   }
 };
 </script>

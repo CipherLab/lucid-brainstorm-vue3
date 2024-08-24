@@ -67,9 +67,9 @@
       >
         <WebPageAgent
           :selectedNode="selectedNode"
+          :updateChatHistoryUrl="updateChatHistoryUrl"
           :updateChatHistoryData="updateChatHistoryData"
           :toggleWatcherState="toggleWatcher"
-          :webUrlProp="webUrl"
         />
       </div>
     </div>
@@ -167,6 +167,10 @@ const toggleWatcher = () => {
     emitter.emit('node:watcher-toggled', {
       nodeId: selectedNode.value.id,
       boolState: selectedNode.value.data.agent.watcher,
+      nodeCoords: {
+        x: selectedNode.value.position.x,
+        y: selectedNode.value.position.y,
+      },
     });
   }
 };
@@ -228,8 +232,6 @@ const handleNodeSelected = (event: BaseNodeEvent) => {
   }
 };
 
-const webUrl = ref(selectedNode.value?.data.agent.webUrl ?? '');
-
 // Watch for changes to selectedNodeId
 watchEffect(() => {
   if (props.selectedNodeId) {
@@ -274,8 +276,6 @@ watchEffect(() => {
     if (chatData && chatData.length > 0) {
       messages.value = [...chatData];
       textInputData.value = messages.value[0]?.message || '';
-      webUrl.value = messages.value[0]?.webUrl || '';
-      console.log('Web URL:', webUrl.value);
     } else {
       messages.value = [
         {
@@ -315,14 +315,22 @@ watchEffect(() => {
 });
 // Debounce the updateChatHistory function
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
+async function updateChatHistoryUrl(url: string) {
+  if (selectedNode.value && url && url.trim() !== '') {
+    selectedNode.value.data.agent.webUrl = url;
+    await lucidFlow.saveSession();
+  }
+}
 async function updateChatHistoryData(data: string) {
+  if (!selectedNode.value) {
+    throw new Error('Selected node is not defined');
+  }
   if (!messages.value || messages.value.length === 0) {
     messages.value = [
       {
         id: Date.now() + '',
         sender: 'user',
         message: data,
-        webUrl: webUrl.value,
         createdAt: Date.now(),
         error: false,
         typing: false,
@@ -336,12 +344,12 @@ async function updateChatHistoryData(data: string) {
     messages.value[0] = {
       ...messages.value[0], // Copy existing properties
       message: data, // Update the message
-      webUrl: webUrl.value,
     };
   }
 
   lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
+
 async function updateChatHistory() {
   await updateChatHistoryData(textInputData.value);
 }

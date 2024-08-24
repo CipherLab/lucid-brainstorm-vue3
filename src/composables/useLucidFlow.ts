@@ -10,7 +10,7 @@ import {
   NodeRemoveChange,
 } from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
-import { debounce, forEach, get } from 'lodash';
+import { debounce, flow, forEach, get } from 'lodash';
 import { IndexedDBStorageService } from '../services/indexedDBStorageService';
 import { StorageService } from '../services/StorageService';
 export interface LucidFlowComposable {
@@ -162,14 +162,14 @@ export default function useLucidFlow(): LucidFlowComposable {
   };
 
   async function saveSession(): Promise<void> {
-    const flowData = vueFlow.toObject();
+    const flowData = await vueFlow.toObject();
     await storageService.save(flowKey, flowData);
   }
 
   async function loadSession(): Promise<void> {
     const flowData = await storageService.load(flowKey);
     if (flowData) {
-      vueFlow.fromObject(flowData);
+      await vueFlow.fromObject(flowData);
     }
   }
 

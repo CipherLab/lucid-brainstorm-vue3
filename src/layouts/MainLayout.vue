@@ -192,7 +192,7 @@ const onInputDragStart = (type: 'file' | 'prompt') => {
 
 const saveApiKey = () => {
   if (!apikey.value || apikey.value.trim() == '') return;
-  console.log('API Key:', apikey.value);
+  //console.log('API Key:', apikey.value);
   prompt.value = false;
 
   sessionStorage.setItem('apikey', apikey.value);
