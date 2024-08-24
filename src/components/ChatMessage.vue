@@ -12,11 +12,7 @@
           color="red"
         />
         <template v-else v-for="(part, index) in messageParts" :key="index">
-          <CodeBlockWithCopy
-            class="fit"
-            v-if="part.isCode"
-            :code="part.content"
-          />
+          <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
           <div class="fit" v-else v-html="md.render(part.content)"></div>
         </template>
       </q-item-label>
@@ -82,6 +78,9 @@ const messageParts = computed(() => {
     let result: { isCode: boolean; content: string }[] = [];
 
     for (let i = 0; i < parts.length; i++) {
+      if (parts[i].trim() === '') {
+        continue;
+      }
       if (i % 2 === 0) {
         result.push({ isCode: false, content: parts[i] });
       } else {
