@@ -69,11 +69,36 @@ abstract class BaseChatService implements ChatService {
       const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true);
 
       for (const connectedNodeId of connectedNodeIds) {
+        const connectedNode = this.lucidFlow.findNodeProps(connectedNodeId);
         const connectedChatHistory = await this.lucidFlow.getNodeChatData(
           connectedNodeId
         );
 
         if (connectedChatHistory) {
+          // Re-fetch data if watcher is true and it's a webpage node
+          if (
+            connectedNode?.data.agent.watcher &&
+            connectedNode?.data.agent.subtype === 'webpage'
+          ) {
+            try {
+              const freshData = await this.webDataFetcher.fetchData(
+                connectedNode.data.agent.webUrl
+              );
+              // Update the chat history with the fresh data
+              connectedChatHistory[0].message = freshData;
+              await this.lucidFlow.updateNodeChatData(
+                connectedNodeId,
+                connectedChatHistory
+              );
+            } catch (error) {
+              console.error(
+                `Error fetching data for node ${connectedNodeId}:`,
+                error
+              );
+              // Handle the error appropriately, e.g., show an error message
+            }
+          }
+
           connectedChatHistory.sort((a, b) => a.id.localeCompare(b.id));
           const formattedHistory = this.formatChatHistory(
             connectedChatHistory,
