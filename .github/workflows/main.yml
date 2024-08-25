@@ -1,29 +1,22 @@
-name: CI Workflow
-
+name: Build and Deploy to Azure Blob Storage
 on:
   push:
     branches:
       - main
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
       - name: Install dependencies
         run: yarn install
-
       - name: Ensure moment is installed
         run: yarn add moment
-
       - name: Increment version and create tag
         run: |
           echo "Running grep..."
@@ -34,21 +27,8 @@ jobs:
           echo "NEW_VERSION: $NEW_VERSION"
           echo "Running sed..."
           sed -i "s/const version = ref('.*')/const version = ref('$NEW_VERSION')/" src/layouts/MainLayout.vue
-
-      - name: Commit and push version update
-        if: "!contains(github.event.head_commit.message, '[skip ci]')"
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add src/layouts/MainLayout.vue
-          git commit -m "Increment version to $NEW_VERSION [skip ci]"
-          git push origin HEAD:main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build the project
         run: yarn build
-
       - name: Upload to Azure Blob Storage
         uses: azure/CLI@v1
         with:
