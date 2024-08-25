@@ -13,7 +13,11 @@
         />
         <template v-else v-for="(part, index) in messageParts" :key="index">
           <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
-          <div class="fit" v-else v-html="md.render(part.content)"></div>
+          <div
+            class="message-part"
+            v-else
+            v-html="md.render(part.content)"
+          ></div>
         </template>
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
@@ -144,5 +148,9 @@ const handleFailed = (event: BaseNodeEvent) => {
 .agent-message {
   background-color: #2b2424;
   border-color: #5e93d52a;
+}
+.message-part {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 </style>

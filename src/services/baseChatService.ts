@@ -60,15 +60,11 @@ abstract class BaseChatService implements ChatService {
       };
       this.model = genAI.getGenerativeModel(modelParams);
 
-      const fullHistoryMap = new Map<string, ChatHistory>(); // Use a Map
-      fullHistoryMap.set('initialDummy', {
-        role: 'user',
-        parts: [{ text: '' }],
-      });
-
       // Get connected nodes using lucidFlow
       const connectedNodeIds = this.lucidFlow.getConnectedNodes(nodeId, true);
 
+      // Merge all connected chat histories into a single string
+      let mergedHistoryText = '';
       for (const connectedNodeId of connectedNodeIds) {
         const connectedNode = this.lucidFlow.findNodeProps(connectedNodeId);
         const connectedChatHistory = await this.lucidFlow.getNodeChatData(
@@ -100,24 +96,20 @@ abstract class BaseChatService implements ChatService {
             }
           }
 
-          connectedChatHistory.sort((a, b) => a.id.localeCompare(b.id));
-          const formattedHistory = this.formatChatHistory(
-            connectedChatHistory,
-            nodeId
-          );
-
-          formattedHistory.forEach((item) => {
-            //if (item.parts[0].text !== '') {
-            fullHistoryMap.set(item.parts[0].text, item);
-            //}
-          });
+          mergedHistoryText += connectedChatHistory
+            .map((message) => message.message?.trim())
+            .join('\r');
         }
       }
 
-      const fullHistory = Array.from(fullHistoryMap.values());
+      // Create a single user message with the merged history
+      const mergedHistory: ChatHistory = {
+        role: 'user',
+        parts: [{ text: mergedHistoryText }],
+      };
 
-      const finalHistory = this.ensurePattern(fullHistory);
-      //console.log('finalHistory', finalHistory);
+      // Apply ensurePattern to maintain the correct user/model pattern
+      const finalHistory = this.ensurePattern([mergedHistory]);
 
       // Create the chat with the combined history:
       const updatedStartChatParams: StartChatParams = {
@@ -187,7 +179,7 @@ abstract class BaseChatService implements ChatService {
 
       return {
         role: message.sender + '',
-        parts: [{ text: isEnabled ? message.message || '' : '' }],
+        parts: [{ text: isEnabled ? message.message.trim() || '' : '' }],
       };
     });
   }
