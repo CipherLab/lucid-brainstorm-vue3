@@ -4,6 +4,7 @@
       :nodes="nodes"
       :edges="edges"
       :connection-mode="connectionMode"
+      @move-end="onMoveEnd"
       @nodes-change="handleNodesChange"
       @edges-changed="onEdgesChange"
       @connect="onConnect"
@@ -227,6 +228,16 @@ const onDrop = (event: any) => {
     });
   }
 };
+const onMoveEnd = (event: any) => {
+  console.log('Move end:', event.flowTransform);
+  //console.log('Node moved:', event.id, event.position);
+  lucidFlow.saveViewportState(
+    event.flowTransform.x,
+    event.flowTransform.y,
+    event.flowTransform.zoom
+  );
+};
+
 const handleNodesChange = async (changes: NodeChange[]) => {
   //loop
   //  changes.forEach((change: NodeChange) => {

@@ -8,6 +8,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   NodeRemoveChange,
+  ViewportTransform,
 } from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
 import { debounce, flow, forEach, get } from 'lodash';
@@ -28,6 +29,7 @@ export interface LucidFlowComposable {
   getConnectedNodes: (nodeId: string, includeSelf: boolean) => string[];
   saveSession: () => Promise<void>;
   loadSession: () => Promise<void>;
+  saveViewportState: (x: number, y: number, zoom: number) => Promise<void>;
   useNodeProperty<T>(
     connectedNodeIds: Ref<string[]>,
     getProperty: (nodeId: string) => Promise<T>
@@ -43,6 +45,7 @@ export default function useLucidFlow(): LucidFlowComposable {
   const storageService: StorageService = new IndexedDBStorageService();
 
   const vueFlow = useVueFlow();
+
   const {
     onConnect,
     addEdges,
@@ -169,10 +172,22 @@ export default function useLucidFlow(): LucidFlowComposable {
   async function loadSession(): Promise<void> {
     const flowData = await storageService.load(flowKey);
     if (flowData) {
-      await vueFlow.fromObject(flowData);
+      {
+        await vueFlow.fromObject(flowData);
+      }
     }
   }
-
+  async function saveViewportState(
+    x: number,
+    y: number,
+    zoom: number
+  ): Promise<void> {
+    const viewport: ViewportTransform = {
+      x,
+      y,
+      zoom,
+    };
+  }
   // Generic function to handle async data loading and caching for node properties
   async function useNodeProperty<T>(
     connectedNodeIds: Ref<string[]>,
@@ -219,5 +234,6 @@ export default function useLucidFlow(): LucidFlowComposable {
     saveSession,
     loadSession,
     useNodeProperty,
+    saveViewportState,
   };
 }
