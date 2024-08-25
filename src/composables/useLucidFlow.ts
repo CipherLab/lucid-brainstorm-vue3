@@ -52,6 +52,8 @@ export default function useLucidFlow(): LucidFlowComposable {
     addEdges,
     onNodesChange,
     onEdgesChange,
+    onEdgeMouseLeave,
+    onEdgeMouseEnter,
     applyNodeChanges,
     applyEdgeChanges,
     removeNodes,

@@ -1,12 +1,44 @@
-<script setup>
+<template>
+  <!-- You can use the `BaseEdge` component to create your own custom edge more easily -->
+  <BaseEdge :id="id" :style="style" :path="path[0]" :marker-end="markerEnd" />
+
+  <!-- Use the `EdgeLabelRenderer` to escape the SVG world of edges and render your own custom label in a `<div>` ctx -->
+  <EdgeLabelRenderer>
+    <div>
+      <div
+        :style="{
+          pointerEvents: 'all',
+          position: 'absolute',
+          transform: `translate(-50%, -50%) translate(${path[1]}px,${path[2]}px)`,
+        }"
+        class="nodrag nopan"
+      >
+        <button
+          v-if="shouldShowDelete || enableDeleteEdgeButton"
+          class="edgebutton"
+          @click="removeEdge(id)"
+        >
+          ×
+        </button>
+        <button v-else class="edgebuttonhover" @click="initialEdgeButtonClick">
+          ×
+        </button>
+      </div>
+    </div>
+  </EdgeLabelRenderer>
+</template>
+
+<script setup lang="ts">
 import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
-  useVueFlow,
+  Position,
 } from '@vue-flow/core';
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+const nodesTotal = ref(0);
 
+import { emitter } from '../eventBus';
 const props = defineProps({
   id: {
     type: String,
@@ -53,43 +85,38 @@ const props = defineProps({
     required: true,
   },
 });
-
-const path = computed(() => getBezierPath(props));
-
+onMounted(async () => {
+  emitter.on('node:deselected', () => {
+    console.log('node:deselected');
+    enableDeleteEdgeButton.value = false;
+  });
+});
+onUnmounted(async () => {
+  emitter.off('node:deselected');
+});
+const path = computed(() =>
+  getBezierPath({
+    ...props,
+    sourcePosition: props.sourcePosition as Position,
+    targetPosition: props.targetPosition as Position,
+  })
+);
+const removeEdge = (id: string) => {
+  props.removeEdge(id);
+  enableDeleteEdgeButton.value = false;
+};
 const shouldShowDelete = computed(() => {
   console.log('props.selectedEdgeId', props.selectedEdgeId);
   console.log('props.id', props.id);
   return props.id === props.selectedEdgeId;
 });
-</script>
-
-<script>
-export default {
-  inheritAttrs: false,
+const enableDeleteEdgeButton = ref(false);
+const initialEdgeButtonClick = () => {
+  setTimeout(() => {
+    enableDeleteEdgeButton.value = true;
+  }, 10);
 };
 </script>
-
-<template>
-  <!-- You can use the `BaseEdge` component to create your own custom edge more easily -->
-  <BaseEdge :id="id" :style="style" :path="path[0]" :marker-end="markerEnd" />
-
-  <!-- Use the `EdgeLabelRenderer` to escape the SVG world of edges and render your own custom label in a `<div>` ctx -->
-  <EdgeLabelRenderer>
-    <div v-if="shouldShowDelete">
-      <div
-        :style="{
-          pointerEvents: 'all',
-          position: 'absolute',
-          transform: `translate(-50%, -50%) translate(${path[1]}px,${path[2]}px)`,
-        }"
-        class="nodrag nopan"
-      >
-        <button class="edgebutton" @click="props.removeEdge(id)">×</button>
-      </div>
-    </div>
-  </EdgeLabelRenderer>
-</template>
-
 <style scoped>
 .edge-label {
   position: absolute;
@@ -102,10 +129,17 @@ export default {
   cursor: pointer;
   font-size: 1em;
   color: rgb(255, 255, 255);
-  background-color: #858585;
+  background-color: #611313;
   border: none;
 }
-
+.edgebuttonhover {
+  cursor: pointer;
+  border-radius: 999px;
+  font-size: 1em;
+  color: rgba(255, 255, 255, 0.548);
+  background-color: #85858425;
+  border: none;
+}
 .edgebutton:hover {
   transform: scale(1.1);
   transition: all ease 0.5s;

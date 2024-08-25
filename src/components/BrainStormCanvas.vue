@@ -10,6 +10,8 @@
       @connect="onConnect"
       @click="handleClickOutside"
       @edge-click="handleEdgeClick"
+      @onEdgeMouseEnter="onEdgeMouseEnter"
+      @onEdgeMouseLeave="onEdgeMouseLeave"
       :style="{ background: '#222222' }"
     >
       <Background class="background" />
@@ -130,10 +132,11 @@ const onEdgesChange = () => {
   console.log('Edges Changes');
 };
 
-const handleClickOutside = () => {
+const handleClickOutside = (event: any) => {
   emitter.emit('node:deselected', {});
 
-  selectedEdgeId.value = null;
+  selectedEdgeId.value = '';
+  event.stopPropagation();
 };
 const selectedEdgeId = ref<string | null>(null);
 
@@ -144,7 +147,13 @@ const handleEdgeClick = (event: EdgeMouseEvent) => {
   // Prevent click event from reaching the canvas
   event.event.stopPropagation();
 };
+const onEdgeMouseEnter = (event: EdgeMouseEvent) => {
+  console.log('Edge mouse enter:', event.edge.id);
+};
 
+const onEdgeMouseLeave = (event: EdgeMouseEvent) => {
+  console.log('Edge mouse leave:', event.edge.id);
+};
 const removeEdge = (edgeId: string) => {
   lucidFlow.removeEdge(edgeId);
   selectedEdgeId.value = null;
@@ -271,6 +280,9 @@ const onDrop = (event: any) => {
       nodeType: newNode.data.agent.type,
     });
   }
+};
+const onEdgeHover = (event: EdgeMouseEvent) => {
+  console.log('Edge hovered:', event.edge.id);
 };
 const onMoveEnd = (event: any) => {
   console.log('Move end:', event.flowTransform);
