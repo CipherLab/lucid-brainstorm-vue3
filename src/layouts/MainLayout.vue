@@ -130,6 +130,7 @@ const updateMessages: Record<string, string> = {
   '1.0.10': 'Fix display of code block issue.',
   '1.0.11':
     'Added a re-run button to the model chat. Fixed layout issues. Fixed other bugs.',
+  '1.0.12': 'Fixing issue with side bar top padding.',
 };
 
 const showUpdateBanner = ref<boolean>(false);
