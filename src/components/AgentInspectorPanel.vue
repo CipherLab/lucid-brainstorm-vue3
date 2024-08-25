@@ -181,7 +181,7 @@ const loadFile = () => {
 
     for (let i = 0; i < files.value.length; i++) {
       const file = files.value[i];
-      console.log('File:', file);
+      //console.log('File:', file);
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {

@@ -118,7 +118,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     }
   };
   const debounceSave = debounce(async () => {
-    console.log('Saving session...');
+    //console.log('Saving session...');
     await saveSession();
   }, 100);
   const getNodeChatData = (nodeId: string) => {

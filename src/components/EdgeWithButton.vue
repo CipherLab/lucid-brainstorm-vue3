@@ -87,7 +87,7 @@ const props = defineProps({
 });
 onMounted(async () => {
   emitter.on('node:deselected', () => {
-    console.log('node:deselected');
+    //console.log('node:deselected');
     enableDeleteEdgeButton.value = false;
   });
 });
@@ -106,8 +106,8 @@ const removeEdge = (id: string) => {
   enableDeleteEdgeButton.value = false;
 };
 const shouldShowDelete = computed(() => {
-  console.log('props.selectedEdgeId', props.selectedEdgeId);
-  console.log('props.id', props.id);
+  //console.log('props.selectedEdgeId', props.selectedEdgeId);
+  //console.log('props.id', props.id);
   return props.id === props.selectedEdgeId;
 });
 const enableDeleteEdgeButton = ref(false);

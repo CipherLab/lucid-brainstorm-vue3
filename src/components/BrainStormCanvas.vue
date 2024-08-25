@@ -141,7 +141,7 @@ const handleClickOutside = (event: any) => {
 const selectedEdgeId = ref<string | null>(null);
 
 const handleEdgeClick = (event: EdgeMouseEvent) => {
-  console.log('Edge clicked:', event.edge.id);
+  //console.log('Edge clicked:', event.edge.id);
   selectedEdgeId.value = event.edge.id;
 
   // Prevent click event from reaching the canvas
@@ -285,7 +285,7 @@ const onEdgeHover = (event: EdgeMouseEvent) => {
   console.log('Edge hovered:', event.edge.id);
 };
 const onMoveEnd = (event: any) => {
-  console.log('Move end:', event.flowTransform);
+  //console.log('Move end:', event.flowTransform);
   //console.log('Node moved:', event.id, event.position);
   lucidFlow.saveViewportState(
     event.flowTransform.x,

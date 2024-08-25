@@ -83,7 +83,7 @@ const cancel = () => {
 
 const createAgent = () => {
   newAgent.id = Date.now(); // Generate unique ID
-  console.log('Create agent:', newAgent);
+  //console.log('Create agent:', newAgent);
   emitter.emit('node:agent-created', { data: JSON.stringify(newAgent) }); // Emit the new agent data
   Object.assign(newAgent, {
     // Reset the newAgent data

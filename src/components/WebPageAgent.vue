@@ -92,7 +92,7 @@ const selectedNode = computed(() => props.selectedNode);
 watch(
   () => props.selectedNode,
   (newVal) => {
-    console.log('Selected Node:', newVal);
+    //console.log('Selected Node:', newVal);
     webUrl.value = newVal?.data.agent.webUrl || '';
   },
   { immediate: true }
