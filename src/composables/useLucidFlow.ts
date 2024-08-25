@@ -22,6 +22,7 @@ export interface LucidFlowComposable {
   addNode: (node: Node) => Promise<void>;
   removeNode: (nodeId: string) => Promise<void>;
   addEdge: (edge: Edge) => Promise<void>;
+  removeEdge: (edgeId: string) => Promise<void>;
   updateNodePosition: (nodeId: string, x: number, y: number) => Promise<void>;
   getNodeChatData: (nodeId: string) => Message[] | null;
   toggleEdgeAnimation: (nodeId: string, boolState: boolean) => Promise<void>;
@@ -74,7 +75,10 @@ export default function useLucidFlow(): LucidFlowComposable {
   const getEdges = () => {
     return vueFlow.edges.value;
   };
-
+  const removeEdge = async (edgeId: string): Promise<void> => {
+    removeEdges(edgeId);
+    await saveSession(); // Wait for saveSession to complete
+  };
   const removeNode = async (nodeId: string): Promise<void> => {
     const changes: NodeRemoveChange[] = [{ type: 'remove', id: nodeId }];
     applyNodeChanges(changes);
@@ -226,6 +230,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     addNode,
     removeNode,
     addEdge,
+    removeEdge,
     updateNodePosition,
     getNodeChatData,
     toggleEdgeAnimation,
