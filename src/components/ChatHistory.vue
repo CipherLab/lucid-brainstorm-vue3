@@ -1,12 +1,11 @@
 <template>
   <q-list bordered separator class="rounded-borders chat-list">
     <q-expansion-item
+      v-model="state.expandedStates[index]"
       dense
       v-for="(nodeId, index) in connectedNodeIds"
       :key="index"
       :label="getAccordionLabel(nodeId)"
-      v-model="expandedStates[index]"
-      @click="handleAccordionToggle(index)"
       :disable="isPrimary"
     >
       <template #header>
@@ -37,10 +36,10 @@
 
 <script setup lang="ts">
 import ChatViewer from './ChatViewer.vue';
-import { inject, ref, onMounted, watchEffect } from 'vue';
+import { inject, ref, onMounted, watchEffect, reactive } from 'vue';
 import { LucidFlowComposable } from '../composables/useLucidFlow';
 import { emitter, NodeToggledEvent } from '../eventBus';
-
+const expanded = ref(true);
 const lucidFlow = inject<LucidFlowComposable>('lucidFlow')!;
 if (!lucidFlow) {
   console.error('useLucidFlow composable not found!');
@@ -63,16 +62,23 @@ const props = defineProps({
 });
 
 const connectedNodeIds = ref<string[]>([]);
-const expandedStates = ref<boolean[]>([]);
+
+const state = reactive({
+  expandedStates: [] as boolean[],
+});
 
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
-  expandedStates.value = connectedNodeIds.value.map((_, index) => {
-    if (props.isPrimary) return true;
-    return false; // Last item open by default
-  });
+  console.log('updateAccordionStates', props.isPrimary);
+  state.expandedStates.splice(
+    0, // Start at the beginning
+    state.expandedStates.length, // Replace the entire array
+    ...connectedNodeIds.value.map((_, index) => {
+      if (props.isPrimary) return true;
+      return false; // Last item open by default
+    })
+  );
 };
-
 function isChatEnabled(nodeId: string): boolean {
   const chatData = lucidFlow.getNodeChatData(nodeId);
   if (!chatData) return true;
@@ -111,8 +117,7 @@ watchEffect(() => {
         false
       );
     }
-
-    updateAccordionStates(); // Update accordion states when nodes change
+    updateAccordionStates();
   }
 });
 
@@ -133,20 +138,27 @@ const getAccordionLabel = (nodeId: string) => {
 const handleAccordionToggle = (index: number) => {
   // Close all other accordions
   if (props.isPrimary) {
+    console.log('handleAccordionToggle', state.expandedStates);
+    state.expandedStates.splice(index, 1, true);
     return;
   }
 
-  expandedStates.value.forEach((_, i) => {
-    if (i === index) return;
-    expandedStates.value[i] = false;
-  });
-  expandedStates.value[index] = !expandedStates.value[index];
+  // state.expandedStates.forEach((_, i) => {
+  //   if (i === index) return;
+  //   state.expandedStates[i] = false;
+  // });
 
-  const toggledEvent: NodeToggledEvent = {
+  console.log('handleAccordionToggle', state.expandedStates[index]);
+
+  const newExpandedState = !state.expandedStates[index];
+  state.expandedStates.splice(index, 1, newExpandedState);
+
+  console.log('handleAccordionToggle', state.expandedStates[index]);
+
+  emitter.emit('node:accordion-toggled', {
     nodeId: connectedNodeIds.value[index],
     totalConnections: connectedNodeIds.value.length,
-  };
-  emitter.emit('node:accordion-toggled', toggledEvent);
+  });
   return;
 };
 </script>
