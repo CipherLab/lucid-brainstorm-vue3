@@ -44,7 +44,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { WebDataFetcher } from '../services/webDataFetcher';
 import { emitter } from '../eventBus';
@@ -86,8 +86,18 @@ const getDataFromUrl = async () => {
     }
   }
 };
-const webUrl = ref(props.selectedNode?.data.agent.webUrl || '');
+const webUrl = ref('');
+
 const selectedNode = computed(() => props.selectedNode);
+watch(
+  () => props.selectedNode,
+  (newVal) => {
+    //console.log('Selected Node:', newVal);
+    webUrl.value = newVal?.data.agent.webUrl || '';
+  },
+  { immediate: true }
+);
+
 const toggleWatcher = async () => {
   if (selectedNode.value) {
     props.toggleWatcherState();

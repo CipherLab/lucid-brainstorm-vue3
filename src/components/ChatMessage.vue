@@ -12,12 +12,12 @@
           color="red"
         />
         <template v-else v-for="(part, index) in messageParts" :key="index">
-          <CodeBlockWithCopy
-            class="fit"
-            v-if="part.isCode"
-            :code="part.content"
-          />
-          <div class="fit" v-else v-html="md.render(part.content)"></div>
+          <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
+          <div
+            class="message-part"
+            v-else
+            v-html="md.render(part.content)"
+          ></div>
         </template>
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
@@ -82,6 +82,9 @@ const messageParts = computed(() => {
     let result: { isCode: boolean; content: string }[] = [];
 
     for (let i = 0; i < parts.length; i++) {
+      if (parts[i].trim() === '') {
+        continue;
+      }
       if (i % 2 === 0) {
         result.push({ isCode: false, content: parts[i] });
       } else {
@@ -145,5 +148,9 @@ const handleFailed = (event: BaseNodeEvent) => {
 .agent-message {
   background-color: #2b2424;
   border-color: #5e93d52a;
+}
+.message-part {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 </style>

@@ -4,10 +4,14 @@
       :nodes="nodes"
       :edges="edges"
       :connection-mode="connectionMode"
+      @move-end="onMoveEnd"
       @nodes-change="handleNodesChange"
       @edges-changed="onEdgesChange"
       @connect="onConnect"
       @click="handleClickOutside"
+      @edge-click="handleEdgeClick"
+      @onEdgeMouseEnter="onEdgeMouseEnter"
+      @onEdgeMouseLeave="onEdgeMouseLeave"
       :style="{ background: '#222222' }"
     >
       <Background class="background" />
@@ -17,6 +21,22 @@
 
       <template #node-input="data">
         <InputNode v-bind="data" />
+      </template>
+
+      <template #edge-button="edge">
+        <EdgeWithButton
+          :id="edge.id"
+          :source-x="edge.sourceX"
+          :source-y="edge.sourceY"
+          :target-x="edge.targetX"
+          :target-y="edge.targetY"
+          :source-position="edge.sourcePosition"
+          :target-position="edge.targetPosition"
+          :marker-end="edge.markerEnd"
+          :style="edge.style"
+          :removeEdge="removeEdge"
+          :selectedEdgeId="selectedEdgeId || ''"
+        />
       </template>
     </vue-flow>
   </div>
@@ -37,11 +57,17 @@ import {
   Node,
   Edge,
   NodeChange,
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  EdgeMouseEvent,
+  Position,
 } from '@vue-flow/core';
 import { VueFlow } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import AgentNode from './AgentNode.vue';
 import InputNode from './InputNode.vue';
+import EdgeWithButton from './EdgeWithButton.vue';
 import { debounce } from 'lodash-es';
 
 const connectionMode = ref(ConnectionMode.Loose);
@@ -67,10 +93,12 @@ onMounted(async () => {
   //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
   await lucidFlow.loadSession();
   emitter.on('node:watcher-toggled', handleWatcherToggled);
+  window.addEventListener('keydown', handleKeyDown);
   //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
 
 onUnmounted(async () => {
+  window.removeEventListener('keydown', handleKeyDown);
   emitter.off('node:watcher-toggled', handleWatcherToggled);
 });
 // Watch for changes in lucidFlow and update local refs
@@ -90,7 +118,8 @@ const onConnect = (connection: Edge | Connection) => {
     id: `${connection.source}-${connection.target}`,
     source: connection.source,
     target: connection.target,
-    type: 'smoothstep',
+    type: 'button',
+    data: { text: 'custom edge' },
     animated: false,
   });
 
@@ -103,10 +132,35 @@ const onEdgesChange = () => {
   console.log('Edges Changes');
 };
 
-const handleClickOutside = () => {
+const handleClickOutside = (event: any) => {
   emitter.emit('node:deselected', {});
+
+  selectedEdgeId.value = '';
+  event.stopPropagation();
+};
+const selectedEdgeId = ref<string | null>(null);
+
+const handleEdgeClick = (event: EdgeMouseEvent) => {
+  //console.log('Edge clicked:', event.edge.id);
+  selectedEdgeId.value = event.edge.id;
+
+  // Prevent click event from reaching the canvas
+  event.event.stopPropagation();
+};
+const onEdgeMouseEnter = (event: EdgeMouseEvent) => {
+  console.log('Edge mouse enter:', event.edge.id);
 };
 
+const onEdgeMouseLeave = (event: EdgeMouseEvent) => {
+  console.log('Edge mouse leave:', event.edge.id);
+};
+const removeEdge = (edgeId: string) => {
+  lucidFlow.removeEdge(edgeId);
+  selectedEdgeId.value = null;
+};
+const handleKeyDown = (event: KeyboardEvent) => {
+  console.log('Key pressed:', event.key);
+};
 const removeNodeFromCanvas = (nodeId: string) => {
   //console.log('Removing node:', nodeId);
   lucidFlow.removeNode(nodeId);
@@ -227,6 +281,19 @@ const onDrop = (event: any) => {
     });
   }
 };
+const onEdgeHover = (event: EdgeMouseEvent) => {
+  console.log('Edge hovered:', event.edge.id);
+};
+const onMoveEnd = (event: any) => {
+  //console.log('Move end:', event.flowTransform);
+  //console.log('Node moved:', event.id, event.position);
+  lucidFlow.saveViewportState(
+    event.flowTransform.x,
+    event.flowTransform.y,
+    event.flowTransform.zoom
+  );
+};
+
 const handleNodesChange = async (changes: NodeChange[]) => {
   //loop
   //  changes.forEach((change: NodeChange) => {

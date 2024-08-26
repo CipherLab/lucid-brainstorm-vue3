@@ -8,6 +8,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   NodeRemoveChange,
+  ViewportTransform,
 } from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
 import { debounce, flow, forEach, get } from 'lodash';
@@ -21,6 +22,7 @@ export interface LucidFlowComposable {
   addNode: (node: Node) => Promise<void>;
   removeNode: (nodeId: string) => Promise<void>;
   addEdge: (edge: Edge) => Promise<void>;
+  removeEdge: (edgeId: string) => Promise<void>;
   updateNodePosition: (nodeId: string, x: number, y: number) => Promise<void>;
   getNodeChatData: (nodeId: string) => Message[] | null;
   toggleEdgeAnimation: (nodeId: string, boolState: boolean) => Promise<void>;
@@ -28,6 +30,7 @@ export interface LucidFlowComposable {
   getConnectedNodes: (nodeId: string, includeSelf: boolean) => string[];
   saveSession: () => Promise<void>;
   loadSession: () => Promise<void>;
+  saveViewportState: (x: number, y: number, zoom: number) => Promise<void>;
   useNodeProperty<T>(
     connectedNodeIds: Ref<string[]>,
     getProperty: (nodeId: string) => Promise<T>
@@ -43,11 +46,14 @@ export default function useLucidFlow(): LucidFlowComposable {
   const storageService: StorageService = new IndexedDBStorageService();
 
   const vueFlow = useVueFlow();
+
   const {
     onConnect,
     addEdges,
     onNodesChange,
     onEdgesChange,
+    onEdgeMouseLeave,
+    onEdgeMouseEnter,
     applyNodeChanges,
     applyEdgeChanges,
     removeNodes,
@@ -71,7 +77,10 @@ export default function useLucidFlow(): LucidFlowComposable {
   const getEdges = () => {
     return vueFlow.edges.value;
   };
-
+  const removeEdge = async (edgeId: string): Promise<void> => {
+    removeEdges(edgeId);
+    await saveSession(); // Wait for saveSession to complete
+  };
   const removeNode = async (nodeId: string): Promise<void> => {
     const changes: NodeRemoveChange[] = [{ type: 'remove', id: nodeId }];
     applyNodeChanges(changes);
@@ -109,7 +118,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     }
   };
   const debounceSave = debounce(async () => {
-    console.log('Saving session...');
+    //console.log('Saving session...');
     await saveSession();
   }, 100);
   const getNodeChatData = (nodeId: string) => {
@@ -169,10 +178,22 @@ export default function useLucidFlow(): LucidFlowComposable {
   async function loadSession(): Promise<void> {
     const flowData = await storageService.load(flowKey);
     if (flowData) {
-      await vueFlow.fromObject(flowData);
+      {
+        await vueFlow.fromObject(flowData);
+      }
     }
   }
-
+  async function saveViewportState(
+    x: number,
+    y: number,
+    zoom: number
+  ): Promise<void> {
+    const viewport: ViewportTransform = {
+      x,
+      y,
+      zoom,
+    };
+  }
   // Generic function to handle async data loading and caching for node properties
   async function useNodeProperty<T>(
     connectedNodeIds: Ref<string[]>,
@@ -211,6 +232,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     addNode,
     removeNode,
     addEdge,
+    removeEdge,
     updateNodePosition,
     getNodeChatData,
     toggleEdgeAnimation,
@@ -219,5 +241,6 @@ export default function useLucidFlow(): LucidFlowComposable {
     saveSession,
     loadSession,
     useNodeProperty,
+    saveViewportState,
   };
 }

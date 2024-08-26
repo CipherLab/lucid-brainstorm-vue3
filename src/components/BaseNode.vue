@@ -12,7 +12,7 @@
       v-if="props.data.agent.hasInput"
       type="target"
       :class="targetHandleClass"
-      :position="Position.Left"
+      :position="Position.Top"
       :id="`${id}-target`"
       @mouseover="handleMouseOver('target')"
       @mouseleave="handleMouseLeave"

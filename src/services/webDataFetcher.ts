@@ -8,7 +8,7 @@ export class WebDataFetcher implements DataFetcher {
     this.corsProxy = corsProxy;
   }
 
-  async fetchData(url: string): Promise<string> {
+  async fetchDataWithProxy(url: string): Promise<string> {
     try {
       const response = await axios.get(
         `${this.corsProxy}${encodeURIComponent(url)}`
@@ -20,15 +20,18 @@ export class WebDataFetcher implements DataFetcher {
     }
   }
 
-  async fetchDataWithProxy(
-    url: string,
-    proxy: string,
-    cacheBust: boolean
-  ): Promise<string> {
-    const cacheBuster = cacheBust ? `&cachebuster=${Date.now()}` : '';
+  async fetchData(url: string): Promise<string> {
+    try {
+      const decodedUrl = decodeURIComponent(url);
+      console.log('decodedUrl', decodedUrl);
 
-    return await this.fetchData(
-      `${proxy}${encodeURIComponent(url)}${cacheBuster}`
-    );
+      const response = await axios.get(decodedUrl);
+      console.log('response', response);
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching webpage:', error);
+      throw new Error(`Failed to fetch data from URL: ${error.message}`);
+    }
   }
 }
