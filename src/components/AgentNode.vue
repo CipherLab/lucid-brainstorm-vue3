@@ -19,6 +19,7 @@
     :subtype="props.data.agent.subtype"
     :watcher="props.data.agent.watcher"
     :webUrl="props.data.agent.webUrl"
+    :githubSelection="props.data.agent.githubSelection"
   >
   </BaseNode>
 </template>

@@ -72,6 +72,17 @@
           :toggleWatcherState="toggleWatcher"
         />
       </div>
+      <div
+        v-if="selectedNode.data.agent.subtype === 'github'"
+        class="q-pa-sm row items-center"
+      >
+        <GitHubAgent
+          :selectedNode="selectedNode"
+          :updateChatHistoryUrl="updateChatHistoryUrl"
+          :updateChatHistoryData="updateChatHistoryData"
+          :toggleWatcherState="toggleWatcher"
+        />
+      </div>
     </div>
 
     <ChatWrapper
@@ -89,6 +100,7 @@
           ref="scrollAreaRef"
         >
           <q-input
+            v-if="selectedNode && selectedNode.data.agent.subtype !== 'github'"
             class="text-light full-height input-textarea"
             v-model="textInputData"
             :label="hintText"
@@ -128,6 +140,7 @@ const props = defineProps({
   },
 });
 import WebPageAgent from './WebPageAgent.vue';
+import GitHubAgent from './GitHubAgent.vue';
 // import FileAgent from './FileAgent.vue';
 // import InputAgent from './InputAgent.vue';
 
@@ -205,7 +218,10 @@ const hintText = computed(() => {
     return 'Select a file, your data will be loaded here';
   } else if (selectedNode.value?.data.agent.subtype === 'webpage') {
     return 'Enter a URL, your content will be loaded here';
+  } else if (selectedNode.value?.data.agent.subtype === 'github') {
+    return '';
   }
+
   return 'Assistant';
 });
 onMounted(() => {
@@ -317,7 +333,15 @@ watchEffect(() => {
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 async function updateChatHistoryUrl(url: string) {
   if (selectedNode.value && url && url.trim() !== '') {
+    console.log('updateChatHistoryUrl', url);
     selectedNode.value.data.agent.webUrl = url;
+    await lucidFlow.saveSession();
+  }
+}
+
+async function updateChatHistoryGithubSelection(selection: any) {
+  if (selectedNode.value && selection) {
+    selectedNode.value.data.agent.githubSelection = selection;
     await lucidFlow.saveSession();
   }
 }
@@ -353,20 +377,6 @@ async function updateChatHistoryData(data: string) {
 async function updateChatHistory() {
   await updateChatHistoryData(textInputData.value);
 }
-
-const currentAgentComponent = computed(() => {
-  if (!selectedNode.value) return null;
-  switch (selectedNode.value.data.agent.subtype) {
-    case 'webpage':
-      return WebPageAgent;
-    // case 'file':
-    //   return FileAgent;
-    // case 'input':
-    //   return InputAgent;
-    default:
-      return null;
-  }
-});
 </script>
 
 <style scoped>

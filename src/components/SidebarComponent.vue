@@ -216,7 +216,7 @@ const availableInputs = reactive([
   },
   {
     id: 102,
-    systemInstructions: 'This is a web url input',
+    systemInstructions: '',
     name: 'Web URL',
     subtype: 'webpage',
     icon: 'web',
@@ -241,6 +241,20 @@ const availableInputs = reactive([
     subtype: 'input',
     webUrl: '',
     watcher: false,
+  },
+  {
+    id: 104,
+    systemInstructions: '',
+    name: 'GitHub Repository',
+    subtype: 'github',
+    icon: 'source',
+    color: '#420897',
+    hasOutput: true,
+    hasInput: false,
+    type: 'agent',
+    inputData: '',
+    webUrl: '',
+    watcher: true,
   },
 ]);
 const onAgentDragStart = (agent: any, event: DragEvent) => {
