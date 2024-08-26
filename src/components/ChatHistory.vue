@@ -99,6 +99,7 @@ function toggleChatEnabled(nodeId: string) {
       }
       message.isEnabledByNode[props.selectedNodeId] = newEnabledState;
     });
+    console.log('toggleChatEnabled', newEnabledState);
     lucidFlow.updateNodeChatData(nodeId, chatData);
   }
 }

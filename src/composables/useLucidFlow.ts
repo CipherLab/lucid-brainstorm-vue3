@@ -16,6 +16,7 @@ import { IndexedDBStorageService } from '../services/indexedDBStorageService';
 import { StorageService } from '../services/StorageService';
 export interface LucidFlowComposable {
   getNodes: () => Node[];
+  getNode: (id: string) => Node[];
   getEdges: () => Edge[];
   findNodeProps: (nodeId: string) => NodeProps | undefined;
   getNodeCount: () => number;
@@ -125,6 +126,9 @@ export default function useLucidFlow(): LucidFlowComposable {
     const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
     return node ? node.data.chatData : null;
   };
+  const getNode = (id: string) => {
+    return vueFlow.nodes.value.filter((node) => node.id === id);
+  };
 
   const updateNodeChatData = async (
     nodeId: string,
@@ -225,6 +229,7 @@ export default function useLucidFlow(): LucidFlowComposable {
     return { propertyValues, getPropertyValue };
   }
   return {
+    getNode,
     getNodes,
     getEdges,
     findNodeProps,

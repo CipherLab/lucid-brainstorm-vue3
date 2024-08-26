@@ -66,14 +66,22 @@ abstract class BaseChatService implements ChatService {
       // Merge all connected chat histories into a single string
       let mergedHistoryText = '';
       for (const connectedNodeId of connectedNodeIds) {
+        if (connectedNodeId === nodeId) continue;
+
         const connectedNode = this.lucidFlow.findNodeProps(connectedNodeId);
+
         const connectedChatHistory = await this.lucidFlow.getNodeChatData(
           connectedNodeId
         );
 
         if (connectedChatHistory) {
+          // const isEnabled =
+          //   connectedChatHistory[0]?.isEnabledByNode[nodeId] ?? true;
           // Re-fetch data if watcher is true and it's a webpage node
+          const isEnabled =
+            connectedChatHistory[0]?.isEnabledByNode[nodeId] ?? true;
           if (
+            isEnabled &&
             connectedNode?.data.agent.watcher &&
             connectedNode?.data.agent.subtype === 'webpage'
           ) {
@@ -95,10 +103,17 @@ abstract class BaseChatService implements ChatService {
               // Handle the error appropriately, e.g., show an error message
             }
           }
-
-          mergedHistoryText += connectedChatHistory
-            .map((message) => message.message?.trim())
-            .join('\r');
+          if (isEnabled) {
+            mergedHistoryText += connectedChatHistory
+              .map(
+                (message) => `\`\`\`
+          //NEW FILE or MESSAGE: ${connectedNode?.data.label}
+          ${message.message?.trim()}
+          \`\`\`
+          \r`
+              )
+              .join('');
+          }
         }
       }
 
