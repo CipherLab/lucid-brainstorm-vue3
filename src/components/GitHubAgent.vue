@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue'; // Import nextTick
 import { useQuasar } from 'quasar';
 import { Octokit } from 'octokit';
 
@@ -75,9 +75,20 @@ const fileTree = ref([]);
 const selectedFilePaths = ref([]);
 const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
-const githubSelection = computed(
-  () => selectedNode.value.data.agent.githubSelection
-);
+
+// Updated githubSelection computed property
+const githubSelection = computed({
+  get() {
+    return selectedNode.value.data.agent.githubSelection || [];
+  },
+  set(newSelection) {
+    if (selectedNode.value) {
+      selectedNode.value.data.agent.githubSelection = newSelection;
+      props.updateChatHistoryGithubSelection(newSelection);
+    }
+  },
+});
+
 const isValidRepoUrl = computed(() => {
   return webUrl.value.match(/https:\/\/github.com\/[^\/]+\/[^\/]+/);
 });
@@ -92,10 +103,9 @@ const loadRepository = async () => {
 
     fileTree.value = await fetchTreeRecursively(owner, repo, '');
 
-    // Restore selected file paths after loading the tree
-    if (selectedNode.value.data.agent.selectedFilePaths) {
-      selectedFilePaths.value = selectedNode.value.data.agent.selectedFilePaths;
-    }
+    // Use nextTick to ensure the QTree is rendered before setting ticked values
+    await nextTick();
+    selectedFilePaths.value = githubSelection.value;
   } catch (error) {
     $q.notify({
       message: `Error loading repository: ${error.message}`,
@@ -173,5 +183,8 @@ onMounted(() => {
 watch(webUrl, () => {
   fileTree.value = [];
   selectedFilePaths.value = []; // Reset selected paths when the URL changes
+});
+watch(selectedFilePaths, (newPaths) => {
+  githubSelection.value = newPaths; // Update the computed property directly
 });
 </script>
