@@ -132,6 +132,7 @@ const updateMessages: Record<string, string> = {
     'Added a re-run button to the model chat. Fixed layout issues. Fixed other bugs.',
   '1.0.12': 'Fixing issue with side bar top padding.',
   '1.0.13': 'Can delete edges!',
+  '1.0.14': 'Fix issue with expansion item in chat history',
 };
 
 const showUpdateBanner = ref<boolean>(false);
