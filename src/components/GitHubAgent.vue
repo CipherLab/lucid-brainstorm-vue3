@@ -90,7 +90,6 @@ const githubSelection = computed({
     }
   },
 });
-
 const isValidRepoUrl = computed(() => {
   return webUrl.value.match(/https:\/\/github.com\/[^\/]+\/[^\/]+/);
 });
@@ -176,31 +175,25 @@ const onTextBlur = () => {
   }
 };
 
-// Watch selectedFilePaths and update the selectedNode data
+// Watch selectedFilePaths and update the githubSelection computed property
 watch(selectedFilePaths, (newPaths) => {
-  if (selectedNode.value) {
-    selectedNode.value.data.agent.selectedFilePaths = newPaths;
-  }
+  githubSelection.value = newPaths;
 });
 
-// Load the repository URL and selected paths on mount if available
 onMounted(() => {
   if (selectedNode.value) {
     webUrl.value = selectedNode.value.data.agent.webUrl || '';
-    if (selectedNode.value.data.agent.selectedFilePaths) {
-      selectedFilePaths.value = selectedNode.value.data.agent.selectedFilePaths;
-      console.log('Selected paths:', selectedFilePaths.value);
-      loadRepository(); // Load the repository if paths are already selected
-    }
+    // No need to load the repository here if paths are already selected
+    // as loadRepository is called when webUrl changes
   }
 });
 
-watch(webUrl, () => {
-  fileTree.value = [];
-  selectedFilePaths.value = []; // Reset selected paths when the URL changes
-});
-watch(selectedFilePaths, (newPaths) => {
-  console.log('newPaths', newPaths);
-  githubSelection.value = newPaths; // Update the computed property directly
+watch(webUrl, (newUrl) => {
+  if (newUrl && isValidRepoUrl.value) {
+    loadRepository();
+  } else {
+    fileTree.value = [];
+    // Don't reset selectedFilePaths here, preserve selections
+  }
 });
 </script>
