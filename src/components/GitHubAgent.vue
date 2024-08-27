@@ -9,16 +9,18 @@
       @input="props.updateChatHistoryUrl"
       @blur="onTextBlur"
       style="flex: 1"
-    />
-
-    <q-btn
-      label="Load Repo"
-      @click="loadRepository"
-      :disable="!webUrl || webUrl.length <= 0"
-      color="primary"
-      unelevated
-      dense
-    />
+    >
+      <template v-slot:append>
+        <q-btn
+          icon="refresh"
+          @click="loadRepository"
+          :disable="!webUrl || webUrl.length <= 0"
+          color="primary"
+          unelevated
+          dense
+        />
+      </template>
+    </q-input>
 
     <q-tree
       v-if="fileTree.length > 0"
@@ -107,11 +109,23 @@ const loadRepository = async () => {
     await nextTick();
     selectedFilePaths.value = githubSelection.value;
   } catch (error) {
-    $q.notify({
-      message: `Error loading repository: ${error.message}`,
-      color: 'negative',
-      position: 'top',
-    });
+    if (
+      error.response &&
+      error.response.status === 403 &&
+      error.response.data.message.includes('API rate limit exceeded')
+    ) {
+      $q.notify({
+        message: `API rate limit exceeded. Please authenticate your requests to get a higher rate limit. More info: ${error.response.data.documentation_url}`,
+        color: 'negative',
+        position: 'top',
+      });
+    } else {
+      $q.notify({
+        message: `Error loading repository: ${error.message}`,
+        color: 'negative',
+        position: 'top',
+      });
+    }
   }
 };
 
@@ -175,6 +189,7 @@ onMounted(() => {
     webUrl.value = selectedNode.value.data.agent.webUrl || '';
     if (selectedNode.value.data.agent.selectedFilePaths) {
       selectedFilePaths.value = selectedNode.value.data.agent.selectedFilePaths;
+      console.log('Selected paths:', selectedFilePaths.value);
       loadRepository(); // Load the repository if paths are already selected
     }
   }
@@ -185,6 +200,7 @@ watch(webUrl, () => {
   selectedFilePaths.value = []; // Reset selected paths when the URL changes
 });
 watch(selectedFilePaths, (newPaths) => {
+  console.log('newPaths', newPaths);
   githubSelection.value = newPaths; // Update the computed property directly
 });
 </script>

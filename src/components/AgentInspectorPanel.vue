@@ -81,6 +81,7 @@
           :updateChatHistoryUrl="updateChatHistoryUrl"
           :updateChatHistoryData="updateChatHistoryData"
           :toggleWatcherState="toggleWatcher"
+          :updateChatHistoryGithubSelection="updateChatHistoryGithubSelection"
         />
       </div>
     </div>
