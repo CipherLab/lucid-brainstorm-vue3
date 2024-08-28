@@ -71,8 +71,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue';
 import { useQuasar } from 'quasar';
-import { Octokit } from 'octokit';
 import { StorageService, StoreName } from '../services/StorageService';
+import { Octokit } from '@octokit/core';
 const dataAction = ref('dataAsUrl');
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
