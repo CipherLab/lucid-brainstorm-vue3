@@ -1,5 +1,4 @@
-// src/composables/useLucidFlow.ts
-import { ref, reactive, Ref, watchEffect } from 'vue';
+import { ref, reactive, Ref, watchEffect, inject } from 'vue';
 import {
   useVueFlow,
   Node,
@@ -12,8 +11,8 @@ import {
 } from '@vue-flow/core';
 import { Message } from '../models/chatInterfaces';
 import { debounce, flow, forEach, get } from 'lodash';
-import { IndexedDBStorageService } from '../services/indexedDBStorageService';
-import { StorageService } from '../services/StorageService';
+import { StorageService, StoreName } from '../services/StorageService';
+
 export interface LucidFlowComposable {
   getNodes: () => Node[];
   getNode: (id: string) => Node[];
@@ -43,10 +42,14 @@ export interface LucidFlowComposable {
 
 const flowKey = 'lucid-flow-session';
 
-export default function useLucidFlow(): LucidFlowComposable {
-  const storageService: StorageService = new IndexedDBStorageService();
-
+export default function useLucidFlow(
+  flowStore: StorageService<StoreName.flowStore>
+): LucidFlowComposable {
   const vueFlow = useVueFlow();
+  //'flowStore', flowStore);
+  if (!flowStore) {
+    throw new Error('flowStore not provided');
+  }
 
   const {
     onConnect,
@@ -78,10 +81,12 @@ export default function useLucidFlow(): LucidFlowComposable {
   const getEdges = () => {
     return vueFlow.edges.value;
   };
+
   const removeEdge = async (edgeId: string): Promise<void> => {
     removeEdges(edgeId);
     await saveSession(); // Wait for saveSession to complete
   };
+
   const removeNode = async (nodeId: string): Promise<void> => {
     const changes: NodeRemoveChange[] = [{ type: 'remove', id: nodeId }];
     applyNodeChanges(changes);
@@ -112,20 +117,18 @@ export default function useLucidFlow(): LucidFlowComposable {
     if (nodeToUpdate) {
       nodeToUpdate.position = { x, y };
       await debounceSave();
-
-      // setTimeout(() => {
-      //   loadSession();
-      // }, 1000);
     }
   };
+
   const debounceSave = debounce(async () => {
-    //console.log('Saving session...');
     await saveSession();
   }, 100);
+
   const getNodeChatData = (nodeId: string) => {
     const node = vueFlow.nodes.value.find((node) => node.id === nodeId);
     return node ? node.data.chatData : null;
   };
+
   const getNode = (id: string) => {
     return vueFlow.nodes.value.filter((node) => node.id === id);
   };
@@ -176,17 +179,16 @@ export default function useLucidFlow(): LucidFlowComposable {
 
   async function saveSession(): Promise<void> {
     const flowData = await vueFlow.toObject();
-    await storageService.save(flowKey, flowData);
+    await flowStore.save(flowKey, flowData);
   }
 
   async function loadSession(): Promise<void> {
-    const flowData = await storageService.load(flowKey);
+    const flowData = await flowStore.load(flowKey);
     if (flowData) {
-      {
-        await vueFlow.fromObject(flowData);
-      }
+      await vueFlow.fromObject(flowData);
     }
   }
+
   async function saveViewportState(
     x: number,
     y: number,
@@ -198,7 +200,7 @@ export default function useLucidFlow(): LucidFlowComposable {
       zoom,
     };
   }
-  // Generic function to handle async data loading and caching for node properties
+
   async function useNodeProperty<T>(
     connectedNodeIds: Ref<string[]>,
     getProperty: (nodeId: string) => Promise<T>
@@ -218,16 +220,15 @@ export default function useLucidFlow(): LucidFlowComposable {
       return propertyValues.value[nodeId];
     };
 
-    // Initial update
     await updatePropertyValues();
 
-    // Watch for changes in connectedNodeIds to update the values
     watchEffect(async () => {
       await updatePropertyValues();
     });
 
     return { propertyValues, getPropertyValue };
   }
+
   return {
     getNode,
     getNodes,

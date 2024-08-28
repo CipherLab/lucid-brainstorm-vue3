@@ -79,8 +79,9 @@
         <GitHubAgent
           :selectedNode="selectedNode"
           :updateChatHistoryUrl="updateChatHistoryUrl"
-          :updateChatHistoryData="updateChatHistoryData"
+          :updateChatHistoryDataArray="updateChatHistoryDataArray"
           :toggleWatcherState="toggleWatcher"
+          :updateChatHistoryGithubSelection="updateChatHistoryGithubSelection"
         />
       </div>
     </div>
@@ -333,7 +334,7 @@ watchEffect(() => {
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 async function updateChatHistoryUrl(url: string) {
   if (selectedNode.value && url && url.trim() !== '') {
-    console.log('updateChatHistoryUrl', url);
+    //console.log('updateChatHistoryUrl', url);
     selectedNode.value.data.agent.webUrl = url;
     await lucidFlow.saveSession();
   }
@@ -344,6 +345,39 @@ async function updateChatHistoryGithubSelection(selection: any) {
     selectedNode.value.data.agent.githubSelection = selection;
     await lucidFlow.saveSession();
   }
+}
+async function updateChatHistoryDataArray(data: string[]) {
+  if (!selectedNode.value) {
+    throw new Error('Selected node is not defined');
+  }
+
+  if (!messages.value || messages.value.length === 0) {
+    messages.value = data.map((message, index) => ({
+      id: Date.now() + index + '',
+      sender: 'user',
+      message: message,
+      createdAt: Date.now(),
+      error: false,
+      typing: false,
+      selected: index === 0, // Select the first message by default
+      isEnabledByNode: {}, // Safe to initialize here (new message)
+    }));
+  } else {
+    // Preserve existing isEnabledByNode!
+    messages.value = data.map((message, index) => ({
+      ...(messages.value[index] || {}), // Copy existing properties if they exist
+      id: messages.value[index]?.id || Date.now() + index + '',
+      sender: 'user',
+      message: message,
+      createdAt: messages.value[index]?.createdAt || Date.now(),
+      error: messages.value[index]?.error || false,
+      typing: messages.value[index]?.typing || false,
+      selected: index === 0, // Select the first message by default
+      isEnabledByNode: messages.value[index]?.isEnabledByNode || {}, // Preserve existing isEnabledByNode
+    }));
+  }
+
+  lucidFlow.updateNodeChatData(props.selectedNodeId, messages.value);
 }
 async function updateChatHistoryData(data: string) {
   if (!selectedNode.value) {

@@ -23,10 +23,10 @@ export class WebDataFetcher implements DataFetcher {
   async fetchData(url: string): Promise<string> {
     try {
       const decodedUrl = decodeURIComponent(url);
-      console.log('decodedUrl', decodedUrl);
+      //console.log('decodedUrl', decodedUrl);
 
       const response = await axios.get(decodedUrl);
-      console.log('response', response);
+      //console.log('response', response);
 
       return response.data;
     } catch (error: any) {

@@ -69,7 +69,7 @@ const state = reactive({
 
 // Function to update the accordion states, ensuring the last is open
 const updateAccordionStates = () => {
-  console.log('updateAccordionStates', props.isPrimary);
+  //console.log('updateAccordionStates', props.isPrimary);
   state.expandedStates.splice(
     0, // Start at the beginning
     state.expandedStates.length, // Replace the entire array
@@ -99,7 +99,7 @@ function toggleChatEnabled(nodeId: string) {
       }
       message.isEnabledByNode[props.selectedNodeId] = newEnabledState;
     });
-    console.log('toggleChatEnabled', newEnabledState);
+    //console.log('toggleChatEnabled', newEnabledState);
     lucidFlow.updateNodeChatData(nodeId, chatData);
   }
 }
@@ -139,7 +139,7 @@ const getAccordionLabel = (nodeId: string) => {
 const handleAccordionToggle = (index: number) => {
   // Close all other accordions
   if (props.isPrimary) {
-    console.log('handleAccordionToggle', state.expandedStates);
+    //console.log('handleAccordionToggle', state.expandedStates);
     state.expandedStates.splice(index, 1, true);
     return;
   }
@@ -149,12 +149,12 @@ const handleAccordionToggle = (index: number) => {
   //   state.expandedStates[i] = false;
   // });
 
-  console.log('handleAccordionToggle', state.expandedStates[index]);
+  //console.log('handleAccordionToggle', state.expandedStates[index]);
 
   const newExpandedState = !state.expandedStates[index];
   state.expandedStates.splice(index, 1, newExpandedState);
 
-  console.log('handleAccordionToggle', state.expandedStates[index]);
+  //console.log('handleAccordionToggle', state.expandedStates[index]);
 
   emitter.emit('node:accordion-toggled', {
     nodeId: connectedNodeIds.value[index],

@@ -32,7 +32,7 @@ class RealChatService extends BaseChatService {
       //   nodeId,
       //   systemInstructions
       // );
-      console.log('Real chatHistory', chat);
+      //console.log('Real chatHistory', chat);
 
       const result = await chat.sendMessage(text);
       const responseText = result.response.text();

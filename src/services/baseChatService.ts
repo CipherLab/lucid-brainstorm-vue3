@@ -80,7 +80,17 @@ abstract class BaseChatService implements ChatService {
           // Re-fetch data if watcher is true and it's a webpage node
           const isEnabled =
             connectedChatHistory[0]?.isEnabledByNode[nodeId] ?? true;
+
           if (
+            isEnabled &&
+            connectedNode?.data.agent.subtype === 'github' &&
+            Array.isArray(connectedNode.data.agent.githubSelection)
+          ) {
+            // Fetch the latest data from GitHub using octokit. iterate on each message.
+            for (const message of connectedChatHistory) {
+              console.log(`pretending to process message ${message}`);
+            }
+          } else if (
             isEnabled &&
             connectedNode?.data.agent.watcher &&
             connectedNode?.data.agent.subtype === 'webpage'
