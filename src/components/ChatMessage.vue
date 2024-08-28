@@ -75,9 +75,12 @@ const messageParts = computed(() => {
 
   if (props.message.length <= 0) return [];
 
+  //console.log('props.message:', props.message);
+  const message = props.message + '';
+
   try {
     const codeBlockRegex = /```([\s\S]*?)```/g;
-    const parts = props.message.split(codeBlockRegex);
+    const parts = message.split(codeBlockRegex);
 
     let result: { isCode: boolean; content: string }[] = [];
 
@@ -97,6 +100,7 @@ const messageParts = computed(() => {
       type: 'negative',
       message: 'Error parsing a message',
     });
+    throw e;
     return [];
   }
 });

@@ -54,14 +54,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'; // Import nextTick
+import { ref, computed, watch, onMounted, nextTick, inject } from 'vue';
 import { useQuasar } from 'quasar';
 import { Octokit } from 'octokit';
 import { StorageService, StoreName } from '../services/StorageService';
 
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
-); // Unique key for each repo
+);
 
 const props = defineProps({
   selectedNode: {
@@ -72,7 +72,7 @@ const props = defineProps({
     type: Function,
     required: true,
   },
-  updateChatHistoryData: {
+  updateChatHistoryDataArray: {
     type: Function,
     required: true,
   },
@@ -90,6 +90,7 @@ const githubStore = inject<StorageService<StoreName.githubTree>>(
 );
 
 const isLoading = ref(false);
+
 if (!githubStore) {
   throw new Error('Could not inject githubStore!');
 }
@@ -113,6 +114,7 @@ const githubSelection = computed({
     }
   },
 });
+
 const isValidRepoUrl = computed(() => {
   return webUrl.value.match(/https:\/\/github.com\/[^\/]+\/[^\/]+/);
 });
@@ -123,6 +125,7 @@ const clearLoadedDataAndCache = async () => {
   selectedFilePaths.value = [];
   webUrl.value = '';
 };
+
 const loadRepository = async (clearCache: boolean) => {
   if (clearCache) {
     await githubStore.delete(cacheKey.value);
@@ -130,17 +133,14 @@ const loadRepository = async (clearCache: boolean) => {
   if (!isValidRepoUrl.value) return;
 
   try {
-    // 1. Try loading from cache
     isLoading.value = true;
 
     let cachedTree = await githubStore.load(cacheKey.value);
 
     if (cachedTree) {
-      // Use the cached data
       console.log('Loading from cache:', cacheKey.value);
       fileTree.value = JSON.parse(cachedTree);
     } else {
-      // Fetch from GitHub and cache the result
       console.log('Fetching from GitHub:', webUrl.value);
       const urlParts = webUrl.value.split('/');
       const owner = urlParts[3];
@@ -148,11 +148,9 @@ const loadRepository = async (clearCache: boolean) => {
 
       fileTree.value = await fetchTreeRecursively(owner, repo, '');
 
-      // Cache the data
       await githubStore.save(cacheKey.value, JSON.stringify(fileTree.value));
     }
 
-    // Use nextTick to ensure the QTree is rendered before setting ticked values
     await nextTick();
     selectedFilePaths.value = [...githubSelection.value];
   } catch (error) {
@@ -228,13 +226,12 @@ const onTextBlur = () => {
 // Watch selectedFilePaths and update the githubSelection computed property
 watch(selectedFilePaths, (newPaths) => {
   githubSelection.value = newPaths;
+  updateChatHistoryWithFilePaths(newPaths);
 });
 
 onMounted(() => {
   if (selectedNode.value) {
     webUrl.value = selectedNode.value.data.agent.webUrl || '';
-    // No need to load the repository here if paths are already selected
-    // as loadRepository is called when webUrl changes
   }
 });
 
@@ -243,7 +240,21 @@ watch(webUrl, (newUrl) => {
     loadRepository(false);
   } else {
     fileTree.value = [];
-    // Don't reset selectedFilePaths here, preserve selections
   }
 });
+
+// Function to generate the URL for each file
+const generateFileUrl = (path) => {
+  const urlParts = webUrl.value.split('/');
+  const owner = urlParts[3];
+  const repo = urlParts[4];
+  return `https://github.com/${owner}/${repo}/blob/main/${path}`;
+};
+
+// Function to update chat history with file paths
+const updateChatHistoryWithFilePaths = (paths: string[]) => {
+  //use generateFileUrl, map to array
+  const tempPaths = paths.map((path) => generateFileUrl(path));
+  props.updateChatHistoryDataArray(tempPaths);
+};
 </script>
