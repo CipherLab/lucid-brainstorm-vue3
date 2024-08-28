@@ -244,7 +244,7 @@ const availableInputs = reactive([
   },
   {
     id: 104,
-    systemInstructions: '',
+    systemInstructions: 'Get data from a public GitHub repository',
     name: 'GitHub Repository',
     subtype: 'github',
     icon: 'source',

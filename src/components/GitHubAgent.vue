@@ -31,6 +31,21 @@
         />
       </template>
     </q-input>
+    <div>
+      <span class="q-mr-sm">Options</span>
+      <br />
+      <q-radio
+        v-model="dataAction"
+        val="dataAsUrl"
+        label="Interact with the data via the url only. (Gemini can access the data directly from the repository)"
+      />
+      <q-radio
+        v-model="dataAction"
+        disable
+        val="dataAsFile"
+        label="Download the files from the repository and include the content directly in the chat history. (Coming soon!)"
+      />
+    </div>
 
     <q-tree
       v-if="fileTree.length > 0"
@@ -58,7 +73,7 @@ import { ref, computed, watch, onMounted, nextTick, inject } from 'vue';
 import { useQuasar } from 'quasar';
 import { Octokit } from 'octokit';
 import { StorageService, StoreName } from '../services/StorageService';
-
+const dataAction = ref('dataAsUrl');
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
 );
@@ -101,6 +116,7 @@ const fileTree = ref([]);
 const selectedFilePaths = ref<Array<any>>([]);
 const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
+const dataAsUrl = ref(false);
 
 // Updated githubSelection computed property
 const githubSelection = computed({
