@@ -12,10 +12,20 @@
     >
       <template v-slot:append>
         <q-btn
-          icon="refresh"
-          @click="loadRepository"
-          :disable="!webUrl || webUrl.length <= 0"
+          icon="download"
+          :loading="isLoading"
+          @click="loadRepository(true)"
+          :disable="!webUrl || webUrl.length <= 0 || isLoading"
           color="primary"
+          unelevated
+          dense
+        />
+        <q-btn
+          icon="clear"
+          :loading="isLoading"
+          @click="clearLoadedDataAndCache"
+          :disable="!webUrl || webUrl.length <= 0 || isLoading"
+          color="critical"
           unelevated
           dense
         />
@@ -79,6 +89,7 @@ const githubStore = inject<StorageService<StoreName.githubTree>>(
   `${StoreName.githubTree}Service`
 );
 
+const isLoading = ref(false);
 if (!githubStore) {
   throw new Error('Could not inject githubStore!');
 }
@@ -106,11 +117,22 @@ const isValidRepoUrl = computed(() => {
   return webUrl.value.match(/https:\/\/github.com\/[^\/]+\/[^\/]+/);
 });
 
-const loadRepository = async () => {
+const clearLoadedDataAndCache = async () => {
+  await githubStore.delete(cacheKey.value);
+  fileTree.value = [];
+  selectedFilePaths.value = [];
+  webUrl.value = '';
+};
+const loadRepository = async (clearCache: boolean) => {
+  if (clearCache) {
+    await githubStore.delete(cacheKey.value);
+  }
   if (!isValidRepoUrl.value) return;
 
   try {
     // 1. Try loading from cache
+    isLoading.value = true;
+
     let cachedTree = await githubStore.load(cacheKey.value);
 
     if (cachedTree) {
@@ -151,6 +173,8 @@ const loadRepository = async () => {
         position: 'top',
       });
     }
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -216,7 +240,7 @@ onMounted(() => {
 
 watch(webUrl, (newUrl) => {
   if (newUrl && isValidRepoUrl.value) {
-    loadRepository();
+    loadRepository(false);
   } else {
     fileTree.value = [];
     // Don't reset selectedFilePaths here, preserve selections

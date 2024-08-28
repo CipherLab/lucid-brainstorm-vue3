@@ -95,4 +95,21 @@ export class IndexedDBStorageService<T extends StoreName>
       };
     });
   }
+
+  async delete(key: string): Promise<void> {
+    const db = await this.openDatabase();
+    const transaction = db.transaction(this.storeName, 'readwrite'); // Use this.storeName
+    const store = transaction.objectStore(this.storeName);
+    store.delete(key);
+
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        resolve();
+      };
+
+      transaction.onerror = (event) => {
+        reject((event.target as IDBRequest).error);
+      };
+    });
+  }
 }
