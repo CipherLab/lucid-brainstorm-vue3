@@ -1,12 +1,15 @@
 // IndexedDBStorageService.ts
-import { StorageService } from './StorageService';
+import { StorageService, StoreName } from './StorageService';
 
-export class IndexedDBStorageService implements StorageService {
+export class IndexedDBStorageService<T extends StoreName>
+  implements StorageService<T>
+{
   private dbName: string;
-  private storeName: string;
-  private db: IDBDatabase | null = null; // Add a reference to the database
+  private storeName: T; // Store the store name as a property
+  private db: IDBDatabase | null = null;
 
-  constructor(dbName = 'lucidFlowDB', storeName = 'flowStore') {
+  constructor(dbName: string, storeName: T) {
+    // Pass the store name in the constructor
     this.dbName = dbName;
     this.storeName = storeName;
   }
@@ -17,34 +20,55 @@ export class IndexedDBStorageService implements StorageService {
         return;
       }
 
-      const request = indexedDB.open(this.dbName, 1); // Start with version 1
+      console.log('Opening database...');
+
+      const totalStores = Object.keys(StoreName).length + 2;
+      const request = indexedDB.open(this.dbName, totalStores); // Increment version if adding a new object store
 
       request.onupgradeneeded = (event) => {
+        console.log('Upgrading database...');
         const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          // Check if store exists
-          db.createObjectStore(this.storeName, { keyPath: 'key' });
+
+        for (const key of Object.keys(StoreName)) {
+          this.createStore(db, StoreName.flowStore);
+          this.createStore(db, StoreName.githubTree);
         }
+
+        // Create object stores if they don't exist
+
+        // Add more object stores here if needed...
       };
 
       request.onsuccess = (event) => {
+        console.log('Database opened successfully.');
         this.db = (event.target as IDBOpenDBRequest).result;
         resolve(this.db);
       };
 
       request.onerror = (event) => {
+        console.error(
+          'Error opening database:',
+          (event.target as IDBRequest).error
+        );
         reject((event.target as IDBRequest).error);
       };
     });
   }
+
+  private createStore(db: IDBDatabase, storeName: StoreName) {
+    if (!db.objectStoreNames.contains(storeName)) {
+      db.createObjectStore(storeName, { keyPath: 'key' });
+      console.log(`Object store created: ${storeName}`);
+    }
+  }
+
   async save(key: string, data: any): Promise<void> {
-    const db = await this.openDatabase(); // Open the database
-    const transaction = db.transaction(this.storeName, 'readwrite');
+    const db = await this.openDatabase();
+    const transaction = db.transaction(this.storeName, 'readwrite'); // Use this.storeName
     const store = transaction.objectStore(this.storeName);
     store.put({ key, data });
 
     return new Promise((resolve, reject) => {
-      // Use a promise for transaction completion
       transaction.oncomplete = () => {
         resolve();
       };
@@ -56,13 +80,12 @@ export class IndexedDBStorageService implements StorageService {
   }
 
   async load(key: string): Promise<any> {
-    const db = await this.openDatabase(); // Open the database
-    const transaction = db.transaction(this.storeName, 'readonly');
+    const db = await this.openDatabase();
+    const transaction = db.transaction(this.storeName, 'readonly'); // Use this.storeName
     const store = transaction.objectStore(this.storeName);
     const getRequest = store.get(key);
 
     return new Promise((resolve, reject) => {
-      // Use a promise for get request
       getRequest.onsuccess = () => {
         resolve(getRequest.result ? getRequest.result.data : null);
       };

@@ -43,10 +43,15 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'; // Import nextTick
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'; // Import nextTick
 import { useQuasar } from 'quasar';
 import { Octokit } from 'octokit';
+import { StorageService, StoreName } from '../services/StorageService';
+
+const cacheKey = computed(
+  () => `${selectedNode.value.data.agent.id}${webUrl.value}`
+); // Unique key for each repo
 
 const props = defineProps({
   selectedNode: {
@@ -70,11 +75,18 @@ const props = defineProps({
     required: true,
   },
 });
+const githubStore = inject<StorageService<StoreName.githubTree>>(
+  `${StoreName.githubTree}Service`
+);
+
+if (!githubStore) {
+  throw new Error('Could not inject githubStore!');
+}
 
 const $q = useQuasar();
 const octokit = ref(new Octokit());
 const fileTree = ref([]);
-const selectedFilePaths = ref([]);
+const selectedFilePaths = ref<Array<any>>([]);
 const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
 
@@ -98,15 +110,29 @@ const loadRepository = async () => {
   if (!isValidRepoUrl.value) return;
 
   try {
-    const urlParts = webUrl.value.split('/');
-    const owner = urlParts[3];
-    const repo = urlParts[4];
+    // 1. Try loading from cache
+    let cachedTree = await githubStore.load(cacheKey.value);
 
-    fileTree.value = await fetchTreeRecursively(owner, repo, '');
+    if (cachedTree) {
+      // Use the cached data
+      console.log('Loading from cache:', cacheKey.value);
+      fileTree.value = JSON.parse(cachedTree);
+    } else {
+      // Fetch from GitHub and cache the result
+      console.log('Fetching from GitHub:', webUrl.value);
+      const urlParts = webUrl.value.split('/');
+      const owner = urlParts[3];
+      const repo = urlParts[4];
+
+      fileTree.value = await fetchTreeRecursively(owner, repo, '');
+
+      // Cache the data
+      await githubStore.save(cacheKey.value, JSON.stringify(fileTree.value));
+    }
 
     // Use nextTick to ensure the QTree is rendered before setting ticked values
     await nextTick();
-    selectedFilePaths.value = githubSelection.value;
+    selectedFilePaths.value = [...githubSelection.value];
   } catch (error) {
     if (
       error.response &&
