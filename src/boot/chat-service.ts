@@ -15,7 +15,7 @@ export default boot(({ app }) => {
     );
     if (!service) throw new Error('Service not provided');
 
-    console.log('Providing service', `${storeName}Service`);
+    //console.log('Providing service', `${storeName}Service`);
     app.provide(`${storeName}Service`, service); // Use storeName for the service key
     if (storeName === StoreName.flowStore) {
       const lucidFlow = useLucidFlow(service);

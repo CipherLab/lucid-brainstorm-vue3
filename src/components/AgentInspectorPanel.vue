@@ -334,7 +334,7 @@ watchEffect(() => {
 const debouncedUpdateChatHistory = debounce(updateChatHistory, 500); // Adjust delay as needed
 async function updateChatHistoryUrl(url: string) {
   if (selectedNode.value && url && url.trim() !== '') {
-    console.log('updateChatHistoryUrl', url);
+    //console.log('updateChatHistoryUrl', url);
     selectedNode.value.data.agent.webUrl = url;
     await lucidFlow.saveSession();
   }

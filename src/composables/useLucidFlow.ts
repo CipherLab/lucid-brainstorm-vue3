@@ -46,7 +46,7 @@ export default function useLucidFlow(
   flowStore: StorageService<StoreName.flowStore>
 ): LucidFlowComposable {
   const vueFlow = useVueFlow();
-  console.log('flowStore', flowStore);
+  //'flowStore', flowStore);
   if (!flowStore) {
     throw new Error('flowStore not provided');
   }

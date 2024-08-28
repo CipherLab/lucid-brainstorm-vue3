@@ -100,9 +100,9 @@ onUnmounted(() => {
   emitter.off('node:accordion-toggled', handleTabScrollToBottom);
 });
 const handleTabScrollToBottom = (event: NodeTabbedEvent) => {
-  console.log('1TAB scroll to bottom');
+  //console.log('1TAB scroll to bottom');
   if (event.nodeId === props.selectedNodeId) {
-    console.log('2TAB scroll to bottom');
+    //console.log('2TAB scroll to bottom');
     nextTick(scrollToBottom);
   }
 };
@@ -190,7 +190,7 @@ async function sendMessageData(data: string) {
         let errorMessage = 'Error sending message';
         let isApiKeyError = false;
         // Check for specific error conditions
-        console.log('error.message:', error.message);
+        //console.log('error.message:', error.message);
         if (error.message.includes('API key expired')) {
           errorMessage = 'API key expired. Please renew the API key.';
           isApiKeyError = true;

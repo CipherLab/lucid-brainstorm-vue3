@@ -95,7 +95,7 @@ const loadCustomAgents = (): any[] => {
   return storedAgents ? JSON.parse(storedAgents) : [];
 };
 const deleteCustomAgent = (id: number) => {
-  console.log('Delete agent:', id);
+  //console.log('Delete agent:', id);
   // 1. Remove from the reactive array:
   for (let i = 0; i < customAgents.value.length; i++) {
     if (customAgents.value[i].id === id) {
@@ -108,7 +108,7 @@ const deleteCustomAgent = (id: number) => {
 };
 const handleAgentCreate = (agentData: GenericEvent) => {
   // Save the new agent to local storage
-  console.log('Create agent:', agentData);
+  //console.log('Create agent:', agentData);
   customAgents.value.push(agentData);
   saveCustomAgents();
 
@@ -127,7 +127,7 @@ onMounted(() => {
   emitter.on('node:agent-created', pushNewAgent);
 });
 async function pushNewAgent(event: GenericEvent) {
-  console.log('Push new agent:', event);
+  //console.log('Push new agent:', event);
   if (event && event.data) {
     const newAgent = JSON.parse(event.data);
     customAgents.value.push(newAgent);

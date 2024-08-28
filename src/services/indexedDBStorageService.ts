@@ -20,13 +20,13 @@ export class IndexedDBStorageService<T extends StoreName>
         return;
       }
 
-      console.log('Opening database...');
+      //console.log('Opening database...');
 
       const totalStores = Object.keys(StoreName).length + 2;
       const request = indexedDB.open(this.dbName, totalStores); // Increment version if adding a new object store
 
       request.onupgradeneeded = (event) => {
-        console.log('Upgrading database...');
+        //console.log('Upgrading database...');
         const db = (event.target as IDBOpenDBRequest).result;
 
         for (const key of Object.keys(StoreName)) {
@@ -40,7 +40,7 @@ export class IndexedDBStorageService<T extends StoreName>
       };
 
       request.onsuccess = (event) => {
-        console.log('Database opened successfully.');
+        //console.log('Database opened successfully.');
         this.db = (event.target as IDBOpenDBRequest).result;
         resolve(this.db);
       };
@@ -58,7 +58,7 @@ export class IndexedDBStorageService<T extends StoreName>
   private createStore(db: IDBDatabase, storeName: StoreName) {
     if (!db.objectStoreNames.contains(storeName)) {
       db.createObjectStore(storeName, { keyPath: 'key' });
-      console.log(`Object store created: ${storeName}`);
+      //console.log(`Object store created: ${storeName}`);
     }
   }
 
