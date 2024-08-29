@@ -44,6 +44,8 @@ import quasarUserOptions from './quasar-user-options.js'
 
 
 
+console.info('[Quasar] Running SPA.')
+
 
 const publicPath = `/`
 
@@ -150,7 +152,7 @@ createQuasarApp(createApp, quasarUserOptions)
 
     return Promise[ method ]([
       
-      import('boot/markdownit'),
+      import('boot/qmarkdown'),
       
       import('boot/lucid-flow'),
       

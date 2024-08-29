@@ -97,6 +97,7 @@
           <q-btn flat label="OK" @click="showUpdateBanner = false" />
         </template>
       </q-banner>
+
       <router-view />
     </q-page-container>
   </q-layout>

@@ -11,14 +11,21 @@
           name="error"
           color="red"
         />
-        <template v-else v-for="(part, index) in messageParts" :key="index">
+        <template v-else>
+          <q-markdown>
+            <pre>
+            {{ props.message }}
+            </pre>
+          </q-markdown>
+        </template>
+        <!-- <template v-else v-for="(part, index) in messageParts" :key="index">
           <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
           <div
             class="message-part"
             v-else
             v-html="md.render(part.content)"
           ></div>
-        </template>
+        </template> -->
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
         {{ formattedTime }}
@@ -31,10 +38,8 @@
 import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import moment from 'moment';
 import { useQuasar } from 'quasar';
-import markdownIt from 'markdown-it';
 import { BaseNodeEvent, emitter, MessageReceivedEvent } from '../eventBus';
-import CodeBlockWithCopy from './CodeBlockWithCopy.vue';
-
+import { QMarkdown } from '@quasar/quasar-ui-qmarkdown';
 const $q = useQuasar();
 const props = defineProps({
   nodeId: {
@@ -62,8 +67,6 @@ const props = defineProps({
     default: 'psychology', // Default icon, you can customize
   },
 });
-
-const md = markdownIt({ breaks: true });
 
 const showWorking = ref(false);
 const showError = ref(false);
