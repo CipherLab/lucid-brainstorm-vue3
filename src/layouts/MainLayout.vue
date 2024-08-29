@@ -114,7 +114,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.15');
+const version = ref('1.0.16');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -136,6 +136,7 @@ const updateMessages: Record<string, string> = {
   '1.0.14': 'Fix issue with expansion item in chat history',
   '1.0.15': 'Fix issue with including/excluding chat history',
   '1.0.16': 'Working on some super cool GitHub integration!',
+  '1.0.17': 'Using QMarkdown for chat display!',
 };
 
 const showUpdateBanner = ref<boolean>(false);
