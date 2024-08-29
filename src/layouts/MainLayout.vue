@@ -108,7 +108,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import SidebarComponent from '../components/SidebarComponent.vue';
 import AgentInspectorPanel from '../components/AgentInspectorPanel.vue';
 import InputInspectorPanel from '../components/InputInspectorPanel.vue';
-import { emitter, NodeSelectedEvent } from '../eventBus';
+import { emitter, GenericEvent, NodeSelectedEvent } from '../eventBus';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
@@ -249,6 +249,9 @@ onMounted(() => {
     sessionStorage.removeItem('apikey');
     prompt.value = true;
   });
+
+  emitter.on('node:code-copied', handleCopiedCode);
+  emitter.on('node:error', handlError);
   inspectorOpen.value = false;
   const apiKey = sessionStorage.getItem('apikey');
 
@@ -260,7 +263,28 @@ onMounted(() => {
 onUnmounted(() => {
   emitter.off('node:selected', handleNodeSelected);
   emitter.off('node:deselected', handleNodeDeselected);
+  emitter.off('node:api-key-invalid', () => {
+    sessionStorage.removeItem('apikey');
+    prompt.value = true;
+  });
+  emitter.off('node:code-copied', handleCopiedCode);
+  emitter.off('node:error', handlError);
 });
+
+const handlError = (event: GenericEvent) => {
+  $q.notify({
+    message: event.data,
+    color: 'negative',
+    position: 'top',
+  });
+};
+const handleCopiedCode = () => {
+  $q.notify({
+    message: 'Code copied to clipboard!',
+    color: 'positive',
+    position: 'top',
+  });
+};
 </script>
 
 <style>

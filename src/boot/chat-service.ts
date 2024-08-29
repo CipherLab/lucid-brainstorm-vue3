@@ -5,8 +5,11 @@ import useLucidFlow from '../composables/useLucidFlow';
 import { ChatService } from '../models/chatInterfaces';
 import { StoreName } from '../services/StorageService';
 import { IndexedDBStorageService } from '../services/indexedDBStorageService';
+import copyCodeDirective from '../directives/copy-code';
 
 export default boot(({ app }) => {
+  app.directive('copy-code', copyCodeDirective);
+
   for (const storeName in StoreName) {
     // Filter out numeric values from the enum
     const service = new IndexedDBStorageService(

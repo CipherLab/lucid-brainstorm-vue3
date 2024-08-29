@@ -12,18 +12,10 @@
           color="red"
         />
         <template v-else>
-          <q-markdown>
-            {{ props.message }}
-          </q-markdown>
+          <div v-copy-code>
+            <q-markdown :src="props.message"></q-markdown>
+          </div>
         </template>
-        <!-- <template v-else v-for="(part, index) in messageParts" :key="index">
-          <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
-          <div
-            class="message-part"
-            v-else
-            v-html="md.render(part.content)"
-          ></div>
-        </template> -->
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
         {{ formattedTime }}
@@ -71,40 +63,6 @@ const showError = ref(false);
 const isUser = computed(() => props.sender === 'user');
 const formattedTime = computed(() => moment(props.createdAt).fromNow());
 const messageProp = ref(props.message);
-const messageParts = computed(() => {
-  if (props.message == null) return [];
-
-  if (props.message.length <= 0) return [];
-
-  //console.log('props.message:', props.message);
-  const message = props.message + '';
-
-  try {
-    const codeBlockRegex = /```([\s\S]*?)```/g;
-    const parts = message.split(codeBlockRegex);
-
-    let result: { isCode: boolean; content: string }[] = [];
-
-    for (let i = 0; i < parts.length; i++) {
-      if (parts[i].trim() === '') {
-        continue;
-      }
-      if (i % 2 === 0) {
-        result.push({ isCode: false, content: parts[i] });
-      } else {
-        result.push({ isCode: true, content: parts[i] });
-      }
-    }
-    return result;
-  } catch (e) {
-    $q.notify({
-      type: 'negative',
-      message: 'Error parsing a message',
-    });
-    throw e;
-    return [];
-  }
-});
 
 onMounted(() => {
   emitter.on('node:message-requested', handleRequested);
@@ -157,5 +115,17 @@ const handleFailed = (event: BaseNodeEvent) => {
 .message-part {
   word-break: break-word;
   overflow-wrap: break-word;
+}
+.copy-code-button {
+  float: right;
+  position: absolute; /* Position within the <pre> */
+  top: 5px;
+  right: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #eee; /* Or your preferred style */
+  cursor: pointer;
 }
 </style>

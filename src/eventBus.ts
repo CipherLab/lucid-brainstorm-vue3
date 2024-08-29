@@ -82,6 +82,8 @@ type Events = {
   'node:agent-created': GenericEvent;
   'node:api-key-invalid': GenericEvent;
   'node:watcher-toggled': NodeWatcherToggledEvent;
+  'node:code-copied': GenericEvent;
+  'node:error': GenericEvent;
 };
 
 // Create the event bus

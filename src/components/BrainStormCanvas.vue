@@ -93,6 +93,7 @@ onMounted(async () => {
   //console.log('B-lucidFlow.nodes.length', lucidFlow.getNodeCount());
   await lucidFlow.loadSession();
   emitter.on('node:watcher-toggled', handleWatcherToggled);
+
   window.addEventListener('keydown', handleKeyDown);
   //console.log('A-lucidFlow.nodes.length', lucidFlow.getNodeCount());
 });
