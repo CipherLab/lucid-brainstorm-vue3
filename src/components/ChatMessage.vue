@@ -11,21 +11,18 @@
           name="error"
           color="red"
         />
-        <template v-else>
-          <q-markdown>
-            <pre>
+
+        <template v-else v-for="(part, index) in messageParts" :key="index">
+          <div v-if="part.isCode">
+            <q-markdown>
+              <pre>
             {{ props.message }}
-            </pre>
-          </q-markdown>
+            </pre
+              >
+            </q-markdown>
+          </div>
+          <div>{{ part.content }}</div>
         </template>
-        <!-- <template v-else v-for="(part, index) in messageParts" :key="index">
-          <CodeBlockWithCopy v-if="part.isCode" :code="part.content" />
-          <div
-            class="message-part"
-            v-else
-            v-html="md.render(part.content)"
-          ></div>
-        </template> -->
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
         {{ formattedTime }}
