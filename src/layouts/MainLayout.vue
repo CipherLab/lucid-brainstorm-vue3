@@ -114,7 +114,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.16');
+const version = ref('1.0.17');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -137,6 +137,7 @@ const updateMessages: Record<string, string> = {
   '1.0.15': 'Fix issue with including/excluding chat history',
   '1.0.16': 'Working on some super cool GitHub integration!',
   '1.0.17': 'Using QMarkdown for chat display!',
+  '1.0.18': 'Fix Copy button for in-line code!',
 };
 
 const showUpdateBanner = ref<boolean>(false);
@@ -292,7 +293,21 @@ const handleCopiedCode = () => {
 /* Import Vue Flow Styles */
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
+.q-markdown--line-numbers-wrapper > div:not(.q-markdown--line-numbers) {
+  width: 100%;
+}
 
+.copy-code-button {
+  float: right;
+  position: absolute; /* Position within the <pre> */
+  top: 5px;
+  right: 5px;
+  padding: 4px 4px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 .q-drawer-container {
   top: 0px !important;
   padding-top: 0px !important;

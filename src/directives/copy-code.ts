@@ -1,25 +1,30 @@
 // src/directives/copy-code.ts
 import { Directive, DirectiveBinding } from 'vue';
-import { event, useQuasar } from 'quasar';
-import { emitter, GenericEvent } from '../eventBus';
+import { useQuasar } from 'quasar';
+import { emitter } from '../eventBus';
 const $q = useQuasar();
 
 const copyCodeDirective: Directive = {
   mounted(el: HTMLElement, binding: DirectiveBinding) {
-    // Find all <code class="language-..."> elements within the target element
-    //const codeElements = el.querySelectorAll('code');
-    const codeElements = el.querySelectorAll('code[class*="language-"]');
+    // Find all <code> elements within the target element
 
+    const codeElements = el.querySelectorAll('pre');
+    console.log('codeElements', codeElements);
     codeElements.forEach((codeEl) => {
-      const button = document.createElement('button');
-      button.textContent = 'Copy';
-      button.classList.add('copy-code-button');
-      button.setAttribute('icon', 'content_copy');
-      button.setAttribute('dense', 'true'); // Make it dense
-      button.setAttribute('flat', 'true'); // Make it flat
-      button.setAttribute('size', 'sm'); // Make it small
+      const icon = document.createElement('i');
+      icon.classList.add(
+        'copy-code-button',
+        'q-icon',
+        'notranslate',
+        'material-icons'
+      );
+      icon.setAttribute('cursor', 'pointer');
+      icon.setAttribute('position', 'relative');
+      icon.setAttribute('float', 'right');
+      icon.setAttribute('role', 'presentation');
+      icon.textContent = 'content_copy';
 
-      button.addEventListener('click', () => {
+      icon.addEventListener('click', () => {
         const code = codeEl.textContent?.trim() || '';
         navigator.clipboard
           .writeText(code)
@@ -38,7 +43,7 @@ const copyCodeDirective: Directive = {
       // Clone the code element
       const clonedCodeEl = codeEl.cloneNode(true) as HTMLElement;
       wrapper.appendChild(clonedCodeEl); // Add the CLONED code element to the wrapper
-      wrapper.appendChild(button); // Add the button to the wrapper
+      wrapper.appendChild(icon); // Add the icon to the wrapper
 
       // Replace the original code element with the wrapper
       codeEl.parentNode?.replaceChild(wrapper, codeEl);

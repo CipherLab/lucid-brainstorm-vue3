@@ -12,9 +12,7 @@
           color="red"
         />
         <template v-else>
-          <div v-copy-code>
-            <q-markdown :src="props.message"></q-markdown>
-          </div>
+          <q-markdown v-copy-code :src="props.message"></q-markdown>
         </template>
       </q-item-label>
       <q-item-label caption class="text-grey-8 text-right">
@@ -116,16 +114,13 @@ const handleFailed = (event: BaseNodeEvent) => {
   word-break: break-word;
   overflow-wrap: break-word;
 }
-.copy-code-button {
-  float: right;
-  position: absolute; /* Position within the <pre> */
-  top: 5px;
-  right: 5px;
-  padding: 4px 8px;
-  font-size: 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: #eee; /* Or your preferred style */
-  cursor: pointer;
+.copy-part {
+  display: block;
+}
+.copy-part > .icon {
+  display: none;
+}
+.copy-part:hover > .icon {
+  display: inline-block;
 }
 </style>
