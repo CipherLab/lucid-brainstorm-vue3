@@ -84,7 +84,7 @@ abstract class BaseChatService implements ChatService {
           if (
             isEnabled &&
             connectedNode?.data.agent.subtype === 'github' &&
-            Array.isArray(connectedNode.data.agent.githubSelection)
+            Array.isArray(connectedNode.data.agent.gitHubAgentMode)
           ) {
             // Fetch the latest data from GitHub using octokit. iterate on each message.
             for (const message of connectedChatHistory) {

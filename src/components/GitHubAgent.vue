@@ -35,36 +35,36 @@
       <span class="q-mr-sm">Options</span>
       <br />
       <q-radio
-        v-model="gitAgentMode"
+        v-model="gitHubAgentMode"
         val="url"
         label="Interact with the data via the url only. (Gemini can access the data directly from the repository)"
       />
       <q-radio
-        v-model="gitAgentMode"
-        disable
+        v-model="gitHubAgentMode"
         val="download"
         label="Download the files from the repository and include the content directly in the chat history. (Coming soon!)"
       />
     </div>
 
-    <q-tree
-      v-if="fileTree.length > 0"
-      :nodes="fileTree"
-      node-key="path"
-      label-key="name"
-      v-model:ticked="selectedFilePaths"
-      tick-strategy="leaf"
-      class="file-tree q-mt-sm"
-    >
-      <template v-slot:default-header="prop">
-        <div class="row items-center">
-          <q-icon
-            :name="prop.node.type === 'tree' ? 'folder' : 'insert_drive_file'"
-          />
-          <span class="q-ml-sm">{{ prop.node.name }}</span>
-        </div>
-      </template>
-    </q-tree>
+    <div v-if="fileTree.length > 0" class="file-tree-container q-mt-sm">
+      <q-tree
+        :nodes="fileTree"
+        node-key="path"
+        label-key="name"
+        v-model:ticked="selectedFilePaths"
+        tick-strategy="leaf"
+        class="file-tree"
+      >
+        <template v-slot:default-header="prop">
+          <div class="row items-center">
+            <q-icon
+              :name="prop.node.type === 'tree' ? 'folder' : 'insert_drive_file'"
+            />
+            <span class="q-ml-sm">{{ prop.node.name }}</span>
+          </div>
+        </template>
+      </q-tree>
+    </div>
   </div>
 </template>
 
@@ -81,7 +81,7 @@ import {
 import { useQuasar } from 'quasar';
 import { StorageService, StoreName } from '../services/StorageService';
 import { Octokit } from '@octokit/core';
-const gitAgentMode = ref('url');
+const gitHubAgentMode = ref('url');
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
 );
@@ -115,6 +115,7 @@ const props = defineProps({
 const githubStore = inject<StorageService<StoreName.githubTree>>(
   `${StoreName.githubTree}Service`
 );
+const hasMounted = ref(false);
 
 const isLoading = ref(false);
 
@@ -132,10 +133,8 @@ const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
 
 watchEffect(() => {
-  if (gitAgentMode.value === 'dataAsUrl') {
-    props.updateGitHubAgentMode('url');
-  } else {
-    props.updateGitHubAgentMode('download');
+  if (gitHubAgentMode.value && hasMounted.value) {
+    props.updateGitHubAgentMode(gitHubAgentMode.value);
   }
 });
 // Updated githubSelection computed property
@@ -271,13 +270,18 @@ watch(selectedFilePaths, (newPaths) => {
 onMounted(() => {
   if (selectedNode.value) {
     webUrl.value = selectedNode.value.data.agent.webUrl || '';
-    gitAgentMode.value = selectedNode.value.data.agent.gitAgentMode || 'url';
+    gitHubAgentMode.value =
+      selectedNode.value.data.agent.gitHubAgentMode || 'url';
+    console.log('gitHubAgentMode:', selectedNode.value.data.agent);
+    // gitHubAgentMode.value =
+    //   selectedNode.value.data.agent.gitHubAgentMode || 'url';
   }
+  hasMounted.value = true;
 });
 
-watch(webUrl, (newUrl) => {
-  if (newUrl && isValidRepoUrl.value) {
-    //loadRepository(false);
+watch(webUrl, async (newUrl) => {
+  if (newUrl && isValidRepoUrl.value && hasMounted.value) {
+    await loadRepository(false);
   } else {
     fileTree.value = [];
   }
@@ -298,3 +302,15 @@ const updateChatHistoryWithFilePaths = (paths: string[]) => {
   props.updateChatHistoryDataArray(tempPaths);
 };
 </script>
+
+<style scoped>
+/* ... (your existing styles) ... */
+
+.file-tree-container {
+  /* Set a max height for the container */
+  max-height: 70vh;
+
+  /* Enable scrolling within the container */
+  overflow-y: auto;
+}
+</style>

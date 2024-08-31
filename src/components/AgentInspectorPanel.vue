@@ -348,7 +348,7 @@ async function updateChatHistoryGithubSelection(selection: any) {
   }
 }
 async function updateGitHubAgentMode(mode: string) {
-  if (selectedNode.value && mode) {
+  if (selectedNode.value) {
     selectedNode.value.data.agent.gitHubAgentMode = mode;
     await lucidFlow.saveSession();
   }
