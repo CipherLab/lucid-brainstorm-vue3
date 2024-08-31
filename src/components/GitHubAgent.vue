@@ -35,14 +35,14 @@
       <span class="q-mr-sm">Options</span>
       <br />
       <q-radio
-        v-model="dataAction"
-        val="dataAsUrl"
+        v-model="gitAgentMode"
+        val="url"
         label="Interact with the data via the url only. (Gemini can access the data directly from the repository)"
       />
       <q-radio
-        v-model="dataAction"
+        v-model="gitAgentMode"
         disable
-        val="dataAsFile"
+        val="download"
         label="Download the files from the repository and include the content directly in the chat history. (Coming soon!)"
       />
     </div>
@@ -69,11 +69,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, inject } from 'vue';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  nextTick,
+  inject,
+  watchEffect,
+} from 'vue';
 import { useQuasar } from 'quasar';
 import { StorageService, StoreName } from '../services/StorageService';
 import { Octokit } from '@octokit/core';
-const dataAction = ref('dataAsUrl');
+const gitAgentMode = ref('url');
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
 );
@@ -95,6 +103,10 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  updateGitHubAgentMode: {
+    type: Function,
+    required: true,
+  },
   toggleWatcherState: {
     type: Function,
     required: true,
@@ -111,13 +123,21 @@ if (!githubStore) {
 }
 
 const $q = useQuasar();
+
 const octokit = ref(new Octokit());
+
 const fileTree = ref([]);
 const selectedFilePaths = ref<Array<any>>([]);
 const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
-const dataAsUrl = ref(false);
 
+watchEffect(() => {
+  if (gitAgentMode.value === 'dataAsUrl') {
+    props.updateGitHubAgentMode('url');
+  } else {
+    props.updateGitHubAgentMode('download');
+  }
+});
 // Updated githubSelection computed property
 const githubSelection = computed({
   get() {
@@ -193,11 +213,14 @@ const loadRepository = async (clearCache: boolean) => {
 };
 
 const fetchTreeRecursively = async (owner, repo, path) => {
-  const response = await octokit.value.rest.repos.getContent({
-    owner,
-    repo,
-    path, // Pass the current path for recursive calls
-  });
+  const response = await octokit.value.request(
+    'GET /repos/{owner}/{repo}/contents/{path}',
+    {
+      owner,
+      repo,
+      path, // Pass the current path for recursive calls
+    }
+  );
 
   let tree = processTreeData(response.data);
 
@@ -248,12 +271,13 @@ watch(selectedFilePaths, (newPaths) => {
 onMounted(() => {
   if (selectedNode.value) {
     webUrl.value = selectedNode.value.data.agent.webUrl || '';
+    gitAgentMode.value = selectedNode.value.data.agent.gitAgentMode || 'url';
   }
 });
 
 watch(webUrl, (newUrl) => {
   if (newUrl && isValidRepoUrl.value) {
-    loadRepository(false);
+    //loadRepository(false);
   } else {
     fileTree.value = [];
   }

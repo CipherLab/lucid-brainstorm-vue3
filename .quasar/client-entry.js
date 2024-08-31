@@ -35,6 +35,8 @@ import 'quasar/dist/quasar.sass'
 
 import 'src/css/app.scss'
 
+import '@quasar/quasar-ui-qmarkdown/src/index.sass'
+
 
 import createQuasarApp from './app.js'
 import quasarUserOptions from './quasar-user-options.js'
@@ -43,8 +45,6 @@ import quasarUserOptions from './quasar-user-options.js'
 
 
 
-
-console.info('[Quasar] Running SPA.')
 
 
 const publicPath = `/`
@@ -158,7 +158,9 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/chat-service'),
       
-      import('boot/vue-flow')
+      import('boot/vue-flow'),
+      
+      import('@quasar/quasar-app-extension-qmarkdown/src/boot/register.js')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

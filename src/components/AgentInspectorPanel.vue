@@ -79,6 +79,7 @@
         <GitHubAgent
           :selectedNode="selectedNode"
           :updateChatHistoryUrl="updateChatHistoryUrl"
+          :updateGitHubAgentMode="updateGitHubAgentMode"
           :updateChatHistoryDataArray="updateChatHistoryDataArray"
           :toggleWatcherState="toggleWatcher"
           :updateChatHistoryGithubSelection="updateChatHistoryGithubSelection"
@@ -343,6 +344,12 @@ async function updateChatHistoryUrl(url: string) {
 async function updateChatHistoryGithubSelection(selection: any) {
   if (selectedNode.value && selection) {
     selectedNode.value.data.agent.githubSelection = selection;
+    await lucidFlow.saveSession();
+  }
+}
+async function updateGitHubAgentMode(mode: string) {
+  if (selectedNode.value && mode) {
+    selectedNode.value.data.agent.gitHubAgentMode = mode;
     await lucidFlow.saveSession();
   }
 }
