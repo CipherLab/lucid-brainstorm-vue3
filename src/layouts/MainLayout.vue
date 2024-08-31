@@ -138,6 +138,7 @@ const updateMessages: Record<string, string> = {
   '1.0.16': 'Working on some super cool GitHub integration!',
   '1.0.17': 'Using QMarkdown for chat display!',
   '1.0.18': 'Fix Copy button for in-line code!',
+  '1.0.19': 'Fix issue with switch to octokit core!',
 };
 
 const showUpdateBanner = ref<boolean>(false);
