@@ -305,6 +305,7 @@ watchEffect(() => {
           typing: false,
           selected: false,
           isEnabledByNode: {}, // Initialize isEnabledByNode
+          data: {},
         },
       ];
       textInputData.value = ''; // Clear input if no message data
@@ -368,6 +369,7 @@ async function updateChatHistoryDataArray(data: string[]) {
       typing: false,
       selected: index === 0, // Select the first message by default
       isEnabledByNode: {}, // Safe to initialize here (new message)
+      data: {},
     }));
   } else {
     // Preserve existing isEnabledByNode!
@@ -401,6 +403,7 @@ async function updateChatHistoryData(data: string) {
         typing: false,
         selected: true,
         isEnabledByNode: {}, // Safe to initialize here (new message)
+        data: {},
       },
     ];
   } else {

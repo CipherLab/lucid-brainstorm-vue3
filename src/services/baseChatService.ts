@@ -9,18 +9,22 @@ import {
 } from '../models/startChatParams.ts';
 import { DataFetcher } from './dataFetcher.ts';
 import { WebDataFetcher } from './webDataFetcher.ts';
+import { Octokit } from '@octokit/core';
 
 abstract class BaseChatService implements ChatService {
   protected apiKey: string;
+
   protected chats: Map<string, any> = new Map();
   protected model: any;
   protected lucidFlow: LucidFlowComposable;
   protected webDataFetcher: DataFetcher;
+  protected octoKit: Octokit;
 
   constructor(apiKey: string, lucidFlow: LucidFlowComposable) {
     this.apiKey = apiKey;
     this.lucidFlow = lucidFlow;
     this.webDataFetcher = new WebDataFetcher();
+    this.octoKit = new Octokit();
   }
 
   async startChat(
@@ -45,6 +49,8 @@ abstract class BaseChatService implements ChatService {
     return apiKey;
   }
 
+  //github key in storage
+
   protected async buildChatHistory(
     nodeId: string,
     systemInstructions: string
@@ -68,57 +74,99 @@ abstract class BaseChatService implements ChatService {
       for (const connectedNodeId of connectedNodeIds) {
         if (connectedNodeId === nodeId) continue;
 
-        const connectedNode = this.lucidFlow.findNodeProps(connectedNodeId);
+        //
 
         const connectedChatHistory = await this.lucidFlow.getNodeChatData(
           connectedNodeId
         );
 
         if (connectedChatHistory) {
-          // const isEnabled =
-          //   connectedChatHistory[0]?.isEnabledByNode[nodeId] ?? true;
-          // Re-fetch data if watcher is true and it's a webpage node
-          const isEnabled =
-            connectedChatHistory[0]?.isEnabledByNode[nodeId] ?? true;
+          for (const connectedNode of connectedChatHistory) {
+            let freshData = '';
+            const enabled = connectedNode.isEnabledByNode[nodeId] ?? true;
 
-          if (
-            isEnabled &&
-            connectedNode?.data.agent.subtype === 'github' &&
-            Array.isArray(connectedNode.data.agent.gitHubAgentMode)
-          ) {
-            // Fetch the latest data from GitHub using octokit. iterate on each message.
-            for (const message of connectedChatHistory) {
-              console.log(`pretending to process message ${message}`);
+            if (!enabled) continue;
+
+            const foundNode = this.lucidFlow.findNodeProps(connectedNodeId);
+
+            if (!foundNode) continue;
+
+            if (
+              foundNode.data.agent.subtype !== 'github' &&
+              foundNode.data.agent.subtype !== 'webpage'
+            )
+              continue;
+
+            if (!connectedNode.message) continue;
+
+            if (!foundNode.data.agent.watcher) continue;
+
+            if (foundNode.data.agent.subtype === 'github') {
+              try {
+                if (foundNode.data.agent.subtype === 'github') {
+                  const urlParts = new URL(connectedNode.message).pathname
+                    .split('/')
+                    .filter(Boolean);
+                  const owner = urlParts[0];
+                  const repo = urlParts[1];
+                  const path = urlParts.slice(2).join('/');
+
+                  console.log('owner, repo, path', owner, repo, path);
+                  const response = await this.octoKit.request(
+                    'GET /repos/{owner}/{repo}/contents/{path}',
+                    {
+                      owner,
+                      repo,
+                      path,
+                    }
+                  );
+                  console.log('got github data:', response.data);
+                  // Assuming the response is a file, extract content
+                  if (response.data && 'content' in response.data) {
+                    const content = Buffer.from(
+                      response.data.content,
+                      'base64'
+                    ).toString();
+                    freshData = content; // Update the message content
+                  } else {
+                    console.warn(
+                      'Unexpected response from GitHub API:',
+                      response
+                    );
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching GitHub content:', error);
+                // Handle the error appropriately, e.g., show an error message
+              }
+            } else if (foundNode.data.agent.subtype === 'webpage') {
+              try {
+                const content = await this.webDataFetcher.fetchData(
+                  foundNode.data.agent.webUrl
+                );
+                // Update the chat history with the fresh data
+                connectedNode.message = content;
+                freshData = content;
+              } catch (error) {
+                console.error(
+                  `Error fetching data for node ${connectedNodeId}:`,
+                  error
+                );
+                // Handle the error appropriately, e.g., show an error message
+              }
             }
-          } else if (
-            isEnabled &&
-            connectedNode?.data.agent.watcher &&
-            connectedNode?.data.agent.subtype === 'webpage'
-          ) {
-            try {
-              const freshData = await this.webDataFetcher.fetchData(
-                connectedNode.data.agent.webUrl
-              );
-              // Update the chat history with the fresh data
-              connectedChatHistory[0].message = freshData;
-              await this.lucidFlow.updateNodeChatData(
-                connectedNodeId,
-                connectedChatHistory
-              );
-            } catch (error) {
-              console.error(
-                `Error fetching data for node ${connectedNodeId}:`,
-                error
-              );
-              // Handle the error appropriately, e.g., show an error message
-            }
-          }
-          if (isEnabled) {
+
+            if (freshData == '') continue;
+
+            await this.lucidFlow.updateNodeChatData(
+              connectedNodeId,
+              connectedChatHistory
+            );
             mergedHistoryText += connectedChatHistory
               .map(
                 (message) => `\`\`\`
-          //NEW FILE or MESSAGE: ${connectedNode?.data.label}
-          ${message.message?.trim()}
+          //NEW FILE or MESSAGE: ${foundNode.data.label}
+          ${freshData.trim()}
           \`\`\`
           \r`
               )
@@ -126,7 +174,6 @@ abstract class BaseChatService implements ChatService {
           }
         }
       }
-
       // Create a single user message with the merged history
       const mergedHistory: ChatHistory = {
         role: 'user',
