@@ -114,7 +114,7 @@ import { useQuasar } from 'quasar';
 const $q = useQuasar();
 $q.dark.set(true);
 
-const version = ref('1.0.17');
+const version = ref('1.0.19');
 const updateMessages: Record<string, string> = {
   '1.0.1': 'Welcome to Gemini Flow!',
   '1.0.2': 'Welcome to Gemini Flow!',
@@ -139,6 +139,7 @@ const updateMessages: Record<string, string> = {
   '1.0.17': 'Using QMarkdown for chat display!',
   '1.0.18': 'Fix Copy button for in-line code!',
   '1.0.19': 'Fix issue with switch to octokit core!',
+  '1.0.20': 'Downloading file data directly from GitHub!',
 };
 
 const showUpdateBanner = ref<boolean>(false);

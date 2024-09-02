@@ -37,12 +37,12 @@
       <q-radio
         v-model="gitHubRepoAgentData.agentMode"
         val="url"
-        label="Interact with the data via the url only. (Gemini can access the data directly from the repository)"
+        label="Interact with the data via the url only. (Gemini can access the data directly from the url)"
       />
       <q-radio
         v-model="gitHubRepoAgentData.agentMode"
         val="download"
-        label="Download the files from the repository and include the content directly in the chat history. (Coming soon!)"
+        label="Download the files from the repository and include the content directly in the chat history. (Beta)"
       />
     </div>
 
