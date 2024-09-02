@@ -79,7 +79,7 @@
         <GitHubAgent
           :selectedNode="selectedNode"
           :updateChatHistoryUrl="updateChatHistoryUrl"
-          :updateGitHubAgentMode="updateGitHubAgentMode"
+          :updateGitHubAgentData="updateGitHubAgentData"
           :updateChatHistoryDataArray="updateChatHistoryDataArray"
           :toggleWatcherState="toggleWatcher"
           :updateChatHistoryGithubSelection="updateChatHistoryGithubSelection"
@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { LucidFlowComposable } from '../composables/useLucidFlow';
-import { Message } from '../models/chatInterfaces';
+import { GitHubRepoAgentData, Message } from '../models/chatInterfaces';
 import { debounce } from 'lodash';
 import { NodeProps } from '@vue-flow/core';
 import { BaseNodeEvent, emitter } from '../eventBus';
@@ -348,9 +348,9 @@ async function updateChatHistoryGithubSelection(selection: any) {
     await lucidFlow.saveSession();
   }
 }
-async function updateGitHubAgentMode(mode: string) {
+async function updateGitHubAgentData(data: GitHubRepoAgentData) {
   if (selectedNode.value) {
-    selectedNode.value.data.agent.gitHubAgentMode = mode;
+    selectedNode.value.data.agent.gitHubRepoAgentData = data;
     await lucidFlow.saveSession();
   }
 }

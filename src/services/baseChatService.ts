@@ -104,14 +104,17 @@ abstract class BaseChatService implements ChatService {
             if (foundNode.data.agent.subtype === 'github') {
               try {
                 if (foundNode.data.agent.subtype === 'github') {
-                  const urlParts = new URL(connectedNode.message).pathname
-                    .split('/')
-                    .filter(Boolean);
-                  const owner = urlParts[0];
-                  const repo = urlParts[1];
-                  const path = urlParts.slice(2).join('/');
+                  console.log(
+                    'baseChat githubRepoData',
+                    foundNode.data.agent.gitHubRepoAgentData
+                  );
 
-                  console.log('owner, repo, path', owner, repo, path);
+                  const owner = foundNode.data.agent.gitHubRepoAgentData.owner;
+                  const repo = foundNode.data.agent.gitHubRepoAgentData.repo;
+                  const path = foundNode.data.agent.gitHubRepoAgentData.path;
+                  const branch =
+                    foundNode.data.agent.gitHubRepoAgentData.branch;
+
                   const response = await this.octoKit.request(
                     'GET /repos/{owner}/{repo}/contents/{path}',
                     {
@@ -120,14 +123,9 @@ abstract class BaseChatService implements ChatService {
                       path,
                     }
                   );
-                  console.log('got github data:', response.data);
-                  // Assuming the response is a file, extract content
                   if (response.data && 'content' in response.data) {
-                    const content = Buffer.from(
-                      response.data.content,
-                      'base64'
-                    ).toString();
-                    freshData = content; // Update the message content
+                    const content = atob(response.data.content); // Decode Base64
+                    freshData = content;
                   } else {
                     console.warn(
                       'Unexpected response from GitHub API:',

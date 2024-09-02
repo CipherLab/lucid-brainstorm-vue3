@@ -12,6 +12,14 @@ export interface Message {
   data: any;
 }
 
+export interface GitHubRepoAgentData {
+  owner: string;
+  repo: string;
+  path: string;
+  branch: string;
+  fullUrl: string;
+  agentMode: string;
+}
 export interface ChatService {
   startChat(
     nodeId: string,

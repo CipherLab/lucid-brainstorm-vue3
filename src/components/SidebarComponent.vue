@@ -255,7 +255,9 @@ const availableInputs = reactive([
     inputData: '',
     webUrl: '',
     watcher: true,
-    gitHubAgentMode: 'url',
+    gitHubRepoAgentData: {
+      agentMode: 'url',
+    },
   },
 ]);
 const onAgentDragStart = (agent: any, event: DragEvent) => {

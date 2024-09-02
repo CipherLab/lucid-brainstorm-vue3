@@ -31,16 +31,16 @@
         />
       </template>
     </q-input>
-    <div>
+    <div v-if="gitHubRepoAgentData">
       <span class="q-mr-sm">Options</span>
       <br />
       <q-radio
-        v-model="gitHubAgentMode"
+        v-model="gitHubRepoAgentData.agentMode"
         val="url"
         label="Interact with the data via the url only. (Gemini can access the data directly from the repository)"
       />
       <q-radio
-        v-model="gitHubAgentMode"
+        v-model="gitHubRepoAgentData.agentMode"
         val="download"
         label="Download the files from the repository and include the content directly in the chat history. (Coming soon!)"
       />
@@ -81,7 +81,15 @@ import {
 import { useQuasar } from 'quasar';
 import { StorageService, StoreName } from '../services/StorageService';
 import { Octokit } from '@octokit/core';
-const gitHubAgentMode = ref('url');
+import { GitHubRepoAgentData } from '../models/chatInterfaces';
+const gitHubRepoAgentData = ref<GitHubRepoAgentData>({
+  agentMode: 'url',
+  owner: '',
+  repo: '',
+  path: '',
+  branch: 'main',
+  fullUrl: '',
+});
 const cacheKey = computed(
   () => `${selectedNode.value.data.agent.id}${webUrl.value}`
 );
@@ -103,7 +111,7 @@ const props = defineProps({
     type: Function,
     required: true,
   },
-  updateGitHubAgentMode: {
+  updateGitHubAgentData: {
     type: Function,
     required: true,
   },
@@ -133,8 +141,8 @@ const webUrl = ref('');
 const selectedNode = computed(() => props.selectedNode);
 
 watchEffect(() => {
-  if (gitHubAgentMode.value && hasMounted.value) {
-    props.updateGitHubAgentMode(gitHubAgentMode.value);
+  if (gitHubRepoAgentData.value && hasMounted.value) {
+    props.updateGitHubAgentData(gitHubRepoAgentData.value);
   }
 });
 // Updated githubSelection computed property
@@ -269,12 +277,18 @@ watch(selectedFilePaths, (newPaths) => {
 
 onMounted(() => {
   if (selectedNode.value) {
-    webUrl.value = selectedNode.value.data.agent.webUrl || '';
-    gitHubAgentMode.value =
-      selectedNode.value.data.agent.gitHubAgentMode || 'url';
-    console.log('gitHubAgentMode:', selectedNode.value.data.agent);
-    // gitHubAgentMode.value =
-    //   selectedNode.value.data.agent.gitHubAgentMode || 'url';
+    webUrl.value = selectedNode.value.data.agent.webUrl;
+    if (selectedNode.value.data.agent.gitHubRepoAgentData) {
+      gitHubRepoAgentData.value =
+        selectedNode.value.data.agent.gitHubRepoAgentData;
+    }
+
+    console.log(
+      'gitHubRepoAgentData:',
+      selectedNode.value.data.gitHubRepoAgentData
+    );
+    // gitHubRepoAgentData.value =
+    //   selectedNode.value.data.agent.gitHubRepoAgentData || 'url';
   }
   hasMounted.value = true;
 });
@@ -288,17 +302,30 @@ watch(webUrl, async (newUrl) => {
 });
 
 // Function to generate the URL for each file
-const generateFileUrl = (path) => {
+const updateGitHubRepoData = (path: string): GitHubRepoAgentData => {
   const urlParts = webUrl.value.split('/');
   const owner = urlParts[3];
   const repo = urlParts[4];
-  return `https://github.com/${owner}/${repo}/blob/main/${path}`;
+
+  if (!gitHubRepoAgentData.value) {
+    throw new Error('gitHubRepoAgentData is not defined');
+  }
+
+  gitHubRepoAgentData.value.owner = owner;
+  gitHubRepoAgentData.value.repo = repo;
+  gitHubRepoAgentData.value.path = path;
+  gitHubRepoAgentData.value.branch = 'main';
+
+  const fullUrl = `https://github.com/${owner}/${repo}/blob/main/${path}`;
+  console.log('gitHubRepoAgentData:', gitHubRepoAgentData.value);
+  gitHubRepoAgentData.value.fullUrl = fullUrl;
+  return gitHubRepoAgentData.value;
 };
 
 // Function to update chat history with file paths
 const updateChatHistoryWithFilePaths = (paths: string[]) => {
-  //use generateFileUrl, map to array
-  const tempPaths = paths.map((path) => generateFileUrl(path));
+  //use updateGitHubRepoData, map to array
+  const tempPaths = paths.map((path) => updateGitHubRepoData(path).fullUrl);
   props.updateChatHistoryDataArray(tempPaths);
 };
 </script>
